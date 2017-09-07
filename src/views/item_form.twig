@@ -1,0 +1,52 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	{% set is_existing = (item.id|default(null) is not empty) %}
+	<h1 class="ui header">{% if is_existing %}Edit{% else %}Add{% endif %} deployment item</h1>
+
+	<form method="POST">
+		<div class="ui form">
+			<div class="ui required field basic segment">
+				<label class="ui top attached large label">Title</label>
+				<input placeholder="User friendly item title (max 100 characters)" type="text" name="title" value="{{app.request.request.get('title')|default(item.title|default(null))}}" />
+				{{ m.fieldError(errors|default([]), 'title') }}
+			</div>
+			<div class="ui field basic segment">
+				<label class="ui top attached large label">Reference Number</label>
+				<input placeholder="Reference number (e.g. CR#, SR# etc)" type="text" name="refnum" value="{{app.request.request.get('refnum')|default(item.refnum|default(null))}}" />
+				{{ m.fieldError(errors|default([]), 'refnum') }}
+			</div>
+			<div class="ui field">
+				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} deployment item" />
+				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+				{% if is_existing %}
+					<input type="submit" class="ui red right floated button" name="_action" value="Delete"
+						   onclick="return confirm('Are you sure you want to delete?')" />
+				{% endif %}
+			</div>
+		</div>
+	</form>
+
+	{% if is_existing %}
+		<h2 class="ui header">Move to another deployment</h2>
+		<p>It is possible for a deployment item to be moved to another upcoming deployment. Warning: the item will be reset to "Unsubmitted" status</p>
+
+		<form method="POST">
+			<div class="ui form">
+				<div class="ui required field basic segment">
+					<label class="ui top attached large label">Deployment</label>
+					<select name="deployment" class="ui dropdown">
+						{% for deployment in item.deployment.project.upcoming() %}
+							<option value="{{deployment.name}}" {% if deployment == item.deployment %}selected="selected"{% endif %}>{{deployment.displayTitle()}}</option>
+						{% endfor %}
+					</select>
+					{{ m.fieldError(errors|default([]), 'deployment') }}
+				</div>
+				<div class="ui field">
+					<input type="submit" class="ui submit primary button" name="_action" value="Move"
+						   onclick="return confirm('Are you sure you want to move this item to another deployment?')" />
+				</div>
+			</div>
+		</form>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui dividing header">
+		<small><i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;</small><br />
+		<span><i class="ui tag icon"></i>{{item.displayTitle}}</span>
+		<a class="ui right floated button" href="{{app.path('item_edit',{project:item.deployment.project.name, deployment:item.deployment.name, item:item.id})}}"><i class="ui pencil icon"></i>Edit</a>
+		{% if item.approved_date %}
+			<div class="ui green label">
+				<i class="ui check icon"></i>
+				{{item.status}}
+				<span class="detail">
+					<i class="ui clock icon"></i>{{item.approved_date|date('d/m/Y h:ia')}}
+				</span>
+			</div>
+		{% else %}
+			<div class="ui red label">
+				<i class="ui radio icon"></i>
+				{{item.status}}
+			</div>
+		{% endif %}
+
+	</h1>
+
+	{{ m.timestamps(item) }}
+
+	<p></p>
+	<div class="ui grid">
+		<div class="twelve wide column">
+			<h2>
+				Activities
+				<a class="ui right floated primary button" href="{{app.path('deployment_create',{project: item.deployment.project.name})}}">
+					<i class="ui plus icon"></i>Add activity
+				</a>
+			</h2>
+
+			<table class="ui celled striped sortable table">
+				<thead>
+					<tr>
+						<th class="ui collapsing">#</th>
+						<th class="ui collapsing">Category</th>
+						<th>Description</th>
+						<th class="ui collapsing">Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="1000" class="center aligned">No activity has been defined</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h2>
+				Attachments
+				<a class="ui right floated primary button" href="{{app.path('deployment_create',{project: item.deployment.project.name})}}">
+					<i class="ui plus icon"></i>Add attachment
+				</a>
+			</h2>
+
+			<table class="ui celled striped sortable table">
+				<thead>
+					<tr>
+						<th class="ui collapsing">#</th>
+						<th class="ui collapsing">Filename</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td colspan="1000" class="center aligned">No attachment has been uploaded</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div class="four wide column">
+			<h2 class="ui header">Comments (sample)</h2>
+
+			<div class="ui comments">
+				<div class="comment">
+					<div class="content">
+						<a class="author">Matt</a>
+						<div class="metadata">
+							<span class="date">Today at 5:42PM</span>
+						</div>
+						<div class="text">
+							How artistic!
+						</div>
+					</div>
+				</div>
+				<div class="comment">
+					<div class="content">
+						<a class="author">Elliot Fu</a>
+						<div class="metadata">
+							<span class="date">Yesterday at 12:30AM</span>
+						</div>
+						<div class="text">
+							<p>This has been very useful for my research. Thanks as well!</p>
+						</div>
+					</div>
+				</div>
+				<div class="comment">
+					<div class="content">
+						<a class="author">Joe Henderson</a>
+						<div class="metadata">
+							<span class="date">5 days ago</span>
+						</div>
+						<div class="text">
+							Dude, this is awesome. Thanks so much
+						</div>
+					</div>
+				</div>
+				<form class="ui form">
+					<div class="field">
+						<textarea rows="3"></textarea>
+					</div>
+					<div class="ui blue labeled submit icon button">
+						<i class="icon edit"></i> Add Reply
+					</div>
+				</form>
+			</div>			
+		</div>
+	</div>
+{% endblock %}

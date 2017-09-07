@@ -1,0 +1,30 @@
+{
+	"name": "mlukman/securilex",
+	"license": "GPL",
+	"description": "Securilex is a simplified security provider for Silex.",
+	"keywords": ["silex", "security", "securilex"],
+	"homepage": "https://github.com/MLukman/Securilex",
+	"authors": [
+		{
+			"name": "Muhammad Lukman Nasaruddin",
+			"email": "anatilmizun@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"silex/silex": "~1.3",
+		"symfony/security": "^3.0",
+		"symfony/ldap": "^3.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "5.7"
+	},
+	"suggest": {
+		"mlukman/securilex-doctrine": "For loading users from database using Doctrine ORM"
+	},
+	"autoload": {
+		"psr-4": {
+			"Securilex\\": "src/"
+		}
+	}
+}

@@ -1,0 +1,205 @@
+{% import _self as m %}
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+		<link rel="icon" href="{{app.request.baseUrl}}/ui/favicon.ico" type="image/x-icon">
+
+		<title>{{title|default(controller.title|default(app.title))}}</title>
+
+		<link rel="stylesheet" type="text/css" href="{{app.request.baseUrl}}/ui/semantic2/semantic.css" />
+
+		<script src="{{app.request.baseUrl}}/ui/jquery/jquery-2.1.3.min.js"></script>
+		<script src="{{app.request.baseUrl}}/ui/jquery/jquery.address.js"></script>
+		<script src="{{app.request.baseUrl}}/ui/semantic2/semantic.js"></script>
+		<script src="{{app.request.baseUrl}}/ui/semantic2/library/jquery.tablesort.js"></script>
+		<script>
+			var dateFieldConfig = {
+				type: 'date',
+				minDate: new Date(),
+				formatter: {
+					date: function (date, settings) {
+						if (!date)
+							return '';
+						var day = date.getDate();
+						var month = date.getMonth() + 1;
+						var year = date.getFullYear();
+						return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
+					}
+				},
+				parser: {
+					date: function (text, settings) {
+						if (!text) {
+							return null;
+						}
+						var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
+						var dateArray = reggie.exec(text);
+						var dateObject = new Date(
+								(+dateArray[3]),
+								(+dateArray[2]) - 1, // Careful, month starts at 0!
+								(+dateArray[1])
+								);
+						return dateObject;
+					}
+				}
+			};
+
+			$(function () {
+				$('table.sortable').tablesort();
+				$('.ui.dropdown').dropdown();
+				$('body').css('padding-top', $('#topbar').outerHeight(true));
+				setTimeout(function () {
+					$('.flash.message').fadeOut(1000);
+				}, 3000);
+			});
+		</script>
+		{% for js in extra_js|default([]) %}<script src="{{js}}"></script>{% endfor %}
+		{% for css in extra_css|default([]) %}<link rel="stylesheet" type="text/css" href="{{css}}" />{% endfor %}
+		<style>
+			#topbar {
+				position: fixed;
+				z-index: 101;
+				margin: 0;
+				width: 100%; 
+				top: 0px; left: 0px; right: auto; bottom: auto; 
+				color: black
+			}
+
+			#topmenu {
+				margin: 0em; 
+				letter-spacing: 0.75pt; 
+				border-radius: 0px;
+				box-shadow: inset 0px -3px 0px rgba(191,191,191,0.5);
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="topbar">
+			<div id="topmenu" class="ui menu inverted purple">
+
+				<div class="ui title item">
+					<a style="padding-right: 30pt" href="{{app.request.baseUrl}}">
+						{% block menutitle %}
+							{% set logo = app.logo %}
+							{% if logo %}
+								<img src="{{logo}}" />
+							{% else %}
+								<h3>
+									{% set icon = app.icon %}
+									{% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}
+									{{app.title}}
+								</h3>
+							{% endif %}
+						{% endblock %}
+					</a>
+				</div>
+
+				{% block menubar %}
+				{% endblock %}
+
+				<div class="right menu">
+					{% block menuright %}
+					{% endblock %}
+
+					{% if app.securilex is defined %}
+						{% if app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
+							<div class="ui dropdown item">
+								<i class="ui user icon"></i> {{app['user'].getUsername()}}
+								<i class="dropdown icon"></i>
+								<div class="menu">
+									<a class="item" href="{{app.securilex.getLogoutPath()}}">
+										<i class="ui sign out icon"></i>Logout
+									</a>
+								</div>
+							</div>
+						{% else %}
+							<a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+						{% endif %}
+					{% endif %}
+				</div>
+			</div>
+
+			{% block belowtopmenu %}
+			{% endblock %}
+		</div>
+
+		{% for message in app.session.flashbag.get('message') %}
+			<div class="ui floating notice flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">{{message}}</div>
+		{% endfor %}
+
+		<div class="ui basic segment">
+			{% block content %}
+				{{content|default(null)|raw}}
+			{% endblock %}
+		</div>
+
+		{% if block('footer')|trim is not empty %}
+			<div style="margin: 2em 0em; border-top: 1px solid silver">
+				{% block footer %}
+				{% endblock %}
+			</div>
+		{% endif %}
+
+	</body>
+</html>
+
+{% macro topmenu_item(text, url, icon, extra_classes) %}
+	<a class="ui link item {{extra_classes|default(null)}}" href="{{url}}">
+		{% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}{{text}}
+	</a>
+{% endmacro %}
+
+{% macro topmenu_dropdown_begin(text, icon) %}
+	<div class="ui dropdown item">
+		{% if icon is defined %}<i class="ui {{icon}} icon"></i>{% endif %}
+		{{text}}
+		<i class="dropdown icon"></i>
+		<div class="ui menu inverted">
+		{% endmacro %}
+
+		{% macro topmenu_dropdown_end() %}
+		</div>
+	</div>
+{% endmacro %}
+
+{% macro fieldError(errors, fieldname, pointing) %}
+	{% if errors[fieldname] is defined %}{% for error in errors[fieldname] %}
+			<div class="ui negative red label {{pointing}} pointing">{{error}}</div>
+	{% endfor %}{% endif %}
+{% endmacro %}
+
+{% macro dateField(id, name, value, placeholder) %}
+	<div class="ui calendar" id="{{id}}">
+		{% if value %}Current value = {{value}}{% endif %}
+		<div class="ui input left icon action">
+			<i class="calendar icon"></i>
+			<input type="text" name="{{name}}" placeholder="{{placeholder}}" value="{{value}}">
+			<button class="ui button" type="button" onclick="$('#{{id}}').calendar('clear');
+					return false;">Clear</button>
+		</div>
+	</div>
+	<script>
+		$(function () {
+			$('#{{id}}').calendar(dateFieldConfig);
+		});
+	</script>
+{% endmacro %}
+
+{% macro timestamps(entity) %}
+	<div class="ui basic label">
+		Created
+		<span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
+		<span class="detail"><i class="ui user icon"></i>{{entity.created_by.username|default('Anonymous')}}</span>
+	</div>
+	{% if entity.updated_date %}
+		<div class="ui basic label">
+			Updated 
+			<span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
+			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.username|default('Anonymous')}}</span>
+		</div>
+	{% endif %}
+{% endmacro %}

@@ -1,0 +1,58 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui dividing header">
+		<span>
+			<i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
+		</span>
+		<a class="ui right floated button" href="{{app.path('deployment_edit',{project: deployment.project.name, deployment:deployment.name})}}"><i class="ui pencil icon"></i>Edit</a>
+	</h1>
+
+	{{ m.timestamps(deployment) }}
+
+	<h2 class="ui header">
+		Deployment Items
+		<a class="ui right floated primary button" href="{{app.path('item_create',{project: deployment.project.name, deployment: deployment.name})}}">
+			<i class="ui plus icon"></i>Add deployment item
+		</a>
+	</h2>
+
+	<table class="ui celled striped sortable table">
+		<thead>
+			<tr>
+				<th class="ui collapsing">Reference #</th>
+				<th>Title</th>
+				<th class="ui collapsing">Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for item in deployment.items %}
+				<tr>
+					<td class="ui collapsing">{{item.refnum|default('-')}}</td>
+					<td>
+						<a href="{{app.path('item_view',{project: item.deployment.project.name, deployment: item.deployment.name, item: item.id})}}" class="header">{{item.title}}</a>
+					</td>
+					<td class="ui collapsing">
+						{% if item.approved_date %}
+							<div class="ui green label">
+								<i class="ui check icon"></i>
+								{{item.status}}
+							</div>
+						{% else %}
+							<div class="ui red label">
+								<i class="ui radio icon"></i>
+								{{item.status}}
+							</div>
+						{% endif %}
+					</td>
+				</tr>
+			{% else %}
+				<tr>
+					<td colspan="1000" class="center aligned">No item found</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<div class="ui very relaxed divided list">
+	</div>
+{% endblock %}

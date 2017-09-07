@@ -1,0 +1,9 @@
+{% extends "base.twig" %}
+
+{% block menubar %}
+	{% if crumbs|length > 0 %}
+		{% for crumb in crumbs %}
+			{{ m.topmenu_item(crumb.text, crumb.url, crumb.icon, (loop.last ? 'active':null)) }}
+		{% endfor %}
+	{% endif %}
+{% endblock %}

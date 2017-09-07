@@ -1,0 +1,21 @@
+language: php
+
+sudo: false
+addons:
+  apt:
+    packages:
+    - ldap-utils
+    - slapd
+
+php:
+  - 5.6
+
+before_install:
+  - INI_FILE=~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - echo extension = ldap.so >> $INI_FILE
+
+before_script:
+  - composer install
+
+script:
+  - vendor/bin/phpunit --debug

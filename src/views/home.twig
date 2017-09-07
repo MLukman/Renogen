@@ -1,0 +1,24 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui header">Welcome to Release Note Generator (Renogen)
+		<a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
+	</h1>
+	<p>Please select a project below</p>
+	<div class="ui raised centered three cards">
+		{% for project in projects %}
+			<a class="ui card" href="{{app.path('project_view', { project: project.name })}}">
+				<div class="content">
+					<div class="header">
+						<i class="ui cube icon"></i> {{project.title}}
+					</div>
+				</div>
+				<div class="content">
+					<div class="ui description">
+						{{project.description}}
+					</div>
+				</div>
+			</a>
+		{% endfor %}
+	</div>
+{% endblock %}
