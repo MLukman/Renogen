@@ -28,7 +28,7 @@ class Project extends Entity
     public $title;
 
     /**
-     * @Column(type="string", length=4000, nullable=true)
+     * @Column(type="text", nullable=true)
      */
     public $description;
 
@@ -39,6 +39,12 @@ class Project extends Entity
     public $deployments = null;
 
     /**
+     * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id")
+     * @var ArrayCollection
+     */
+    public $templates = null;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -46,12 +52,13 @@ class Project extends Entity
         'name' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 16,
             'preg_match' => '/^[0-9a-zA-Z_]+$/'),
         'title' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 100),
-        'description' => array('trim' => 1, 'truncate' => 4000),
+        'description' => array('trim' => 1),
     );
 
     public function __construct()
     {
         $this->deployments = new ArrayCollection();
+        $this->templates   = new ArrayCollection();
     }
 
     public function upcoming()

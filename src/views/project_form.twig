@@ -2,7 +2,14 @@
 
 {% block content %}
 	{% set is_existing = (project.id|default(null) is not empty) %}
-	<h1 class="ui header">{% if is_existing %}Edit{% else %}Create{% endif %} project</h1>
+	<h1 class="ui header">
+		{% if is_existing %}
+			Edit project
+			<a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
+		{% else %}
+			Create project
+		{% endif %}
+	</h1>
 
 	<form method="POST">
 		<div class="ui form">
@@ -18,7 +25,7 @@
 			</div>
 			<div class="ui field basic segment">
 				<label class="ui top attached large label">Description</label>
-				<textarea name="description">{{app.request.request.get('description')|default(project.description|default(null))}}</textarea>
+				<textarea name="description" rows="3">{{app.request.request.get('description')|default(project.description|default(null))}}</textarea>
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
 			<div class="ui field">

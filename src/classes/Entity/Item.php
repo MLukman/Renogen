@@ -34,6 +34,7 @@ class Item extends ApproveableEntity
 
     /**
      * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id")
+     * @OrderBy({"priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection
      */
     public $activities = null;
@@ -66,6 +67,17 @@ class Item extends ApproveableEntity
             return 'Pending Approval';
         } else {
             return 'Unsubmitted';
+        }
+    }
+
+    public function statusIcon()
+    {
+        if ($this->approved_date) {
+            return 'check';
+        } elseif ($this->submitted_date) {
+            return 'help';
+        } else {
+            return 'warning';
         }
     }
 }

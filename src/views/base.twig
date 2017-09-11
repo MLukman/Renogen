@@ -17,35 +17,41 @@
 		<script src="{{app.request.baseUrl}}/ui/semantic2/semantic.js"></script>
 		<script src="{{app.request.baseUrl}}/ui/semantic2/library/jquery.tablesort.js"></script>
 		<script>
-			var dateFieldConfig = {
-				type: 'date',
-				minDate: new Date(),
-				formatter: {
-					date: function (date, settings) {
-						if (!date)
-							return '';
-						var day = date.getDate();
-						var month = date.getMonth() + 1;
-						var year = date.getFullYear();
-						return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
-					}
-				},
-				parser: {
-					date: function (text, settings) {
-						if (!text) {
-							return null;
-						}
-						var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
-						var dateArray = reggie.exec(text);
-						var dateObject = new Date(
-								(+dateArray[3]),
-								(+dateArray[2]) - 1, // Careful, month starts at 0!
-								(+dateArray[1])
-								);
-						return dateObject;
-					}
+			function dateParser(text) {
+				if (!text) {
+					return null;
 				}
-			};
+				var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
+				var dateArray = reggie.exec(text);
+				var dateObject = new Date(
+						(+dateArray[3]),
+						(+dateArray[2]) - 1, // Careful, month starts at 0!
+						(+dateArray[1])
+						);
+				return dateObject;
+			}
+			function dateFieldConfig(minDate) {
+				return {
+					type: 'date',
+					minDate: (minDate ? minDate : new Date()),
+					formatter: {
+						date: function (date, settings) {
+							if (!date)
+								return '';
+							var day = date.getDate();
+							var month = date.getMonth() + 1;
+							var year = date.getFullYear();
+							return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
+						}
+					}
+					,
+					parser: {
+						date: function (text, settings) {
+							return dateParser(text);
+						}
+					}
+				};
+			}
 
 			$(function () {
 				$('table.sortable').tablesort();
@@ -184,22 +190,7 @@
 	</div>
 	<script>
 		$(function () {
-			$('#{{id}}').calendar(dateFieldConfig);
+			$('#{{id}}').calendar(dateFieldConfig(dateParser("{{value}}")));
 		});
 	</script>
-{% endmacro %}
-
-{% macro timestamps(entity) %}
-	<div class="ui basic label">
-		Created
-		<span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
-		<span class="detail"><i class="ui user icon"></i>{{entity.created_by.username|default('Anonymous')}}</span>
-	</div>
-	{% if entity.updated_date %}
-		<div class="ui basic label">
-			Updated 
-			<span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
-			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.username|default('Anonymous')}}</span>
-		</div>
-	{% endif %}
 {% endmacro %}

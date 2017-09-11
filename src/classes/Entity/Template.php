@@ -28,9 +28,19 @@ class Template extends Entity
     public $title;
 
     /**
+     * @Column(type="text", nullable=true)
+     */
+    public $description;
+
+    /**
      * @Column(type="string", length=100)
      */
     public $class;
+
+    /**
+     * @Column(type="integer")
+     */
+    public $priority = 1;
 
     /**
      * @Column(type="json_array", nullable=true)
@@ -48,7 +58,8 @@ class Template extends Entity
      * @var array
      */
     protected $validation_rules = array(
-        'class' => array('required' => 1, 'unique' => 'project'),
+        'class' => array('required' => 1),
+        'title' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 100),
     );
 
     public function __construct(Project $project)

@@ -5,14 +5,12 @@
 		<span>
 			<i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
 		</span>
-		<a class="ui right floated button" href="{{app.path('deployment_edit',{project: deployment.project.name, deployment:deployment.name})}}"><i class="ui pencil icon"></i>Edit</a>
+		<a class="ui right floated button" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
 	</h1>
-
-	{{ m.timestamps(deployment) }}
 
 	<h2 class="ui header">
 		Deployment Items
-		<a class="ui right floated primary button" href="{{app.path('item_create',{project: deployment.project.name, deployment: deployment.name})}}">
+		<a class="ui right floated primary button" href="{{app.path('item_create',controller.entityParams(deployment))}}">
 			<i class="ui plus icon"></i>Add deployment item
 		</a>
 	</h2>
@@ -30,20 +28,10 @@
 				<tr>
 					<td class="ui collapsing">{{item.refnum|default('-')}}</td>
 					<td>
-						<a href="{{app.path('item_view',{project: item.deployment.project.name, deployment: item.deployment.name, item: item.id})}}" class="header">{{item.title}}</a>
+						<a href="{{app.path('item_view',controller.entityParams(item))}}" class="header">{{item.title}}</a>
 					</td>
 					<td class="ui collapsing">
-						{% if item.approved_date %}
-							<div class="ui green label">
-								<i class="ui check icon"></i>
-								{{item.status}}
-							</div>
-						{% else %}
-							<div class="ui red label">
-								<i class="ui radio icon"></i>
-								{{item.status}}
-							</div>
-						{% endif %}
+						{{ r.itemStatusLabel(item) }}
 					</td>
 				</tr>
 			{% else %}
@@ -55,4 +43,8 @@
 	</table>
 	<div class="ui very relaxed divided list">
 	</div>
+
+	<p>&nbsp;</p>
+	{{ r.timestamps(deployment) }}
+
 {% endblock %}

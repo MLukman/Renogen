@@ -1,4 +1,5 @@
 {% extends "base.twig" %}
+{% import _self as r %}
 
 {% block menubar %}
 	{% if crumbs|length > 0 %}
@@ -7,3 +8,37 @@
 		{% endfor %}
 	{% endif %}
 {% endblock %}
+
+{% macro timestamps(entity) %}
+	<div class="ui label">
+		Created
+		<span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
+		<span class="detail"><i class="ui user icon"></i>{{entity.created_by.username|default('Anonymous')}}</span>
+	</div>
+	{% if entity.updated_date %}
+		<div class="ui label">
+			Updated 
+			<span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
+			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.username|default('Anonymous')}}</span>
+		</div>
+	{% endif %}
+{% endmacro %}
+
+{% macro itemStatusLabel(item, detailed) %}
+	{% if item.approved_date %}
+		<div class="ui green label">
+			<i class="ui {{item.statusIcon}} icon"></i>
+			{{item.status}}
+			{% if detailed %}
+			<span class="detail">
+				<i class="ui clock icon"></i>{{item.approved_date|date('d/m/Y h:ia')}}
+			</span>
+			{% endif %}
+		</div>
+	{% else %}
+		<div class="ui red label">
+			<i class="ui {{item.statusIcon}} icon"></i>
+			{{item.status}}
+		</div>
+	{% endif %}
+{% endmacro %}

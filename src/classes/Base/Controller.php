@@ -30,6 +30,7 @@ abstract class Controller
     public function __construct(\Renogen\Application $app)
     {
         $this->app                   = $app;
+        $this->app['controller']     = $this;
         $this->basectx['controller'] = $this;
         $this->basectx['crumbs']     = array();
         if (empty($this->title)) {

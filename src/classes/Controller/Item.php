@@ -16,7 +16,7 @@ class Item extends RenoController
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
             $this->addEntityCrumb($deployment_obj);
-            $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->generatePathParameters($deployment_obj)));
+            $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->entityParams($deployment_obj)));
             return $this->edit_or_create(new \Renogen\Entity\Item($deployment_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -41,14 +41,15 @@ class Item extends RenoController
         try {
             $item_obj = $this->fetchItem($project, $deployment, $item);
             $this->addEntityCrumb($item_obj);
-            $this->addEditCrumb($this->app->path('item_edit', $this->entityPathParameters($item_obj)));
+            $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
             return $this->edit_or_create($item_obj, $request->request, array('item' => $item_obj));
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
 
-    protected function edit_or_create(\Renogen\Entity\Item $item, $post,
+    protected function edit_or_create(\Renogen\Entity\Item $item,
+                                      ParameterBag $post,
                                       array $context = array())
     {
         if ($post->count() > 0) {
@@ -66,7 +67,7 @@ class Item extends RenoController
                             ));
                             if ($this->saveEntity($item, $data->keys(), $data)) {
                                 $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
-                                return $this->redirect('item_view', $this->entityPathParameters($item));
+                                return $this->redirect('item_view', $this->entityParams($item));
                             }
                         }
                         $context['errors'] = array(
@@ -83,13 +84,13 @@ class Item extends RenoController
                     $this->app['em']->remove($item);
                     $this->app['em']->flush();
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
-                    return $this->redirect('deployment_view', $this->entityPathParameters($item));
+                    return $this->redirect('deployment_view', $this->entityParams($item->deployment));
 
                 default:
                     $context['item'] = $item;
                     if ($this->saveEntity($item, static::entityFields, $post)) {
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
-                        return $this->redirect('item_view', $this->entityPathParameters($item));
+                        return $this->redirect('item_view', $this->entityParams($item));
                     } else {
                         $context['errors'] = $item->errors;
                     }

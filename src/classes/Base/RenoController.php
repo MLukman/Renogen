@@ -19,52 +19,53 @@ abstract class RenoController extends Controller
         if ($entity instanceof Project) {
             $project     = $entity;
             $this->title = $project->title;
-            $this->addCrumb($this->title, $this->app->path('project_view', $this->entityPathParameters($project)), 'cube');
+            $this->addCrumb($this->title, $this->app->path('project_view', $this->entityParams($project)), 'cube');
         } elseif ($entity instanceof Deployment) {
             $deployment  = $entity;
             $this->addEntityCrumb($deployment->project);
             $this->title = $deployment->displayTitle();
-            $this->addCrumb($this->title, $this->app->path('deployment_view', $this->entityPathParameters($deployment)), 'calendar check o');
+            $this->addCrumb($this->title, $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
         } elseif ($entity instanceof Item) {
             $item        = $entity;
             $this->addEntityCrumb($item->deployment);
             $this->title = $item->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
-                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('item_view', $this->entityPathParameters($item)), 'tag');
+                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('item_view', $this->entityParams($item)), 'tag');
         } elseif ($entity instanceof Activity) {
             $activity    = $entity;
             $this->addEntityCrumb($activity->item);
             $this->title = $activity->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
-                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('activity_view', $this->entityPathParameters($activity)), 'list');
+                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('activity_edit', $this->entityParams($activity)), 'list');
         } elseif ($entity instanceof Template) {
             $template    = $entity;
             $this->addEntityCrumb($template->project);
+            $this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($template->project)), 'clipboard');
             $this->title = $template->title;
-            $this->addCrumb($this->title, $this->app->path('template_view', $this->entityPathParameters($template)), 'code');
+            $this->addCrumb($this->title, $this->app->path('template_view', $this->entityParams($template)), 'copy');
         }
     }
 
-    public function entityPathParameters(Entity $entity)
+    public function entityParams(Entity $entity)
     {
         if ($entity instanceof Project) {
             return array(
                 'project' => $entity->name,
             );
         } elseif ($entity instanceof Deployment) {
-            return $this->entityPathParameters($entity->project) + array(
+            return $this->entityParams($entity->project) + array(
                 'deployment' => $entity->name,
             );
         } elseif ($entity instanceof Item) {
-            return $this->entityPathParameters($entity->deployment) + array(
+            return $this->entityParams($entity->deployment) + array(
                 'item' => $entity->id,
             );
         } elseif ($entity instanceof Activity) {
-            return $this->entityPathParameters($entity->item) + array(
+            return $this->entityParams($entity->item) + array(
                 'activity' => $entity->id,
             );
         } elseif ($entity instanceof Template) {
-            return $this->entityPathParameters($entity->project) + array(
+            return $this->entityParams($entity->project) + array(
                 'template' => $entity->id,
             );
         } else {
@@ -137,6 +138,37 @@ abstract class RenoController extends Controller
         return $item;
     }
 
+    protected function fetchActivity($project, $deployment, $item, $activity)
+    {
+        if (!($activity instanceof Renogen\Entity\Activity)) {
+            $id       = $activity;
+            $item_obj = $this->fetchItem($project, $deployment, $item);
+            if (!($activity = $item_obj->activities->get($id))) {
+                throw new NoResultException("There is not such activity with id '$name'");
+            }
+        }
+        return $activity;
+    }
+
+    /**
+     *
+     * @param type $project
+     * @param type $template
+     * @return Template
+     * @throws NoResultException
+     */
+    protected function fetchTemplate($project, $template)
+    {
+        if (!($template instanceof Template)) {
+            $id          = $template;
+            $project_obj = $this->fetchProject($project);
+            if (!($template    = $project_obj->templates->get($id))) {
+                throw new NoResultException("There is not such template with id '$name'");
+            }
+        }
+        return $template;
+    }
+
     /**
      * 
      * @param Entity $entity
@@ -145,6 +177,18 @@ abstract class RenoController extends Controller
      * @return boolean
      */
     protected function saveEntity(Entity &$entity, $fields, ParameterBag $data)
+    {
+        if ($this->prepareValidateEntity($entity, $fields, $data)) {
+            $this->app['em']->persist($entity);
+            $this->app['em']->flush($entity);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected function prepareValidateEntity(Entity &$entity, $fields,
+                                             ParameterBag $data)
     {
         foreach ($fields as $field) {
             if (!$data->has($field)) {
@@ -159,12 +203,6 @@ abstract class RenoController extends Controller
                 $entity->$field = $data->get($field);
             }
         }
-        if ($entity->validate($this->app['em'])) {
-            $this->app['em']->persist($entity);
-            $this->app['em']->flush($entity);
-            return true;
-        } else {
-            return false;
-        }
+        return $entity->validate($this->app['em']);
     }
 }

@@ -29,9 +29,10 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 class Application extends \Silex\Application
 {
-    static protected $instance;
 
     use UrlGeneratorTrait;
+    static protected $instance;
+    protected $_templateClasses = array();
 
     public function __construct($values = array())
     {
@@ -81,31 +82,54 @@ class Application extends \Silex\Application
             'twig.path' => realpath(__DIR__."/../views"),
         ));
 
-        /* Controllers */
+        /* Routes: Home */
         $this['home.controller'] = $this->share(function() {
             return new Controller\Home($this);
         });
+        $this->match('/', 'home.controller:index')->bind('home');
+
+        /* Routes: Project */
         $this['project.controller'] = $this->share(function() {
             return new Controller\Project($this);
         });
-        $this['deployment.controller'] = $this->share(function() {
-            return new Controller\Deployment($this);
-        });
-        $this['item.controller'] = $this->share(function() {
-            return new Controller\Item($this);
-        });
-
-        /* Add routes */
-        $this->match('/', 'home.controller:index')->bind('home');
         $this->match('/!project', 'project.controller:create')->bind('project_create');
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
         $this->match('/{project}/!edit', 'project.controller:edit')->bind('project_edit');
+
+        /* Routes: Template */
+        $this['template.controller'] = $this->share(function() {
+            return new Controller\Template($this);
+        });
+        $this->match('/{project}/!templates/', 'template.controller:index')->bind('template_list');
+        $this->match('/{project}/!templates/!create', 'template.controller:create')->bind('template_create');
+        $this->match('/{project}/!templates/{template}/', 'template.controller:view')->bind('template_view');
+        $this->match('/{project}/!templates/{template}/!edit', 'template.controller:edit')->bind('template_edit');
+
+        /* Routes: Deployment */
+        $this['deployment.controller'] = $this->share(function() {
+            return new Controller\Deployment($this);
+        });
         $this->match('/{project}/!deployment', 'deployment.controller:create')->bind('deployment_create');
         $this->match('/{project}/{deployment}/', 'deployment.controller:view')->bind('deployment_view');
         $this->match('/{project}/{deployment}/!edit', 'deployment.controller:edit')->bind('deployment_edit');
+
+        /* Routes: Item */
+        $this['item.controller'] = $this->share(function() {
+            return new Controller\Item($this);
+        });
         $this->match('/{project}/{deployment}/!item', 'item.controller:create')->bind('item_create');
-        $this->match('/{project}/{deployment}/{item}', 'item.controller:view')->bind('item_view');
+        $this->match('/{project}/{deployment}/{item}/', 'item.controller:view')->bind('item_view');
         $this->match('/{project}/{deployment}/{item}/!edit', 'item.controller:edit')->bind('item_edit');
+
+        /* Routes: Activity */
+        $this['activity.controller'] = $this->share(function() {
+            return new Controller\Activity($this);
+        });
+        $this->match('/{project}/{deployment}/{item}/!activity', 'activity.controller:create')->bind('activity_create');
+        $this->match('/{project}/{deployment}/{item}/{activity}/', 'activity.controller:edit')->bind('activity_edit');
+
+        /* Init activity template classes */
+        $this->addActivityTemplateClass(new ActivityTemplate\Impl\Rundeck($this));
 
         static::$instance = $app;
     }
@@ -183,12 +207,13 @@ class Application extends \Silex\Application
         //return $this['request']->getBaseUrl().'/ui/logo.png';
     }
 
+    /**
+     *
+     * @return static
+     */
     static public function instance()
     {
-        if (!static::$instance) {
-            static::$instance = new static();
-        }
-        return static::$instance;
+        return static::$instance ?: new static();
     }
 
     public function initializeOrRefreshDatabaseSchemas()
@@ -203,5 +228,19 @@ class Application extends \Silex\Application
         $tool->updateSchema($classes, true);
         // update twice to ensure foreign keys are mapped completely
         $tool->updateSchema($classes, true);
+    }
+
+    public function addActivityTemplateClass(ActivityTemplate\BaseClass $templateClass)
+    {
+        $this->_templateClasses[get_class($templateClass)] = $templateClass;
+    }
+
+    public function getActivityTemplateClass($name = null)
+    {
+        if (empty($name)) {
+            return $this->_templateClasses;
+        } else {
+            return (!isset($this->_templateClasses[$name]) ? null : $this->_templateClasses[$name]);
+        }
     }
 }

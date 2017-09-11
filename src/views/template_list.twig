@@ -1,0 +1,36 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui dividing header">
+		<small><i class="ui cube icon"></i>{{project.title}} &raquo;</small><br />
+		<span><i class="ui clipboard icon"></i>Activity Templates</span>
+		<a class="ui right floated primary button" href="{{app.path('template_create',controller.entityParams(project))}}">
+			<i class="ui plus icon"></i>Create activity template
+		</a>
+	</h1>
+
+	<p>Activity templates are templates that will be used to create activities under deployment items</p>
+
+	{% if project.templates.count() > 0 %}
+		<div class="ui segment">
+			<div class="ui very relaxed divided list">
+				{% for template in project.templates %}
+					<div class="ui item">
+						<i class="large copy middle aligned icon"></i>
+						<div class="content">
+							<a href="{{app.path('template_view',controller.entityParams(template))}}" class="header"><h3>{{template.title}}</h3></a>
+							<div class="ui description">
+								Category: {{app.getActivityTemplateClass(template.class).classTitle}}
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		</div>
+	{% else %}
+		<div class="ui error message">
+			No activity template has been defined for this project
+		</div>
+	{% endif %}
+
+{% endblock %}

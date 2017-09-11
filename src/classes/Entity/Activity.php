@@ -29,16 +29,30 @@ class Activity extends ApproveableEntity
     public $template;
 
     /**
+     * @Column(type="integer", nullable=true)
+     */
+    public $priority;
+
+    /**
      * @Column(type="json_array", nullable=true)
      */
     public $parameters;
+
+    /**
+     * Validation rules
+     * @var array
+     */
+    protected $validation_rules = array(
+        'template' => array('required' => 1),
+    );
 
     public function __construct(Item $item)
     {
         $this->item = $item;
     }
 
-    public function displayTitle() {
-        return 'Activity';
+    public function displayTitle()
+    {
+        return 'Activity: '.$this->template->title;
     }
 }

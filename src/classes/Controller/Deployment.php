@@ -2,10 +2,13 @@
 
 namespace Renogen\Controller;
 
+use Doctrine\ORM\NoResultException;
+use Renogen\Base\RenoController;
 use Renogen\Entity\Deployment as DeploymentEntity;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
-class Deployment extends \Renogen\Base\RenoController
+class Deployment extends RenoController
 {
     const entityFields = array('name', 'title', 'execute_date');
 
@@ -14,9 +17,9 @@ class Deployment extends \Renogen\Base\RenoController
         try {
             $project_obj = $this->fetchProject($project);
             $this->addEntityCrumb($project_obj);
-            $this->addCreateCrumb('Create deployment', $this->app->path('deployment_create', $this->entityPathParameters($project_obj)));
+            $this->addCreateCrumb('Create deployment', $this->app->path('deployment_create', $this->entityParams($project_obj)));
             return $this->edit_or_create(new DeploymentEntity($project_obj), $request->request);
-        } catch (\Doctrine\ORM\NoResultException $ex) {
+        } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
@@ -29,7 +32,7 @@ class Deployment extends \Renogen\Base\RenoController
             return $this->render('deployment_view', array(
                     'deployment' => $deployment_obj,
             ));
-        } catch (\Doctrine\ORM\NoResultException $ex) {
+        } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
@@ -39,15 +42,16 @@ class Deployment extends \Renogen\Base\RenoController
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
             $this->addEntityCrumb($deployment_obj);
-            $this->addEditCrumb($this->app->path('deployment_edit', $this->entityPathParameters($deployment_obj)));
+            $this->addEditCrumb($this->app->path('deployment_edit', $this->entityParams($deployment_obj)));
             return $this->edit_or_create($deployment_obj, $request->request, array(
                     'deployment' => $deployment_obj));
-        } catch (\Doctrine\ORM\NoResultException $ex) {
+        } catch (NoResultException $ex) {
             return $this->errorPage('Deployment not found', $ex->getMessage());
         }
     }
 
-    protected function edit_or_create(DeploymentEntity $deployment, $post,
+    protected function edit_or_create(DeploymentEntity $deployment,
+                                      ParameterBag $post,
                                       array $context = array())
     {
         if ($post->count() > 0) {
@@ -62,7 +66,7 @@ class Deployment extends \Renogen\Base\RenoController
             $context['deployment'] = $deployment;
             if ($this->saveEntity($deployment, static::entityFields, $post)) {
                 $this->app->addFlashMessage("Deployment '$deployment->title' has been successfully saved");
-                return $this->redirect('deployment_view', $this->entityPathParameters($deployment));
+                return $this->redirect('deployment_view', $this->entityParams($deployment));
             } else {
                 $context['errors'] = $deployment->errors;
             }

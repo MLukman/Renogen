@@ -3,6 +3,7 @@
 namespace Renogen\Controller;
 
 use Renogen\Base\RenoController;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
 class Project extends RenoController
@@ -38,11 +39,12 @@ class Project extends RenoController
             }
         }
         $this->addEntityCrumb($project);
-        $this->addEditCrumb($this->app->path('project_edit', $this->entityPathParameters($project)));
+        $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));
         return $this->edit_or_create($project, $request->request, array('project' => $project));
     }
 
-    protected function edit_or_create(\Renogen\Entity\Project $project, $post,
+    protected function edit_or_create(\Renogen\Entity\Project $project,
+                                      ParameterBag $post,
                                       array $context = array())
     {
         if ($post->count() > 0) {
@@ -55,7 +57,7 @@ class Project extends RenoController
             $context['project'] = $project;
             if ($this->saveEntity($project, static::entityFields, $post)) {
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");
-                return $this->redirect('project_view', $this->entityPathParameters($project));
+                return $this->redirect('project_view', $this->entityParams($project));
             } else {
                 $context['errors'] = $project->errors;
             }

@@ -5,7 +5,9 @@ namespace Renogen\Base;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
+use Renogen\Application;
 use Renogen\Validation\DoctrineValidator;
+use Symfony\Component\Security\Core\User\User;
 
 /**
  * @MappedSuperclass @HasLifecycleCallbacks
@@ -84,12 +86,14 @@ class Entity
     public function defaultCreatedDate()
     {
         $this->created_date = new \DateTime();
+        $this->created_by   = Application::instance()->user();
     }
 
     /** @PreUpdate */
     public function defaultUpdatedDate()
     {
         $this->updated_date = new \DateTime();
+        $this->updated_by   = Application::instance()->user();
     }
 
     protected function cached($cacheid, callable $create, $force = false)
