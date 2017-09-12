@@ -86,14 +86,14 @@ class Entity
     public function defaultCreatedDate()
     {
         $this->created_date = new \DateTime();
-        $this->created_by   = Application::instance()->user();
+        $this->created_by   = Application::instance()->userEntity();
     }
 
     /** @PreUpdate */
     public function defaultUpdatedDate()
     {
         $this->updated_date = new \DateTime();
-        $this->updated_by   = Application::instance()->user();
+        $this->updated_by   = Application::instance()->userEntity();
     }
 
     protected function cached($cacheid, callable $create, $force = false)

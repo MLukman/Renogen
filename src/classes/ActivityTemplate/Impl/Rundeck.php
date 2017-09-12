@@ -18,14 +18,16 @@ class Rundeck extends BaseClass
         $this->addParameter('job', Parameter::Dropdown('List of Jobs', 'List of Rundeck jobs', true, '{jobDropdownLabel}', 'The name of Rundeck job', true));
         $this->addParameter('jobDropdownLabel', Parameter::Config('Job Dropdown Label', 'The label that will be displayed in activity create/edit form (it should describe the texts in the list of jobs above)', true));
         $this->addParameter('options', Parameter::MultiFreeText('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
+        $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 
     public function describeActivity(Activity $activity)
     {
         $twig = new \Twig\Environment(new \Twig\Loader\ArrayLoader(array(
-            'description' => '<table class="ui very compact table"><tr><td class="ui collapsing">{{jobDropdownLabel}}</td><td>{{jobName}}</tr>'
-            .'{% if options %}<tr><td class="ui collapsing top aligned">{{optLabel}}</td><td><table class="ui very compact table">'
-            .'{% for key,option in options %}<tr><td class="ui collapsing top aligned">{{key}}</td><td>{{option|default("null")}}</td></tr>{% endfor %}'
+            'description' => '<table class="ui very compact table"><tr><td class="four wide right aligned"><strong>{{jobDropdownLabel}}</td><td class="ten wide">{{jobName}}</strong></td></tr>'
+            . '{% if options %}<tr><td class="ui top aligned right aligned"><strong>{{optLabel}}</strong></td>'
+            .'<td><table class="ui very basic small table">'
+            .'{% for key,option in options %}<tr><td class="ui collapsing top aligned">{{key}}</td><td>{{option|default("<blank>")}}</td></tr>{% endfor %}'
             .'</table></td></tr>{% endif %}</table>',
         )));
 
@@ -35,11 +37,14 @@ class Rundeck extends BaseClass
         $keysLabels = array_combine(explode("\n", $activity->template->parameters['options']['keys']), explode("\n", $activity->template->parameters['options']['labels']));
         $options    = array();
         foreach ($keysLabels as $key => $label) {
+            if (empty($key)) {
+                continue;
+            }
             if (substr($label, -1) == '*') {
                 $label = substr($label, 0, -1);
             }
-            $options[$label] = (isset($activity->parameters['options'][$key]) ? $activity->parameters['options'][$key]
-                    : null);
+            $options[$label] = (!isset($activity->parameters['options'][$key]) ? null
+                    : $activity->parameters['options'][$key]);
         }
 
         return $twig->render('description', array(

@@ -4,6 +4,7 @@ namespace Renogen\Base;
 
 use Doctrine\ORM\NoResultException;
 use Renogen\Entity\Activity;
+use Renogen\Entity\Attachment;
 use Renogen\Entity\Deployment;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
@@ -30,7 +31,7 @@ abstract class RenoController extends Controller
             $this->addEntityCrumb($item->deployment);
             $this->title = $item->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
-                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('item_view', $this->entityParams($item)), 'tag');
+                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('item_view', $this->entityParams($item)), 'idea');
         } elseif ($entity instanceof Activity) {
             $activity    = $entity;
             $this->addEntityCrumb($activity->item);
@@ -63,6 +64,10 @@ abstract class RenoController extends Controller
         } elseif ($entity instanceof Activity) {
             return $this->entityParams($entity->item) + array(
                 'activity' => $entity->id,
+            );
+        } elseif ($entity instanceof Attachment) {
+            return $this->entityParams($entity->item) + array(
+                'attachment' => $entity->id,
             );
         } elseif ($entity instanceof Template) {
             return $this->entityParams($entity->project) + array(
@@ -138,16 +143,46 @@ abstract class RenoController extends Controller
         return $item;
     }
 
+    /**
+     *
+     * @param type $project
+     * @param type $deployment
+     * @param type $item
+     * @param type $activity
+     * @return Activity
+     * @throws NoResultException
+     */
     protected function fetchActivity($project, $deployment, $item, $activity)
     {
-        if (!($activity instanceof Renogen\Entity\Activity)) {
+        if (!($activity instanceof Activity)) {
             $id       = $activity;
             $item_obj = $this->fetchItem($project, $deployment, $item);
             if (!($activity = $item_obj->activities->get($id))) {
-                throw new NoResultException("There is not such activity with id '$name'");
+                throw new NoResultException("There is not such activity with id '$id'");
             }
         }
         return $activity;
+    }
+
+    /**
+     *
+     * @param type $project
+     * @param type $deployment
+     * @param type $item
+     * @param type $attachment
+     * @return Attachment
+     * @throws NoResultException
+     */
+    protected function fetchAttachment($project, $deployment, $item, $attachment)
+    {
+        if (!($attachment instanceof Attachment)) {
+            $id         = $attachment;
+            $item_obj   = $this->fetchItem($project, $deployment, $item);
+            if (!($attachment = $item_obj->attachments->get($id))) {
+                throw new NoResultException("There is not such attachment with id '$id'");
+            }
+        }
+        return $attachment;
     }
 
     /**

@@ -70,7 +70,7 @@ class DoctrineValidator implements DataValidator
                 // validation: string is not one of invalid values
                 if (isset($rules['invalidvalues']) && is_array($rules['invalidvalues'])
                     && in_array($entity->$field, $rules['invalidvalues'])) {
-                    $errors[$field][] = "Invalid value";
+                    $errors[$field][] = "'{$entity->$field}' is an invalid value";
                 }
 
                 // validation: minimum value

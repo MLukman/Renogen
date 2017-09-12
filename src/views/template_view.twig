@@ -11,13 +11,13 @@
 		<a class="ui right floated button" href="{{app.path('template_edit',controller.entityParams(template))}}"><i class="ui pencil icon"></i>Edit</a>
 	</h1>
 
-	{{ m.timestamps(template) }}
-
-	<p></p>
 
 	<h2>Sample Activity Create/Edit Form</h2>
 
 	<div class="ui form segment">
 		{{ actform.activityConfigForm(template) }}
 	</div>
+
+	<p>&nbsp;</p>
+	{{ r.timestamps(template) }}
 {% endblock %}

@@ -33,11 +33,23 @@ class Item extends ApproveableEntity
     public $title;
 
     /**
+     * @Column(type="string", length=100, nullable=true)
+     */
+    public $category;
+
+    /**
      * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id")
      * @OrderBy({"priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection
      */
     public $activities = null;
+
+    /**
+     * @OneToMany(targetEntity="Attachment", mappedBy="item", indexBy="id")
+     * @OrderBy({"created_date" = "asc"})
+     * @var ArrayCollection
+     */
+    public $attachments = null;
 
     /**
      * Validation rules
@@ -46,12 +58,14 @@ class Item extends ApproveableEntity
     protected $validation_rules = array(
         'refnum' => array('trim' => 1, 'maxlen' => 16),
         'title' => array('trim' => 1, 'required' => 1, 'maxlen' => 100),
+        'category' => array('required' => 1),
     );
 
     public function __construct(Deployment $deployment)
     {
-        $this->deployment = $deployment;
-        $this->activities = new ArrayCollection();
+        $this->deployment  = $deployment;
+        $this->activities  = new ArrayCollection();
+        $this->attachments = new ArrayCollection();
     }
 
     public function displayTitle()

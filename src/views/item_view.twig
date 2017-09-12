@@ -3,8 +3,9 @@
 {% block content %}
 	<h1 class="ui dividing header">
 		<small><i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;</small><br />
-		<span><i class="ui tag icon"></i>{{item.displayTitle}}</span>
+		<span><i class="ui idea icon"></i>{{item.displayTitle}}</span>
 		<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+		{{ r.itemCategoryLabel(item) }}
 		{{ r.itemStatusLabel(item, true) }}
 	</h1>
 
@@ -17,7 +18,7 @@
 				</a>
 			</h2>
 
-			<table class="ui celled striped sortable table">
+			<table class="ui celled striped table">
 				<thead>
 					<tr>
 						<th class="ui collapsing">#</th>
@@ -49,23 +50,45 @@
 
 			<h2>
 				Attachments
-				<a class="ui right floated primary button" href="{{app.path('deployment_create',controller.entityParams(item))}}">
+				<a class="ui right floated primary button" href="{{app.path('attachment_create',controller.entityParams(item))}}">
 					<i class="ui plus icon"></i>Add attachment
 				</a>
 			</h2>
 
-			<table class="ui celled striped sortable table">
+			<table class="ui celled striped table">
 				<thead>
 					<tr>
 						<th class="ui collapsing">#</th>
-						<th class="ui collapsing">Filename</th>
 						<th>Description</th>
+						<th class="ui collapsing">File Name</th>
+						<th class="ui collapsing">File Type</th>
+						<th class="ui collapsing">File Size</th>
+						<th class="ui collapsing">Action</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td colspan="1000" class="center aligned">No attachment has been uploaded</td>
-					</tr>
+					{% for attachment in item.attachments %}
+						<tr>
+							<td class="ui collapsing">{{loop.index}}</td>
+							<td>{{attachment.description}}</td>
+							<td class="ui collapsing">
+								<a title="Download" href="{{app.path('attachment_download',controller.entityParams(attachment))}}">
+									{{attachment.filename}}
+								</a>
+							</td>
+							<td class="ui collapsing">{{attachment.mime_type}}</td>
+							<td class="ui collapsing">{{attachment.filesize}}</td>
+							<td class="ui collapsing">
+								<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
+									<i class="ui pencil icon"></i>
+								</a>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="1000" class="center aligned">No attachment has been uploaded</td>
+						</tr>
+					{% endfor %}
 				</tbody>
 			</table>
 		</div>

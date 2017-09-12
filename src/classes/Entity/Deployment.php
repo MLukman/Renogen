@@ -49,7 +49,7 @@ class Deployment extends Entity
      */
     protected $validation_rules = array(
         'name' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 16,
-            'preg_match' => '/^[0-9a-zA-Z_]+$/'),
+            'preg_match' => '/^[0-9a-zA-Z_]+$/', 'invalidvalues' => array('templates')),
         'title' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 100),
         'execute_date' => array('required' => 1),
     );

@@ -28,6 +28,11 @@
 				<textarea name="description" rows="3">{{app.request.request.get('description')|default(project.description|default(null))}}</textarea>
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
+			<div class="ui required field basic segment">
+				<label class="ui top attached large label">Deployment Item Categories</label>
+				<textarea name="categories">{{app.request.request.get('categories')|default(project.categories|default([])|join("\n"))}}</textarea>
+				{{ m.fieldError(errors|default([]), 'categories') }}
+			</div>
 			<div class="ui field">
 				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} project" />
 				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>

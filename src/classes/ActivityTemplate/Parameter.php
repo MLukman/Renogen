@@ -57,6 +57,16 @@ class Parameter
         return static::generateParameter('regextext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
     }
 
+    static public function MultiLineText($activityLabel, $activityDescription,
+                                         $activityRequired)
+    {
+        $param                      = new static('multilinetext');
+        $param->activityLabel       = $activityLabel;
+        $param->activityDescription = $activityDescription;
+        $param->activityRequired    = (bool) $activityRequired;
+        return $param;
+    }
+
     static public function MultiFreeText($templateLabel, $templateDescription,
                                          $templateRequired, $activityLabel,
                                          $activityDescription, $activityRequired)
@@ -106,6 +116,7 @@ class Parameter
     {
         switch ($this->type) {
             case 'dropdown':
+            case 'multiselect':
                 $values                = static::linesToCleanArray($input[$key]['values']);
                 $texts                 = static::linesToCleanArray($input[$key]['texts']);
                 $size                  = min(count($values), count($texts));
@@ -146,6 +157,7 @@ class Parameter
         $errkey = ($error_prefix ? "$error_prefix.$key" : $key);
         switch ($this->type) {
             case 'dropdown':
+            case 'multiselect':
                 if ($this->templateRequired &&
                     (empty($input[$key]['values']) || empty($input[$key]['texts']))) {
                     $errors[$errkey] = array('Required');

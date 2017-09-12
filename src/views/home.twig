@@ -13,9 +13,16 @@
 						<i class="ui cube icon"></i> {{project.title}}
 					</div>
 				</div>
-				<div class="content">
+				{% if project.description %}
+					<div class="content">
+						<div class="ui description">
+							{{project.description}}
+						</div>
+					</div>
+				{% endif %}
+				<div class="extra content">
 					<div class="ui description">
-						{{project.description}}
+						{{project.upcoming().count}} upcoming deployment(s)
 					</div>
 				</div>
 			</a>

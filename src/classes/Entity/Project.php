@@ -33,6 +33,11 @@ class Project extends Entity
     public $description;
 
     /**
+     * @Column(type="json_array")
+     */
+    public $categories;
+
+    /**
      * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="name")
      * @var ArrayCollection
      */
@@ -50,9 +55,10 @@ class Project extends Entity
      */
     protected $validation_rules = array(
         'name' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 16,
-            'preg_match' => '/^[0-9a-zA-Z_]+$/'),
+            'preg_match' => '/^[0-9a-zA-Z_]+$/', 'invalidvalues' => array('login')),
         'title' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 100),
         'description' => array('trim' => 1),
+        'categories' => array('required' => 1),
     );
 
     public function __construct()

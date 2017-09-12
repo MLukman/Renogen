@@ -22,4 +22,10 @@ class User extends \Renogen\Base\Entity
      */
     public $roles;
 
+    public function __construct(\Symfony\Component\Security\Core\User\UserInterface $user)
+    {
+        $this->username = $user->getUsername();
+        $this->password = $user->getPassword();
+        $this->roles    = $user->getRoles();
+    }
 }

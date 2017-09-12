@@ -31,22 +31,28 @@
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-	<div class="ui very relaxed divided list">
+	<div class="ui large very relaxed list">
 		{% for deployment in deployments %}
 			<div class="ui item">
-				<i class="large calendar check o  middle aligned icon"></i>
+				<i class="large calendar check o middle aligned icon"></i>
 				<div class="content">
-					<a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header"><h3>{{deployment.displayTitle}}</h3></a>
-					<div class="ui horizontal list description">
-						{% for item in deployment.items %}
-							<span class="ui label">
-								<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-								<a class="item" href="{{app.path('item_view',app.controller.entityParams(item))}}">
-									{{item.displayTitle}}
-								</a>
-							</span>
-						{% endfor %}
-					</div>
+					<a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
+						<h3>{{deployment.displayTitle}}</h3>
+					</a>
+					{% if deployment.items.count() > 0 %}
+						<div class="description">
+							<div class="ui horizontal divided list">
+								{% for item in deployment.items %}
+									<span class="ui item">
+										<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+											<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
+											{{item.displayTitle}}
+										</a>
+									</span>
+								{% endfor %}
+							</div>
+						</div>
+					{% endif %}
 				</div>
 			</div>
 		{% endfor %}

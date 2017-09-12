@@ -2,24 +2,35 @@
 
 namespace Renogen;
 
-//include_once __DIR__.'/../constants.php';
-
+define('ROOTDIR', realpath(__DIR__.'/../..'));
 
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
+use Renogen\ActivityTemplate\BaseClass;
+use Renogen\ActivityTemplate\Impl\Rundeck;
+use Renogen\Controller\Activity;
+use Renogen\Controller\Deployment;
+use Renogen\Controller\Home;
+use Renogen\Controller\Item;
+use Renogen\Controller\Project;
+use Renogen\Controller\Template;
 use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
+use Securilex\Authentication\Factory\PlaintextPasswordAuthenticationFactory;
+use Securilex\Authentication\User\SQLite3UserProvider;
 use Securilex\Authorization\SecuredAccessVoter;
 use Securilex\Firewall;
-use Securilex\ServiceProvider;
+use Securilex\SecurityServiceProvider;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\ServiceControllerServiceProvider;
 use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -33,6 +44,7 @@ class Application extends \Silex\Application
     use UrlGeneratorTrait;
     static protected $instance;
     protected $_templateClasses = array();
+    protected $security;
 
     public function __construct($values = array())
     {
@@ -82,84 +94,88 @@ class Application extends \Silex\Application
             'twig.path' => realpath(__DIR__."/../views"),
         ));
 
+        $authFactory  = new PlaintextPasswordAuthenticationFactory();
+        $userProvider = new SQLite3UserProvider(new \SQLite3($sqlitefile));
+        $this->activateSecurity($authFactory, $userProvider);
+
+
         /* Routes: Home */
         $this['home.controller'] = $this->share(function() {
-            return new Controller\Home($this);
+            return new Home($this);
         });
         $this->match('/', 'home.controller:index')->bind('home');
 
         /* Routes: Project */
         $this['project.controller'] = $this->share(function() {
-            return new Controller\Project($this);
+            return new Project($this);
         });
-        $this->match('/!project', 'project.controller:create')->bind('project_create');
+        $this->match('/+', 'project.controller:create')->bind('project_create');
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
-        $this->match('/{project}/!edit', 'project.controller:edit')->bind('project_edit');
+        $this->match('/{project}/!', 'project.controller:edit')->bind('project_edit');
 
         /* Routes: Template */
         $this['template.controller'] = $this->share(function() {
-            return new Controller\Template($this);
+            return new Template($this);
         });
-        $this->match('/{project}/!templates/', 'template.controller:index')->bind('template_list');
-        $this->match('/{project}/!templates/!create', 'template.controller:create')->bind('template_create');
-        $this->match('/{project}/!templates/{template}/', 'template.controller:view')->bind('template_view');
-        $this->match('/{project}/!templates/{template}/!edit', 'template.controller:edit')->bind('template_edit');
+        $this->match('/{project}/templates/', 'template.controller:index')->bind('template_list');
+        $this->match('/{project}/templates/+', 'template.controller:create')->bind('template_create');
+        $this->match('/{project}/templates/{template}/', 'template.controller:view')->bind('template_view');
+        $this->match('/{project}/templates/{template}/!', 'template.controller:edit')->bind('template_edit');
 
         /* Routes: Deployment */
         $this['deployment.controller'] = $this->share(function() {
-            return new Controller\Deployment($this);
+            return new Deployment($this);
         });
-        $this->match('/{project}/!deployment', 'deployment.controller:create')->bind('deployment_create');
+        $this->match('/{project}/+', 'deployment.controller:create')->bind('deployment_create');
         $this->match('/{project}/{deployment}/', 'deployment.controller:view')->bind('deployment_view');
-        $this->match('/{project}/{deployment}/!edit', 'deployment.controller:edit')->bind('deployment_edit');
+        $this->match('/{project}/{deployment}/!', 'deployment.controller:edit')->bind('deployment_edit');
 
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {
-            return new Controller\Item($this);
+            return new Item($this);
         });
-        $this->match('/{project}/{deployment}/!item', 'item.controller:create')->bind('item_create');
+        $this->match('/{project}/{deployment}/+', 'item.controller:create')->bind('item_create');
         $this->match('/{project}/{deployment}/{item}/', 'item.controller:view')->bind('item_view');
-        $this->match('/{project}/{deployment}/{item}/!edit', 'item.controller:edit')->bind('item_edit');
+        $this->match('/{project}/{deployment}/{item}/!', 'item.controller:edit')->bind('item_edit');
+
+        /* Routes: Attachment */
+        $this['attachment.controller'] = $this->share(function() {
+            return new Controller\Attachment($this);
+        });
+        $this->match('/{project}/{deployment}/{item}/@', 'attachment.controller:create')->bind('attachment_create');
+        $this->match('/{project}/{deployment}/{item}/@/{attachment}/', 'attachment.controller:download')->bind('attachment_download');
+        $this->match('/{project}/{deployment}/{item}/@/{attachment}/!', 'attachment.controller:edit')->bind('attachment_edit');
 
         /* Routes: Activity */
         $this['activity.controller'] = $this->share(function() {
-            return new Controller\Activity($this);
+            return new Activity($this);
         });
-        $this->match('/{project}/{deployment}/{item}/!activity', 'activity.controller:create')->bind('activity_create');
+        $this->match('/{project}/{deployment}/{item}/+', 'activity.controller:create')->bind('activity_create');
         $this->match('/{project}/{deployment}/{item}/{activity}/', 'activity.controller:edit')->bind('activity_edit');
 
         /* Init activity template classes */
-        $this->addActivityTemplateClass(new ActivityTemplate\Impl\Rundeck($this));
+        $this->addActivityTemplateClass(new Rundeck($this));
 
         static::$instance = $app;
     }
 
-    /**
-     * Activate security using the provided Authentication Factory and User Provider.
-     * It is possible to use multiple pairs of Authentication Factory and User Provider
-     * by calling this method multiple times.
-     *
-     * @param AuthenticationFactoryInterface $authFactory
-     * @param UserProviderInterface $userProvider
-     */
     public function activateSecurity(AuthenticationFactoryInterface $authFactory,
                                      UserProviderInterface $userProvider)
     {
         if (!$this->security) {
-            $this->security = new ServiceProvider();
-            $this->firewall = new Firewall('/', '/login/');
+            $this->security = new \Securilex\ServiceProvider();
+            $this->firewall = new Firewall('/', 'login');
             $this->firewall->addAuthenticationFactory($authFactory, $userProvider);
             $this->security->addFirewall($this->firewall);
             $this->security->addAuthorizationVoter(new SecuredAccessVoter());
             $this->register($this->security);
 
-            /* Auth controller */
-            $this['auth.controller'] = $this->share(function() {
-                return new Controller\Auth($this);
-            });
-
-            /* Add routes */
-            $this->match('/login/', 'auth.controller:login')->bind('login');
+            /* Login page (not using controller because too simple) */
+            $this->get('/login/', function(Request $request) {
+                return $this['twig']->render("login.twig", array(
+                        'error' => $this['security.last_error']($request),
+                ));
+            })->bind('login');
         } else {
             $this->firewall->addAuthenticationFactory($authFactory, $userProvider);
         }
@@ -172,6 +188,12 @@ class Application extends \Silex\Application
     public function user()
     {
         return (isset($this['user']) ? $this['user'] : null);
+    }
+
+    public function userEntity($username = null)
+    {
+        return $this['em']->getRepository('\Renogen\Entity\User')->find($username
+                    ?: (isset($this['user']) ? $this['user']->getUsername() : null));
     }
 
     static public function execute($debug = false)
@@ -218,7 +240,7 @@ class Application extends \Silex\Application
 
     public function initializeOrRefreshDatabaseSchemas()
     {
-        $tool    = new \Doctrine\ORM\Tools\SchemaTool($this['em']);
+        $tool    = new SchemaTool($this['em']);
         $classes = array();
         foreach (glob(__DIR__.'/Entity/*.php') as $entityfn) {
             $classes[] = $this['em']->getClassMetadata('Renogen\Entity\\'.basename($entityfn, '.php'));
@@ -230,7 +252,7 @@ class Application extends \Silex\Application
         $tool->updateSchema($classes, true);
     }
 
-    public function addActivityTemplateClass(ActivityTemplate\BaseClass $templateClass)
+    public function addActivityTemplateClass(BaseClass $templateClass)
     {
         $this->_templateClasses[get_class($templateClass)] = $templateClass;
     }

@@ -4,7 +4,7 @@
 {% block content %}
 	{% set is_existing = (activity.id|default(null) is not empty) %}
 	<h1 class="ui header">
-		<i class="ui tag icon"></i>{{activity.item.displayTitle}} &raquo; 
+		<i class="ui idea icon"></i>{{activity.item.displayTitle}} &raquo; 
 		{% if is_existing %}Edit{% else %}Add{% endif %} activity
 	</h1>
 
@@ -12,11 +12,11 @@
 		<div class="ui form">
 			{% if activity.template is empty %}
 				<div class="ui required field basic segment">
-					<label class="ui top attached large label">Category</label>
+					<label class="ui top attached large label">Template</label>
 					<select name="template" class="ui dropdown">
 						<option value="">-- Select one --</option>
 						{% for template in activity.item.deployment.project.templates %}
-							<option value="{{template.id}}" {% if template.id == activity.template|default(null) %}selected="selected"{% endif %}>{{template.title}}</option>
+							<option value="{{template.id}}">{{template.title}}</option>
 						{% endfor %}
 					</select>
 					{{ m.fieldError(errors|default([]), 'template') }}
@@ -26,7 +26,7 @@
 					<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
 				</div>
 			{% else %}
-				<h2 class="ui header">Category: {{activity.template.title}}</h2>
+				<h2 class="ui header">Template: {{activity.template.title}}</h2>
 				<input type="hidden" name="template" value="{{activity.template.id}}" />
 				{{ actform.activityConfigForm(activity.template, activity, errors|default([])) }}
 				<div class="ui field">
@@ -40,6 +40,9 @@
 			{% endif %}
 		</div>
 	</form>
+		
+	<p>&nbsp;</p>
+	{{ r.timestamps(activity) }}
 {% endblock %}
 
 {% macro activityConfigForm(template, activity, errors) %}
@@ -48,9 +51,15 @@
 	{% for param,parameter in templateClass.getParameters() %}
 		{% if parameter.activityLabel %}
 			<div class="ui field basic segment {% if parameter.activityRequired %}required{% endif %}">
-				<label class="ui top attached large label">{{parameter.activityLabel(template.parameters)}}</label>
-				{% if parameter.type == 'dropdown' %}
-					<select name="parameters[{{param}}]" class="ui dropdown">
+				<label for="parameters-{{param}}" class="ui top attached large label">{{parameter.activityLabel(template.parameters)}}</label>
+				{% if parameter.type in ['freetext', 'regextext'] %}
+					<input id="parameters-{{param}}" type="text" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" value="{{activity.parameters[param]|default(null)}}" />
+					{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
+				{% elseif parameter.type == 'multilinetext' %}
+					<textarea id="parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}">{{activity.parameters[param]|default(null)}}</textarea>
+					{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
+				{% elseif parameter.type == 'dropdown' %}
+					<select id="parameters-{{param}}" name="parameters[{{param}}]" class="ui dropdown">
 						<option value="">-- Please select --</option>
 						{% set dd_values = template.parameters[param].values|split('\n') %}
 						{% set dd_texts = template.parameters[param].texts|split('\n') %}
@@ -59,6 +68,19 @@
 						{% endfor %}
 					</select>
 					{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
+				{% elseif parameter.type == 'multiselect' %}
+					<div class="grouped fields">
+						{% set dd_values = template.parameters[param].values|split('\n') %}
+						{% set dd_texts = template.parameters[param].texts|split('\n') %}
+						{% for f in range(0, dd_values|length - 1) %}
+							<div class="field">
+								<div class="ui checkbox">
+									<input type="checkbox" value="{{dd_values[f]}}" name="parameters[{{param}}][]" {% if dd_values[f] in activity.parameters[param]|default([]) %}checked="checked"{% endif %} />
+									<label>{{dd_texts[f]}}</label>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
 				{% elseif parameter.type == 'multifreetext' %}
 					{% if template.parameters[param].keys is defined and template.parameters[param].keys is not empty %}
 						{% set dd_keys = template.parameters[param].keys|split('\n') %}

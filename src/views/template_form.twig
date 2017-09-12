@@ -35,7 +35,7 @@
 							<label class="ui top attached large label">{{parameter.templateLabel}}</label>
 							{% if parameter.type == 'config' %}
 								<input placeholder="{{parameter.templateDescription}}" type="text" name="parameters[{{param}}]" value="{{template.parameters[param]|default(null)}}" />
-							{% elseif parameter.type == 'dropdown' %}
+							{% elseif parameter.type in ['dropdown', 'multiselect'] %}
 								<p>{{parameter.templateDescription}}</p>
 								<div class="two fields">
 									<div class="ui field">

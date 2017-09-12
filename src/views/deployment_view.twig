@@ -20,6 +20,7 @@
 			<tr>
 				<th class="ui collapsing">Reference #</th>
 				<th>Title</th>
+				<th class="ui collapsing">Category</th>
 				<th class="ui collapsing">Status</th>
 			</tr>
 		</thead>
@@ -28,7 +29,10 @@
 				<tr>
 					<td class="ui collapsing">{{item.refnum|default('-')}}</td>
 					<td>
-						<a href="{{app.path('item_view',controller.entityParams(item))}}" class="header">{{item.title}}</a>
+						<h3><a href="{{app.path('item_view',controller.entityParams(item))}}" class="header">{{item.title}}</a></h3>
+					</td>
+					<td class="ui collapsing">
+						{{ r.itemCategoryLabel(item) }}
 					</td>
 					<td class="ui collapsing">
 						{{ r.itemStatusLabel(item) }}

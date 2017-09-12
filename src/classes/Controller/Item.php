@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Item extends RenoController
 {
-    const entityFields = array('refnum', 'title');
+    const entityFields = array('refnum', 'title', 'category');
 
     public function create(Request $request, $project, $deployment)
     {
@@ -42,16 +42,16 @@ class Item extends RenoController
             $item_obj = $this->fetchItem($project, $deployment, $item);
             $this->addEntityCrumb($item_obj);
             $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
-            return $this->edit_or_create($item_obj, $request->request, array('item' => $item_obj));
+            return $this->edit_or_create($item_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
 
     protected function edit_or_create(\Renogen\Entity\Item $item,
-                                      ParameterBag $post,
-                                      array $context = array())
+                                      ParameterBag $post)
     {
+        $context = array('item' => $item);
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Move':
@@ -87,7 +87,6 @@ class Item extends RenoController
                     return $this->redirect('deployment_view', $this->entityParams($item->deployment));
 
                 default:
-                    $context['item'] = $item;
                     if ($this->saveEntity($item, static::entityFields, $post)) {
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($item));
