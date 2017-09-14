@@ -31,30 +31,31 @@
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-	<div class="ui large very relaxed list">
+	<table class="ui very basic padded table">
 		{% for deployment in deployments %}
-			<div class="ui item">
-				<i class="large calendar check o middle aligned icon"></i>
-				<div class="content">
+			<tr>
+				<td class="ui collapsing"><i class="large calendar check o icon"></i></td>
+				<td class="ui collapsing">
 					<a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
 						<h3>{{deployment.displayTitle}}</h3>
 					</a>
+					<div>{{deployment.description|nl2br}}</div>
+				</td>
+				<td>
 					{% if deployment.items.count() > 0 %}
-						<div class="description">
-							<div class="ui horizontal divided list">
-								{% for item in deployment.items %}
-									<span class="ui item">
-										<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
-											<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-											{{item.displayTitle}}
-										</a>
-									</span>
-								{% endfor %}
-							</div>
+						<div class="ui horizontal list">
+							{% for item in deployment.items %}
+								<span class="ui item">
+									<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+										<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
+										{{item.displayTitle}}
+									</a>
+								</span>
+							{% endfor %}
 						</div>
 					{% endif %}
-				</div>
-			</div>
+				</td>
+			</tr>
 		{% endfor %}
-	</div>
+	</table>
 {% endmacro %}

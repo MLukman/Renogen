@@ -172,6 +172,7 @@ class Parameter
                 }
         }
 
+        $input[$key] = $this->templateFormToDatabase($input[$key]);
         return true;
     }
 
@@ -190,6 +191,18 @@ class Parameter
                 for ($i = 0; $i < count($keys); $i++) {
                     if (substr($labels[$i], -1) == '*' && empty($input[$key][$keys[$i]])) {
                         $errors[$errkey.'.'.$keys[$i]] = array('Required');
+                    }
+                }
+                break;
+            case 'dropdown':
+            case 'multiselect':
+                if (empty($input[$key])) {
+                    $values = explode("\n", $template_parameters[$key]['values']);
+                    if (count($values) == 1) {
+                        $input[$key] = $values[0];
+                    } else {
+                        $errors[$errkey] = array('Required');
+                        return false;
                     }
                 }
                 break;
@@ -212,5 +225,71 @@ class Parameter
             }
         }
         return $label;
+    }
+
+    public function activityRequireInputs($templateParameter)
+    {
+        switch ($this->type) {
+            case 'dropdown':
+            case 'multiselect':
+            case 'multifreetext':
+                return count($templateParameter) > 0;
+            default:
+                return !empty($this->activityLabel);
+        }
+    }
+
+    public function templateFormToDatabase($parameter)
+    {
+        switch ($this->type) {
+            case 'dropdown':
+            case 'multiselect':
+                $cfg    = array();
+                $values = explode("\n", $parameter['values']);
+                $texts  = explode("\n", $parameter['texts']);
+                for ($i = 0; $i < min(count($values), count($texts)); $i++) {
+                    if (empty($values[$i]) || empty($texts[$i])) {
+                        continue;
+                    }
+                    $cfg[$values[$i]] = $texts[$i];
+                }
+                return $cfg;
+
+            case 'multifreetext':
+                $cfg    = array();
+                $keys   = explode("\n", $parameter['keys']);
+                $labels = explode("\n", $parameter['labels']);
+                for ($i = 0; $i < min(count($keys), count($labels)); $i++) {
+                    if (empty($keys[$i]) || empty($labels[$i])) {
+                        continue;
+                    }
+                    $cfg[$keys[$i]] = $labels[$i];
+                }
+                return $cfg;
+
+            default:
+                return $parameter;
+        }
+    }
+
+    public function templateDatabaseToForm($parameter)
+    {
+        switch ($this->type) {
+            case 'dropdown':
+            case 'multiselect':
+                return array(
+                    'values' => implode("\n", array_keys($parameter ?: array())),
+                    'texts' => implode("\n", array_values($parameter ?: array())),
+                );
+
+            case 'multifreetext':
+                return array(
+                    'keys' => implode("\n", array_keys($parameter ?: array())),
+                    'labels' => implode("\n", array_values($parameter ?: array())),
+                );
+
+            default:
+                return $parameter;
+        }
     }
 }

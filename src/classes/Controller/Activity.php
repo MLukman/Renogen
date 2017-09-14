@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Activity extends RenoController
 {
-    const entityFields = array('parameters');
+    const entityFields = array('stage', 'parameters');
 
     public function create(Request $request, $project, $deployment, $item)
     {
@@ -46,7 +46,7 @@ class Activity extends RenoController
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
-                    $this->app['em']->remove($activity);
+                    $activity->delete($this->app['em']);
                     $this->app['em']->flush();
                     $this->app->addFlashMessage("Activity has been deleted");
                     return $this->redirect('item_view', $this->entityParams($activity->item));
@@ -60,7 +60,7 @@ class Activity extends RenoController
                     $errors = array();
                     if ($activity->template) {
                         $activity->priority = $activity->template->priority;
-                        if (($templateClass      = $this->app->getActivityTemplateClass($activity->template->class))) {
+                        if (($templateClass      = $activity->template->templateClass())) {
                             $parameters = $post->get('parameters', array());
                             foreach ($templateClass->getParameters() as $param => $parameter) {
                                 $parameter->validateActivityInput($activity->template->parameters, $parameters, $param, $errors, 'parameters');

@@ -49,7 +49,7 @@ class Project extends RenoController
     {
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
-                $this->app['em']->remove($project);
+                $project->delete($this->app['em']);
                 $this->app['em']->flush();
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->redirect('home');

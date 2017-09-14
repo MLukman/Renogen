@@ -1,0 +1,27 @@
+<table class="ui striped very compact table">
+	<thead>
+		<tr>
+			<th class="three wide">Project</th>
+			<th class="three wide">Group</th>
+			<th class="three wide">Job</th>
+			<th>Options</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in data %}
+			<tr>
+				<td class="ui top aligned collapsing">{{row.project}}</td>
+				<td class="ui top aligned collapsing">{{row.group}}</td>
+				<td class="ui top aligned">{{row.job}}</td>
+				<td>
+					{% if row.options %}
+						{{ r.arrayTable(row.options) }}
+					{% else %}
+						Not required
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+

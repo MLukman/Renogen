@@ -31,4 +31,41 @@ class ApproveableEntity extends Entity
      */
     public $approved_date;
 
+    /**
+     * Approve this entity
+     * @param \Renogen\Entity\User $user Approved by
+     */
+    public function submit(\Renogen\Entity\User $user = null)
+    {
+        $this->submitted_date = new \DateTime();
+        $this->submitted_by   = $user ?: \Renogen\Application::instance()->userEntity();
+    }
+
+    /**
+     *
+     */
+    public function unsubmit()
+    {
+        $this->submitted_date = null;
+        $this->submitted_by   = null;
+    }
+
+    /**
+     * Approve this entity
+     * @param \Renogen\Entity\User $user Approved by
+     */
+    public function approve(\Renogen\Entity\User $user = null)
+    {
+        $this->approved_date = new \DateTime();
+        $this->approved_by   = $user ?: \Renogen\Application::instance()->userEntity();
+    }
+
+    /**
+     *
+     */
+    public function unapprove()
+    {
+        $this->approved_date = null;
+        $this->approved_by   = null;
+    }
 }

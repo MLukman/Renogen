@@ -58,8 +58,7 @@ class Attachment extends RenoController
             $targetdir = $this->getFolder($attachment);
             switch ($post->get('_action')) {
                 case 'Delete':
-                    unlink($targetdir.$attachment->id);
-                    $this->app['em']->remove($attachment);
+                    $attachment->delete($this->app['em']);
                     $this->app['em']->flush();
                     $this->app->addFlashMessage("Attachment has been deleted");
                     return $this->redirect('item_view', $this->entityParams($attachment->item));
@@ -98,6 +97,6 @@ class Attachment extends RenoController
 
     protected function getFolder(\Renogen\Entity\Attachment $attachment)
     {
-        return ROOTDIR.'/data/attachments/'.$attachment->item->deployment->project->name.'/';
+        return dirname($attachment->getFilesystemPath()).'/';
     }
 }

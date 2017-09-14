@@ -20,7 +20,8 @@
 						<div class="content">
 							<a href="{{app.path('template_view',controller.entityParams(template))}}" class="header"><h3>{{template.title}}</h3></a>
 							<div class="ui description">
-								Category: {{app.getActivityTemplateClass(template.class).classTitle}}
+								<div>Category: {{template.templateClass().classTitle}}</div>
+								<div>Used by {{template.activities.count}} {{ template.activities.count > 1 ? 'activities':'activity' }}</div>
 							</div>
 						</div>
 					</div>

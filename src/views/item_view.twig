@@ -1,21 +1,40 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
+	{% set params = controller.entityParams(item) %}
 	<h1 class="ui dividing header">
 		<small><i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;</small><br />
-		<span><i class="ui idea icon"></i>{{item.displayTitle}}</span>
-		<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+		<span>
+			<i class="ui idea icon"></i>{{item.displayTitle}}
+		</span>
+		{% if not item.approved_date %}
+			<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+		{% endif %}
+		{% if not item.submitted_date %}
+			<a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
+			   onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
+		{% elseif not item.approved_date %}
+			<a class="ui right floated primary button" href="{{app.path('item_approve',params)}}"
+			   onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
+		{% else %}
+			<a class="ui right floated red button" href="{{app.path('item_unapprove',params)}}"
+			   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
+		{% endif %}
 		{{ r.itemCategoryLabel(item) }}
 		{{ r.itemStatusLabel(item, true) }}
 	</h1>
+
+	<p>{{item.description|nl2br}}</p>
 
 	<div class="ui grid">
 		<div class="twelve wide column">
 			<h2>
 				Activities
-				<a class="ui right floated primary button" href="{{app.path('activity_create',controller.entityParams(item))}}">
-					<i class="ui plus icon"></i>Add activity
-				</a>
+				{% if not item.approved_date %}
+					<a class="ui right floated primary button" href="{{app.path('activity_create',params)}}">
+						<i class="ui plus icon"></i>Add activity
+					</a>
+				{% endif %}
 			</h2>
 
 			<table class="ui celled striped table">
@@ -24,21 +43,34 @@
 						<th class="ui collapsing">#</th>
 						<th class="ui collapsing">Category</th>
 						<th>Description</th>
-						<th class="ui collapsing">Action</th>
+							{% if not item.approved_date %}
+							<th class="ui collapsing">Action</th>
+							{% endif %}
 					</tr>
 				</thead>
 				<tbody>
 					{% for activity in item.activities %}
-						{% set description = app.getActivityTemplateClass(activity.template.class).describeActivity(activity)|trim %}
+						{% set description = activity.template.templateClass().describeActivityAsArray(activity) %}
 						<tr>
 							<td class="ui collapsing top aligned">{{loop.index}}</td>
-							<td class="ui collapsing top aligned">{{activity.template.title}}</td>
-							<td class="ui top aligned">{% if description|first == '<' %}{{description|raw}}{% else %}{{description|nl2br}}{% endif %}</td>
 							<td class="ui collapsing top aligned">
-								<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
-									<i class="ui pencil icon"></i>
-								</a>
+								{% if activity.stage < 0 %}
+									<em>Pre Deployment &raquo;</em><br />
+								{% elseif activity.stage > 0 %}
+									<em>Post Deployment &raquo;</em><br />
+								{% endif %}
+								{{activity.template.title}}
 							</td>
+							<td class="ui top aligned">
+								{{ r.arrayTable(description) }}
+							</td>
+							{% if not item.approved_date %}
+								<td class="ui collapsing top aligned">
+									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
+										<i class="ui pencil icon"></i>
+									</a>
+								</td>
+							{% endif %}
 						</tr>
 					{% else %}
 						<tr>
@@ -50,9 +82,11 @@
 
 			<h2>
 				Attachments
-				<a class="ui right floated primary button" href="{{app.path('attachment_create',controller.entityParams(item))}}">
-					<i class="ui plus icon"></i>Add attachment
-				</a>
+				{% if not item.approved_date %}
+					<a class="ui right floated primary button" href="{{app.path('attachment_create',params)}}">
+						<i class="ui plus icon"></i>Add attachment
+					</a>
+				{% endif %}
 			</h2>
 
 			<table class="ui celled striped table">
@@ -60,10 +94,12 @@
 					<tr>
 						<th class="ui collapsing">#</th>
 						<th>Description</th>
-						<th class="ui collapsing">File Name</th>
+						<th>File Name</th>
 						<th class="ui collapsing">File Type</th>
 						<th class="ui collapsing">File Size</th>
-						<th class="ui collapsing">Action</th>
+							{% if not item.approved_date %}
+							<th class="ui collapsing">Action</th>
+							{% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -71,18 +107,20 @@
 						<tr>
 							<td class="ui collapsing">{{loop.index}}</td>
 							<td>{{attachment.description}}</td>
-							<td class="ui collapsing">
+							<td>
 								<a title="Download" href="{{app.path('attachment_download',controller.entityParams(attachment))}}">
 									{{attachment.filename}}
 								</a>
 							</td>
 							<td class="ui collapsing">{{attachment.mime_type}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
-							<td class="ui collapsing">
-								<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
-									<i class="ui pencil icon"></i>
-								</a>
-							</td>
+							{% if not item.approved_date %}
+								<td class="ui collapsing">
+									<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
+										<i class="ui pencil icon"></i>
+									</a>
+								</td>
+							{% endif %}
 						</tr>
 					{% else %}
 						<tr>

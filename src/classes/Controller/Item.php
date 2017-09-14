@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Item extends RenoController
 {
-    const entityFields = array('refnum', 'title', 'category');
+    const entityFields = array('refnum', 'title', 'category', 'description');
 
     public function create(Request $request, $project, $deployment)
     {
@@ -48,6 +48,39 @@ class Item extends RenoController
         }
     }
 
+    public function action(Request $request, $project, $deployment, $item,
+                           $action)
+    {
+        try {
+            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $actioned = null;
+            switch ($action) {
+                case 'submit':
+                    $item_obj->submit();
+                    $actioned = 'submitted for approval';
+                    break;
+
+                case 'approve':
+                    $item_obj->approve();
+                    $actioned = 'approved for deployment';
+                    break;
+
+                case 'unapprove':
+                    $item_obj->unapprove();
+                    $actioned = 'unapproved';
+                    break;
+            }
+            $item_obj->submit();
+            $this->app['em']->flush($item_obj);
+            if ($actioned) {
+                $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");
+            }
+            return $this->redirect('item_view', $this->entityParams($item_obj));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
     protected function edit_or_create(\Renogen\Entity\Item $item,
                                       ParameterBag $post)
     {
@@ -81,7 +114,7 @@ class Item extends RenoController
                     break;
 
                 case 'Delete':
-                    $this->app['em']->remove($item);
+                    $item->delete($this->app['em']);
                     $this->app['em']->flush();
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
                     return $this->redirect('deployment_view', $this->entityParams($item->deployment));

@@ -12,7 +12,7 @@
 		<div class="ui form">
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Upload File</label>
-				<input placeholder="User friendly project title (max 100 characters)" type="file" name="file" />
+				<input type="file" name="file" />
 				{% if is_existing %}
 					<p>Existing file: <strong>{{attachment.filename}}</strong> with size {{attachment.filesize}} bytes</p>
 				{% endif %}
@@ -20,7 +20,7 @@
 			</div>
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Description</label>
-				<textarea name="description" rows="3">{{app.request.request.get('description')|default(attachment.description|default(null))}}</textarea>
+				<input placeholder="Brief description of the file" type="text" name="description" value="{{app.request.request.get('description')|default(attachment.description|default(null))}}" />
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
 			<div class="ui field">

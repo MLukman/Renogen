@@ -31,6 +31,11 @@ class Activity extends ApproveableEntity
     /**
      * @Column(type="integer", nullable=true)
      */
+    public $stage = 0;
+
+    /**
+     * @Column(type="integer", nullable=true)
+     */
     public $priority;
 
     /**

@@ -3,6 +3,8 @@
 namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManager;
+use Renogen\Application;
 use Renogen\Base\Entity;
 
 /**
@@ -66,5 +68,18 @@ class Template extends Entity
     {
         $this->project    = $project;
         $this->activities = new ArrayCollection();
+    }
+
+    public function templateClass()
+    {
+        return Application::instance()->getActivityTemplateClass($this->class);
+    }
+
+    public function delete(EntityManager $em)
+    {
+        foreach ($this->activities as $c) {
+            $c->delete($em);
+        }
+        parent::delete($em);
     }
 }

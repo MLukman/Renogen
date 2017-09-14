@@ -42,7 +42,12 @@ abstract class BaseClass
     abstract public function classTitle();
 
     /**
-     * @return string HTML that describes the activity
+     * @return array
      */
-    abstract public function describeActivity(Activity $activity);
+    abstract public function describeActivityAsArray(Activity $activity);
+
+    /**
+     * @return \Renogen\Runbook\Group[]
+     */
+    abstract public function convertActivitiesToRunbookGroups(array $activities);
 }

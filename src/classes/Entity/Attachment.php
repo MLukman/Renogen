@@ -2,7 +2,9 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\ORM\EntityManager;
 use Renogen\Base\Entity;
+use const ROOTDIR;
 
 /**
  * @Entity @Table(name="attachments")
@@ -53,5 +55,16 @@ class Attachment extends Entity
     public function __construct(Item $item)
     {
         $this->item = $item;
+    }
+
+    public function getFilesystemPath()
+    {
+        return ROOTDIR.'/data/attachments/'.$this->item->deployment->project->name.'/'.$this->id;
+    }
+
+    public function delete(EntityManager $em)
+    {
+        parent::delete($em);
+        unlink($this->getFilesystemPath());
     }
 }

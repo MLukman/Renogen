@@ -2,9 +2,11 @@
 
 namespace Renogen\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\ORM\EntityManager;
 use Renogen\Base\Entity;
 
 /**
@@ -72,7 +74,7 @@ class Project extends Entity
         return $this->cached('upcoming', function() {
                 return $this->deployments->matching(
                         Criteria::create()
-                            ->where(new Comparison('execute_date', '>=', (new \DateTime())->setTime(0, 0, 0)))
+                            ->where(new Comparison('execute_date', '>=', (new DateTime())->setTime(0, 0, 0)))
                             ->orderBy(array('execute_date' => 'ASC')));
             });
     }
@@ -82,8 +84,19 @@ class Project extends Entity
         return $this->cached('past', function() {
                 return $this->deployments->matching(
                         Criteria::create()
-                            ->where(new Comparison('execute_date', '<', (new \DateTime())->setTime(0, 0, 0)))
+                            ->where(new Comparison('execute_date', '<', (new DateTime())->setTime(0, 0, 0)))
                             ->orderBy(array('execute_date' => 'DESC')));
             });
+    }
+
+    public function delete(EntityManager $em)
+    {
+        foreach ($this->deployments as $c) {
+            $c->delete($em);
+        }
+        foreach ($this->templates as $c) {
+            $c->delete($em);
+        }
+        parent::delete($em);
     }
 }

@@ -21,42 +21,92 @@ class Rundeck extends BaseClass
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 
-    public function describeActivity(Activity $activity)
+    public function describeActivityAsArray(Activity $activity)
     {
-        $twig = new \Twig\Environment(new \Twig\Loader\ArrayLoader(array(
-            'description' => '<table class="ui very compact table"><tr><td class="four wide right aligned"><strong>{{jobDropdownLabel}}</td><td class="ten wide">{{jobName}}</strong></td></tr>'
-            . '{% if options %}<tr><td class="ui top aligned right aligned"><strong>{{optLabel}}</strong></td>'
-            .'<td><table class="ui very basic small table">'
-            .'{% for key,option in options %}<tr><td class="ui collapsing top aligned">{{key}}</td><td>{{option|default("<blank>")}}</td></tr>{% endfor %}'
-            .'</table></td></tr>{% endif %}</table>',
-        )));
+        $jobLabel = $activity->template->parameters['jobDropdownLabel'];
+        $jobValue = $activity->parameters['job'];
+        $jobName  = (isset($activity->template->parameters['job'][$jobValue]) ?
+            $activity->template->parameters['job'][$jobValue] : $jobValue);
+        $describe = array(
+            "$jobLabel" => $jobName,
+        );
 
-        $f          = array_search($activity->parameters['job'], explode("\n", $activity->template->parameters['job']['values']));
-        $texts      = explode("\n", $activity->template->parameters['job']['texts']);
-        $optParam   = $this->getParameter('options');
-        $keysLabels = array_combine(explode("\n", $activity->template->parameters['options']['keys']), explode("\n", $activity->template->parameters['options']['labels']));
-        $options    = array();
-        foreach ($keysLabels as $key => $label) {
+        $optParam = $this->getParameter('options', true);
+        $options  = $this->getOptions($activity, true);
+        $optLabel = $optParam->activityLabel($activity->template->parameters);
+        if (!empty($options)) {
+            $describe[$optLabel] = $options;
+        }
+
+        $remark = $activity->parameters['remark'];
+        if (!empty($remark)) {
+            $describe['Remark'] = $remark;
+        }
+
+        return $describe;
+    }
+
+    protected function getOptions(Activity $activity, $useLabel = false)
+    {
+        $options = array();
+        foreach ($activity->template->parameters['options'] as $key => $label) {
             if (empty($key)) {
                 continue;
             }
-            if (substr($label, -1) == '*') {
-                $label = substr($label, 0, -1);
+            if ($useLabel) {
+                if (substr($label, -1) == '*') {
+                    $label = substr($label, 0, -1);
+                }
+                $d = $label;
+            } else {
+                $d = $key;
             }
-            $options[$label] = (!isset($activity->parameters['options'][$key]) ? null
+            $options[$d] = (!isset($activity->parameters['options'][$key]) ? null
                     : $activity->parameters['options'][$key]);
         }
-
-        return $twig->render('description', array(
-                'jobDropdownLabel' => $activity->template->parameters['jobDropdownLabel'],
-                'jobName' => ($f !== FALSE ? $texts[$f] : $activity->parameters['job']),
-                'optLabel' => $optParam->activityLabel($activity->template->parameters),
-                'options' => $options,
-        ));
+        return $options;
     }
 
     public function classTitle()
     {
         return 'Execute RunDeck Job';
+    }
+
+    public function convertActivitiesToRunbookGroups(array $activities)
+    {
+        $templates              = array();
+        $activities_by_template = array();
+        $added                  = array();
+
+        foreach ($activities as $activity) {
+            /* @var $activity Activity */
+            if (!isset($activities_by_template[$activity->template->id])) {
+                $templates[$activity->template->id]              = $activity->template;
+                $activities_by_template[$activity->template->id] = array();
+            }
+            $activities_by_template[$activity->template->id][] = $activity;
+        }
+
+        $groups = array();
+        foreach ($activities_by_template as $template_id => $activities) {
+            $group = new \Renogen\Runbook\Group($templates[$template_id]->title);
+            $group->setInstruction("Login to Rundeck @ ".$templates[$template_id]->parameters['url']." and run the following jobs:");
+            $group->setTemplate('runbook/rundeck.twig');
+            foreach ($activities as $activity) {
+                $signature = json_encode($this->describeActivityAsArray($activity));
+                if (!isset($added[$signature])) {
+                    $added[$signature] = true;
+                    $group->addRow(array(
+                        'project' => $templates[$template_id]->parameters['project'],
+                        'group' => $templates[$template_id]->parameters['group'],
+                        'job' => $activity->parameters['job'],
+                        'options' => $this->getOptions($activity),
+                    ));
+                }
+            }
+            $groups[] = $group;
+        }
+
+        return $groups;
     }
 }

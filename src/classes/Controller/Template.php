@@ -52,8 +52,7 @@ class Template extends RenoController
             $template_obj = $this->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
             $this->addEditCrumb($this->app->path('template_edit', $this->entityParams($template_obj)));
-            return $this->edit_or_create($template_obj, $request->request, array(
-                    'template' => $template_obj));
+            return $this->edit_or_create($template_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -74,15 +73,14 @@ class Template extends RenoController
             != 'Next') {
 
             if ($post->get('_action') == 'Delete') {
-                $this->app['em']->remove($template);
+                $template->delete($this->app['em']);
                 $this->app['em']->flush();
                 $this->app->addFlashMessage("Template '$template->title' has been deleted");
                 return $this->redirect('template_list', $this->entityParams($template));
             }
 
-            $context['template'] = $template;
-            $parameters          = $post->get('parameters', array());
-            $errors              = array();
+            $parameters = $post->get('parameters', array());
+            $errors     = array();
             foreach ($context['class_instance']->getParameters() as $param => $parameter) {
                 $parameter->validateTemplateInput($parameters, $param, $errors, 'parameters');
             }
@@ -98,7 +96,8 @@ class Template extends RenoController
             }
         }
 
-        $context['project'] = $template->project;
+        $context['project']  = $template->project;
+        $context['template'] = $template;
         return $this->render('template_form', $context);
     }
 }

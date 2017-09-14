@@ -103,4 +103,9 @@ class Entity
         }
         return $this->_caches[$cacheid];
     }
+
+    public function delete(EntityManager $em)
+    {
+        $em->remove($this);
+    }
 }

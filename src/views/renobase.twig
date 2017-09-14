@@ -35,6 +35,9 @@
 				<span class="detail">
 					<i class="ui clock icon"></i>{{item.approved_date|date('d/m/Y h:ia')}}
 				</span>
+				<span class="detail">
+					<i class="ui user icon"></i>{{item.approved_by.username|default('Anonymous')}}
+				</span>
 			{% endif %}
 		</div>
 	{% else %}
@@ -49,4 +52,30 @@
 	<span class="ui label">
 		<i class="ui tag icon"></i>{{item.category}}
 	</span>
+{% endmacro %}
+
+{% macro arrayTable(arr, child) %}
+	{% import _self as r %}	
+	<table class="ui compact {% if child %}small{% endif %} table">
+		{% for key,val in arr %}
+			<tr>
+				<td class="top aligned right aligned collapsing">
+					{% if not child %}
+						<strong>{{key}}</strong>
+					{% else %}
+						{{key}}
+					{% endif %}
+				</td>
+				<td class="ui top aligned">
+					{% if val is empty %}
+						{{'<blank>'|trim}}
+					{% elseif val is iterable %}
+						{{r.arrayTable(val, true)}}
+					{% else %}
+						{{val}}
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
 {% endmacro %}

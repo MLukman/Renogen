@@ -3,6 +3,7 @@
 namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityManager;
 use Renogen\Base\ApproveableEntity;
 
 /**
@@ -38,8 +39,13 @@ class Item extends ApproveableEntity
     public $category;
 
     /**
+     * @Column(type="text", nullable=true)
+     */
+    public $description;
+
+    /**
      * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id")
-     * @OrderBy({"priority" = "asc", "created_date" = "asc"})
+     * @OrderBy({"stage" = "asc", "priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection
      */
     public $activities = null;
@@ -93,5 +99,16 @@ class Item extends ApproveableEntity
         } else {
             return 'warning';
         }
+    }
+
+    public function delete(EntityManager $em)
+    {
+        foreach ($this->activities as $c) {
+            $c->delete($em);
+        }
+        foreach ($this->attachments as $c) {
+            $c->delete($em);
+        }
+        parent::delete($em);
     }
 }

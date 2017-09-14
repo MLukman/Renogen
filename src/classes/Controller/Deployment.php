@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Deployment extends RenoController
 {
-    const entityFields = array('name', 'title', 'execute_date');
+    const entityFields = array('name', 'title', 'execute_date', 'description');
 
     public function create(Request $request, $project)
     {
@@ -56,7 +56,7 @@ class Deployment extends RenoController
     {
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
-                $this->app['em']->remove($deployment);
+                $deployment->delete($this->app['em']);
                 $this->app['em']->flush();
                 $this->app->addFlashMessage("Deployment '$deployment->title' has been deleted");
                 return $this->redirect('project_view', array(
@@ -75,4 +75,5 @@ class Deployment extends RenoController
         $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);
     }
+
 }

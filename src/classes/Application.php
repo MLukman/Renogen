@@ -14,17 +14,18 @@ use Doctrine\ORM\Tools\Setup;
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Impl\Rundeck;
 use Renogen\Controller\Activity;
+use Renogen\Controller\Attachment;
 use Renogen\Controller\Deployment;
 use Renogen\Controller\Home;
 use Renogen\Controller\Item;
 use Renogen\Controller\Project;
+use Renogen\Controller\Runbook;
 use Renogen\Controller\Template;
 use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
 use Securilex\Authentication\Factory\PlaintextPasswordAuthenticationFactory;
 use Securilex\Authentication\User\SQLite3UserProvider;
 use Securilex\Authorization\SecuredAccessVoter;
 use Securilex\Firewall;
-use Securilex\SecurityServiceProvider;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\ServiceControllerServiceProvider;
 use Silex\Provider\SessionServiceProvider;
@@ -130,6 +131,12 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/', 'deployment.controller:view')->bind('deployment_view');
         $this->match('/{project}/{deployment}/!', 'deployment.controller:edit')->bind('deployment_edit');
 
+        /* Routes: Run Book */
+        $this['runbook.controller'] = $this->share(function() {
+            return new Runbook($this);
+        });
+        $this->match('/{project}/{deployment}/*', 'runbook.controller:view')->bind('runbook_view');
+
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {
             return new Item($this);
@@ -137,10 +144,13 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/+', 'item.controller:create')->bind('item_create');
         $this->match('/{project}/{deployment}/{item}/', 'item.controller:view')->bind('item_view');
         $this->match('/{project}/{deployment}/{item}/!', 'item.controller:edit')->bind('item_edit');
+        $this->match('/{project}/{deployment}/{item}/!!', 'item.controller:action')->value('action', 'submit')->bind('item_submit');
+        $this->match('/{project}/{deployment}/{item}/!!!', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
+        $this->match('/{project}/{deployment}/{item}/!!-', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
 
         /* Routes: Attachment */
         $this['attachment.controller'] = $this->share(function() {
-            return new Controller\Attachment($this);
+            return new Attachment($this);
         });
         $this->match('/{project}/{deployment}/{item}/@', 'attachment.controller:create')->bind('attachment_create');
         $this->match('/{project}/{deployment}/{item}/@/{attachment}/', 'attachment.controller:download')->bind('attachment_download');
@@ -156,7 +166,7 @@ class Application extends \Silex\Application
         /* Init activity template classes */
         $this->addActivityTemplateClass(new Rundeck($this));
 
-        static::$instance = $app;
+        static::$instance = $this;
     }
 
     public function activateSecurity(AuthenticationFactoryInterface $authFactory,
@@ -235,7 +245,7 @@ class Application extends \Silex\Application
      */
     static public function instance()
     {
-        return static::$instance ?: new static();
+        return static::$instance;
     }
 
     public function initializeOrRefreshDatabaseSchemas()
@@ -257,6 +267,11 @@ class Application extends \Silex\Application
         $this->_templateClasses[get_class($templateClass)] = $templateClass;
     }
 
+    /**
+     *
+     * @param type $name
+     * @return BaseClass|array
+     */
     public function getActivityTemplateClass($name = null)
     {
         if (empty($name)) {
