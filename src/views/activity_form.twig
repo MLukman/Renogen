@@ -85,7 +85,7 @@
 						<div>{{template.parameters[param][v]}}</div>
 						<input type="hidden" name="parameters[{{param}}]" value="{{v}}" />
 					{% else %}
-						<select id="parameters-{{param}}" name="parameters[{{param}}]" class="ui dropdown">
+						<select id="parameters-{{param}}" name="parameters[{{param}}]" class="ui search dropdown">
 							<option value="">-- Please select --</option>
 							{% for v,t in template.parameters[param] %}
 								<option value="{{v}}" {% if v == activity.parameters[param]|default(null) %}selected="selected"{% endif %}>{{t}}</option>

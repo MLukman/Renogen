@@ -24,9 +24,9 @@ interface FirewallInterface
 
     /**
      * Register the Firewall
-     * @param ServiceProvider $provider Service Provider
+     * @param SecurityServiceProvider $provider Service Provider
      */
-    public function register(ServiceProvider $provider);
+    public function register(SecurityServiceProvider $provider);
 
     /**
      * Check if the provided path is covered by this firewall or not

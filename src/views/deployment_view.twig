@@ -5,7 +5,9 @@
 		<span>
 			<i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
 		</span>
-		<a class="ui right floated button" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
+		{% if app.securilex.isGranted('approval',deployment.project) %}
+			<a class="ui right floated button" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
+		{% endif %}
 		<a class="ui right floated primary button" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui eye icon"></i>View Run Book</a>
 	</h1>
 
@@ -13,9 +15,11 @@
 
 	<h2 class="ui header">
 		Deployment Items
-		<a class="ui right floated primary button" href="{{app.path('item_create',controller.entityParams(deployment))}}">
-			<i class="ui plus icon"></i>Add deployment item
-		</a>
+		{% if app.securilex.isGranted('entry',deployment.project) %}
+			<a class="ui right floated primary button" href="{{app.path('item_create',controller.entityParams(deployment))}}">
+				<i class="ui plus icon"></i>Add deployment item
+			</a>
+		{% endif %}
 	</h2>
 
 	<table class="ui celled striped sortable table">

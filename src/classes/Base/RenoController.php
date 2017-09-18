@@ -240,4 +240,23 @@ abstract class RenoController extends Controller
         }
         return $entity->validate($this->app['em']);
     }
+
+    protected function checkAccess($attr, Entity $entity)
+    {
+        if ($entity instanceof Project) {
+            if (!$this->app['securilex']->isGranted($attr, $entity)) {
+                throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+            }
+        } elseif ($entity instanceof Deployment) {
+            $this->checkAccess($attr, $entity->project);
+        } elseif ($entity instanceof Item) {
+            $this->checkAccess($attr, $entity->deployment->project);
+        } elseif ($entity instanceof Activity) {
+            $this->checkAccess($attr, $entity->item->deployment->project);
+        } elseif ($entity instanceof Attachment) {
+            $this->checkAccess($attr, $entity->item->deployment->project);
+        } elseif ($entity instanceof Template) {
+            $this->checkAccess($attr, $entity->project);
+        }
+    }
 }

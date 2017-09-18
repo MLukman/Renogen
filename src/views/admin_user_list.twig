@@ -1,0 +1,46 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui dividing header">
+		<small><i class="ui setting icon"></i>Admin &raquo;</small><br />
+		<span><i class="ui users icon"></i>Users</span>
+		<a class="ui right floated primary button" href="{{app.path('admin_user_add')}}">
+			<i class="ui plus icon"></i>Add new user
+		</a>
+	</h1>
+
+	<table class="ui celled striped table">
+		<thead>
+			<tr>
+				<th>Username</th>
+				<th>Short Name</th>
+				<th class="ui collapsing">Login by</th>
+				<th class="ui collapsing">Admin</th>
+				<th>Project Role</th>
+				<th class="ui collapsing">Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for user in users %}
+				<tr>
+					<td>{{user.username}}</td>
+					<td>{{user.shortname}}</td>
+					<td class="ui center aligned"><div class="ui label">{{user.auth}}</div></td>
+					<td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
+					<td>
+						{% for userProject in user.userProjects %}
+							<div>{{userProject.project.title}} = {{userProject.role}}</div>
+						{% else %}
+							N/A
+						{% endfor %}
+					</td>
+					<td class="ui collapsing">
+						<a class="ui button" href="{{app.path('admin_user_edit', {'username': user.username})}}">
+							<i class="ui pencil icon"></i> Edit
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

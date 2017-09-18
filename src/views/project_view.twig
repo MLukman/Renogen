@@ -3,17 +3,23 @@
 
 {% block content %}
 	<h1 class="ui dividing header">
-		<span><i class="ui cube icon"></i>{{project.title}}</span>
-		<a class="ui right floated button" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
+		<span>
+			<i class="ui cube icon"></i>{{project.title}}
+		</span>
+		{% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
+			<a class="ui right floated button" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
+		{% endif %}
 	</h1>
 
 	<p>{{project.description}}</p>
 
 	<h2>
 		Deployments
-		<a class="ui right floated primary button" href="{{app.path('deployment_create',controller.entityParams(project))}}">
-			<i class="ui plus icon"></i>Create deployment
-		</a>
+		{% if app.securilex.isGranted('approval',project) %}
+			<a class="ui right floated primary button" href="{{app.path('deployment_create',controller.entityParams(project))}}">
+				<i class="ui plus icon"></i>Create deployment
+			</a>
+		{% endif %}
 	</h2>
 
 	<h3>Upcoming</h3>

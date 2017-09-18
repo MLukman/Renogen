@@ -70,13 +70,8 @@ class SecurityServiceProvider extends \Silex\Provider\SecurityServiceProvider
             return array_merge($voters, $this->voters);
         });
 
-        // Register firewalls
-        $this->app = $app;
-        foreach ($this->firewalls as $firewall) {
-            $firewall->register($this);
-        }
-
         // Add reference to this in application instance
+        $this->app = $app;
         $this->app['securilex'] = $this;
     }
 
@@ -86,6 +81,11 @@ class SecurityServiceProvider extends \Silex\Provider\SecurityServiceProvider
      */
     public function boot(\Silex\Application $app)
     {
+        // Register firewalls
+        foreach ($this->firewalls as $firewall) {
+            $firewall->register($this);
+        }
+
         $i         = 0;
         $firewalls = array();
         foreach ($this->unsecuredPatterns as $pattern => $v) {

@@ -12,8 +12,10 @@ use Renogen\Base\Entity;
 /**
  * @Entity @Table(name="projects")
  */
-class Project extends Entity
+class Project extends Entity implements \Securilex\Authorization\SecuredAccessInterface
 {
+
+    use \Securilex\Authorization\SecuredAccessTrait;
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */
@@ -46,6 +48,12 @@ class Project extends Entity
     public $deployments = null;
 
     /**
+     * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username")
+     * @var ArrayCollection
+     */
+    public $userProjects = null;
+
+    /**
      * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id")
      * @var ArrayCollection
      */
@@ -55,18 +63,20 @@ class Project extends Entity
      * Validation rules
      * @var array
      */
-    protected $validation_rules = array(
-        'name' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 16,
-            'preg_match' => '/^[0-9a-zA-Z_]+$/', 'invalidvalues' => array('login')),
-        'title' => array('trim' => 1, 'required' => 1, 'unique' => true, 'maxlen' => 100),
-        'description' => array('trim' => 1),
+    protected $validation_rules   = array(
+        'name' => array('required' => 1, 'unique' => true, 'maxlen' => 16,
+            'preg_match' => '/^[0-9a-zA-Z_]+$/',
+            'invalidvalues' => array('login', 'admin')),
+        'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),
         'categories' => array('required' => 1),
     );
+    protected $validation_default = array('trim' => 1);
 
     public function __construct()
     {
-        $this->deployments = new ArrayCollection();
-        $this->templates   = new ArrayCollection();
+        $this->deployments  = new ArrayCollection();
+        $this->templates    = new ArrayCollection();
+        $this->userProjects = new ArrayCollection();
     }
 
     public function upcoming()
@@ -98,5 +108,15 @@ class Project extends Entity
             $c->delete($em);
         }
         parent::delete($em);
+    }
+
+    public function isUsernameAllowed($username, $attr = 'view')
+    {
+        $this->allowedRoles = array();
+        if (method_exists($this, '__load')) {
+            $this->__load();
+        }
+        return ($this->userProjects->containsKey($username) &&
+            ($this->userProjects->get($username)->role == $attr || $attr == 'any'));
     }
 }

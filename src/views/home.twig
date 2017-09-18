@@ -2,27 +2,27 @@
 
 {% block content %}
 	<h1 class="ui header">Welcome to Release Note Generator (Renogen)
-		<a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
+		{% if app.securilex.isGranted('prefix', 'project_create') %}
+			<a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
+		{% endif %}
 	</h1>
-	<p>Please select a project below</p>
-	<div class="ui raised centered three cards">
+	<h3>Please select a project below <i class="ui level down icon"></i></h3>
+	<p>&nbsp;</p>
+	<div class="ui three cards secondary segment">
 		{% for project in projects %}
 			<a class="ui card" href="{{app.path('project_view', { project: project.name })}}">
 				<div class="content">
-					<div class="header">
-						<i class="ui cube icon"></i> {{project.title}}
+					<div class="ui top left blue ribbon label">
+						<h2><i class="ui cube icon"></i> {{project.title}}</h2>
 					</div>
-				</div>
-				{% if project.description %}
-					<div class="content">
-						<div class="ui description">
+					<p>&nbsp;</p>
+					{% if project.description %}
+						<div class="ui meta">
 							{{project.description}}
 						</div>
-					</div>
-				{% endif %}
-				<div class="extra content">
+					{% endif %}
 					<div class="ui description">
-						{{project.upcoming().count}} upcoming deployment(s)
+						{{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
 					</div>
 				</div>
 			</a>

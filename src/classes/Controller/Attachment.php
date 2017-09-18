@@ -29,9 +29,9 @@ class Attachment extends RenoController
     {
         try {
             $attachment_obj = $this->fetchAttachment($project, $deployment, $item, $attachment);
-            $targetdir      = $this->getFolder($attachment_obj);
             return $this->app
-                    ->sendFile($targetdir.$attachment_obj->id, 200, array('Content-type' => $attachment_obj->mime_type))
+                    ->sendFile($attachment_obj->getFilesystemPath(), 200, array(
+                        'Content-type' => $attachment_obj->mime_type))
                     ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $attachment_obj->filename);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -55,7 +55,6 @@ class Attachment extends RenoController
     {
         $post = $request->request;
         if ($post->count() > 0) {
-            $targetdir = $this->getFolder($attachment);
             switch ($post->get('_action')) {
                 case 'Delete':
                     $attachment->delete($this->app['em']);
@@ -71,20 +70,30 @@ class Attachment extends RenoController
                                 'file' => array('Required'),
                             );
                         } else {
-                            if ($file && $file->isValid()) {
-                                $attachment->filename  = $file->getClientOriginalName();
-                                $attachment->filesize  = $file->getClientSize();
-                                $attachment->mime_type = $file->getMimeType();
-                            }
-                            $this->saveEntity($attachment, static::entityFields, $post);
-                            if ($file && $file->isValid()) {
-                                if (!file_exists($targetdir)) {
-                                    mkdir($targetdir, 0777, true);
+                            if ($file) {
+                                if ($file->isValid()) {
+                                    $attachment->filename  = $file->getClientOriginalName();
+                                    $attachment->filesize  = $file->getClientSize();
+                                    $attachment->mime_type = $file->getMimeType();
+                                    $this->saveEntity($attachment, static::entityFields, $post);
+                                    $targetpath            = $attachment->getFilesystemPath();
+                                    $targetdir             = dirname($targetpath).'/';
+                                    if (!file_exists($targetdir)) {
+                                        mkdir($targetdir, 0777, true);
+                                    }
+                                    $file->move($targetdir, $attachment->id);
+                                    $this->app->addFlashMessage("Attachment has been successfully uploaded/saved");
+                                    return $this->redirect('item_view', $this->entityParams($attachment->item));
+                                } else {
+                                    $context['errors'] = array(
+                                        'file' => array('Unable to process uploaded file'),
+                                    );
                                 }
-                                $file->move($targetdir, $attachment->id);
+                            } else {
+                                $this->saveEntity($attachment, static::entityFields, $post);
+                                $this->app->addFlashMessage("Attachment has been successfully update");
+                                return $this->redirect('item_view', $this->entityParams($attachment->item));
                             }
-                            $this->app->addFlashMessage("Attachment has been successfully saved");
-                            return $this->redirect('item_view', $this->entityParams($attachment->item));
                         }
                     } else {
                         $context['errors'] = $attachment->errors;
@@ -93,10 +102,5 @@ class Attachment extends RenoController
         }
         $context['attachment'] = $attachment;
         return $this->render('attachment_form', $context);
-    }
-
-    protected function getFolder(\Renogen\Entity\Attachment $attachment)
-    {
-        return dirname($attachment->getFilesystemPath()).'/';
     }
 }

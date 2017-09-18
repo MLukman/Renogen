@@ -15,6 +15,7 @@ class Item extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
+            $this->checkAccess('entry', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->entityParams($deployment_obj)));
             return $this->edit_or_create(new \Renogen\Entity\Item($deployment_obj), $request->request);
@@ -40,6 +41,7 @@ class Item extends RenoController
     {
         try {
             $item_obj = $this->fetchItem($project, $deployment, $item);
+            $this->checkAccess('entry', $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
             return $this->edit_or_create($item_obj, $request->request);
@@ -56,16 +58,19 @@ class Item extends RenoController
             $actioned = null;
             switch ($action) {
                 case 'submit':
+                    $this->checkAccess('entry', $item_obj);
                     $item_obj->submit();
                     $actioned = 'submitted for approval';
                     break;
 
                 case 'approve':
+                    $this->checkAccess('approval', $item_obj);
                     $item_obj->approve();
                     $actioned = 'approved for deployment';
                     break;
 
                 case 'unapprove':
+                    $this->checkAccess('approval', $item_obj);
                     $item_obj->unapprove();
                     $actioned = 'unapproved';
                     break;
@@ -129,5 +134,21 @@ class Item extends RenoController
             }
         }
         return $this->render('item_form', $context);
+    }
+
+    public function comment_add(Request $request, $project, $deployment, $item)
+    {
+        try {
+            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $comment  = new \Renogen\Entity\ItemComment($item_obj);
+            if ($this->saveEntity($comment, array('text'), $request->request)) {
+                $this->app->addFlashMessage("Succesfully added a reply");
+            } else {
+                $this->app->addFlashMessage("Failed to add a reply: please ensure you enter a reply and please try again");
+            }
+            return $this->redirect('item_view', $this->entityParams($item_obj));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
     }
 }

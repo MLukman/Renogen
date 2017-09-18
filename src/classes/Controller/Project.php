@@ -38,6 +38,9 @@ class Project extends RenoController
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
+        if (!$this->app['securilex']->isGranted('ROLE_ADMIN') && !$this->app['securilex']->isGranted('approval', $project)) {
+            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+        }
         $this->addEntityCrumb($project);
         $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));
         return $this->edit_or_create($project, $request->request, array('project' => $project));

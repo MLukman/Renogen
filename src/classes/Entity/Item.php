@@ -58,6 +58,13 @@ class Item extends ApproveableEntity
     public $attachments = null;
 
     /**
+     * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id")
+     * @OrderBy({"created_date" = "asc"})
+     * @var ArrayCollection
+     */
+    public $comments = null;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -107,6 +114,9 @@ class Item extends ApproveableEntity
             $c->delete($em);
         }
         foreach ($this->attachments as $c) {
+            $c->delete($em);
+        }
+        foreach ($this->comments as $c) {
             $c->delete($em);
         }
         parent::delete($em);

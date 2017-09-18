@@ -8,17 +8,25 @@
 			<i class="ui idea icon"></i>{{item.displayTitle}}
 		</span>
 		{% if not item.approved_date %}
-			<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+			{% if app.securilex.isGranted('entry',item.deployment.project) %}
+				<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+			{% endif %}
 		{% endif %}
 		{% if not item.submitted_date %}
-			<a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
-			   onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
+			{% if app.securilex.isGranted('entry',item.deployment.project) %}
+				<a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
+				   onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
+			{% endif %}
 		{% elseif not item.approved_date %}
-			<a class="ui right floated primary button" href="{{app.path('item_approve',params)}}"
-			   onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
+			{% if app.securilex.isGranted('approval',item.deployment.project) %}
+				<a class="ui right floated primary button" href="{{app.path('item_approve',params)}}"
+				   onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
+			{% endif %}
 		{% else %}
-			<a class="ui right floated red button" href="{{app.path('item_unapprove',params)}}"
-			   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
+			{% if app.securilex.isGranted('approval',item.deployment.project) %}
+				<a class="ui right floated red button" href="{{app.path('item_unapprove',params)}}"
+				   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
+			{% endif %}
 		{% endif %}
 		{{ r.itemCategoryLabel(item) }}
 		{{ r.itemStatusLabel(item, true) }}
@@ -30,7 +38,7 @@
 		<div class="twelve wide column">
 			<h2>
 				Activities
-				{% if not item.approved_date %}
+				{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 					<a class="ui right floated primary button" href="{{app.path('activity_create',params)}}">
 						<i class="ui plus icon"></i>Add activity
 					</a>
@@ -43,7 +51,7 @@
 						<th class="ui collapsing">#</th>
 						<th class="ui collapsing">Category</th>
 						<th>Description</th>
-							{% if not item.approved_date %}
+							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 							<th class="ui collapsing">Action</th>
 							{% endif %}
 					</tr>
@@ -64,7 +72,7 @@
 							<td class="ui top aligned">
 								{{ r.arrayTable(description) }}
 							</td>
-							{% if not item.approved_date %}
+							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 								<td class="ui collapsing top aligned">
 									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
 										<i class="ui pencil icon"></i>
@@ -82,7 +90,7 @@
 
 			<h2>
 				Attachments
-				{% if not item.approved_date %}
+				{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 					<a class="ui right floated primary button" href="{{app.path('attachment_create',params)}}">
 						<i class="ui plus icon"></i>Add attachment
 					</a>
@@ -97,7 +105,7 @@
 						<th>File Name</th>
 						<th class="ui collapsing">File Type</th>
 						<th class="ui collapsing">File Size</th>
-							{% if not item.approved_date %}
+							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 							<th class="ui collapsing">Action</th>
 							{% endif %}
 					</tr>
@@ -114,7 +122,7 @@
 							</td>
 							<td class="ui collapsing">{{attachment.mime_type}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
-							{% if not item.approved_date %}
+							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
 								<td class="ui collapsing">
 									<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
 										<i class="ui pencil icon"></i>
@@ -132,49 +140,27 @@
 		</div>
 		<div class="four wide stretched column">
 			<div class="ui secondary basic segment">
-				<h2 class="ui header">Comments (sample)</h2>
+				<h2 class="ui header">Comments</h2>
 
 				<div class="ui comments">
-					<div class="comment">
-						<div class="content">
-							<a class="author">Matt</a>
-							<div class="metadata">
-								<span class="date">Today at 5:42PM</span>
-							</div>
-							<div class="text">
-								How artistic!
-							</div>
-						</div>
-					</div>
-					<div class="comment">
-						<div class="content">
-							<a class="author">Elliot Fu</a>
-							<div class="metadata">
-								<span class="date">Yesterday at 12:30AM</span>
-							</div>
-							<div class="text">
-								<p>This has been very useful for my research. Thanks as well!</p>
+					{% for comment in item.comments %}
+						<div class="comment">
+							<div class="content">
+								<a class="author">{{comment.created_by.getName()}}</a>
+								<div class="metadata">
+									<span class="date">{{comment.created_date|date('d/m/Y h:ia')}}</span>
+								</div>
+								<div class="text">
+									{{comment.text}}
+								</div>
 							</div>
 						</div>
-					</div>
-					<div class="comment">
-						<div class="content">
-							<a class="author">Joe Henderson</a>
-							<div class="metadata">
-								<span class="date">5 days ago</span>
-							</div>
-							<div class="text">
-								Dude, this is awesome. Thanks so much
-							</div>
-						</div>
-					</div>
-					<form class="ui form">
+					{% endfor %}
+					<form class="ui form" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
 						<div class="field">
-							<textarea rows="3"></textarea>
+							<textarea name="text" rows="3"></textarea>
 						</div>
-						<div class="ui blue labeled submit icon button">
-							<i class="icon edit"></i> Add Reply
-						</div>
+						<input class="ui blue button" type="submit" name="_action" value="Add Reply" />
 					</form>
 				</div>			
 			</div>

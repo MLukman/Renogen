@@ -7,6 +7,7 @@
 		<i class="ui idea icon"></i>{{attachment.item.displayTitle}} &raquo; 
 		{% if is_existing %}Edit{% else %}Add{% endif %} attachment
 	</h1>
+	<!-- debug errors: {{errors|default(null)|json_encode}} -->
 
 	<form method="POST" enctype="multipart/form-data">
 		<div class="ui form">

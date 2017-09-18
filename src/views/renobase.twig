@@ -14,14 +14,14 @@
 		<div class="ui label">
 			Created
 			<span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
-			<span class="detail"><i class="ui user icon"></i>{{entity.created_by.username|default('Anonymous')}}</span>
+			<span class="detail"><i class="ui user icon"></i>{{entity.created_by.getName()|default('Anonymous')}}</span>
 		</div>
 	{% endif %}
 	{% if entity.updated_date %}
 		<div class="ui label">
 			Updated 
 			<span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
-			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.username|default('Anonymous')}}</span>
+			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.getName()|default('Anonymous')}}</span>
 		</div>
 	{% endif %}
 {% endmacro %}
@@ -36,7 +36,7 @@
 					<i class="ui clock icon"></i>{{item.approved_date|date('d/m/Y h:ia')}}
 				</span>
 				<span class="detail">
-					<i class="ui user icon"></i>{{item.approved_by.username|default('Anonymous')}}
+					<i class="ui user icon"></i>{{item.approved_by.getName()|default('Anonymous')}}
 				</span>
 			{% endif %}
 		</div>

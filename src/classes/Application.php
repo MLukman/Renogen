@@ -14,6 +14,7 @@ use Doctrine\ORM\Tools\Setup;
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Impl\Rundeck;
 use Renogen\Controller\Activity;
+use Renogen\Controller\Admin;
 use Renogen\Controller\Attachment;
 use Renogen\Controller\Deployment;
 use Renogen\Controller\Home;
@@ -21,11 +22,13 @@ use Renogen\Controller\Item;
 use Renogen\Controller\Project;
 use Renogen\Controller\Runbook;
 use Renogen\Controller\Template;
+use Renogen\Entity\AuthDriver;
+use Renogen\Entity\User;
 use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
-use Securilex\Authentication\Factory\PlaintextPasswordAuthenticationFactory;
-use Securilex\Authentication\User\SQLite3UserProvider;
 use Securilex\Authorization\SecuredAccessVoter;
+use Securilex\Doctrine\DoctrineMutableUserProvider;
 use Securilex\Firewall;
+use Securilex\ServiceProvider;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\ServiceControllerServiceProvider;
 use Silex\Provider\SessionServiceProvider;
@@ -43,9 +46,13 @@ class Application extends \Silex\Application
 {
 
     use UrlGeneratorTrait;
+    const PROJECT_ROLES = array('none', 'view', 'entry', 'approval', 'execute');
+
     static protected $instance;
     protected $_templateClasses = array();
+    protected $_authClassNames  = array();
     protected $security;
+    protected $admin_route      = null;
 
     public function __construct($values = array())
     {
@@ -95,16 +102,34 @@ class Application extends \Silex\Application
             'twig.path' => realpath(__DIR__."/../views"),
         ));
 
-        $authFactory  = new PlaintextPasswordAuthenticationFactory();
-        $userProvider = new SQLite3UserProvider(new \SQLite3($sqlitefile));
-        $this->activateSecurity($authFactory, $userProvider);
+        /* Security */
+        foreach (glob(__DIR__.'/Auth/Driver/*.php') as $fn) {
+            $shortName = basename($fn, '.php');
+            $className = '\Renogen\Auth\Driver\\'.$shortName;
+            $classId   = strtolower($shortName);
 
+            $this->_authClassNames[$classId] = $className;
+        }
+
+        $this->activateSecurity();
 
         /* Routes: Home */
         $this['home.controller'] = $this->share(function() {
             return new Home($this);
         });
         $this->match('/', 'home.controller:index')->bind('home');
+
+        /* Routes: Admin */
+        $this['admin.controller'] = $this->share(function() {
+            return new Admin($this);
+        });
+        $this->match('/admin/', 'admin.controller:index')->bind('admin_index');
+        $this->match('/admin/users/', 'admin.controller:users')->bind('admin_users');
+        $this->match('/admin/users/+', 'admin.controller:user_create')->bind('admin_user_add');
+        $this->match('/admin/users/{username}/', 'admin.controller:user_edit')->bind('admin_user_edit');
+        $this->match('/admin/auth/', 'admin.controller:auth')->bind('admin_auth');
+        $this->match('/admin/auth/{driver}', 'admin.controller:auth_edit')->bind('admin_auth_edit');
+        $this->admin_route = 'admin_index';
 
         /* Routes: Project */
         $this['project.controller'] = $this->share(function() {
@@ -156,6 +181,9 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/{item}/@/{attachment}/', 'attachment.controller:download')->bind('attachment_download');
         $this->match('/{project}/{deployment}/{item}/@/{attachment}/!', 'attachment.controller:edit')->bind('attachment_edit');
 
+        /* Routes: Comment */
+        $this->match('/{project}/{deployment}/{item}/@@', 'item.controller:comment_add')->bind('item_comment_add');
+
         /* Routes: Activity */
         $this['activity.controller'] = $this->share(function() {
             return new Activity($this);
@@ -169,26 +197,57 @@ class Application extends \Silex\Application
         static::$instance = $this;
     }
 
-    public function activateSecurity(AuthenticationFactoryInterface $authFactory,
-                                     UserProviderInterface $userProvider)
+    public function activateSecurity()
     {
-        if (!$this->security) {
-            $this->security = new \Securilex\ServiceProvider();
-            $this->firewall = new Firewall('/', 'login');
-            $this->firewall->addAuthenticationFactory($authFactory, $userProvider);
-            $this->security->addFirewall($this->firewall);
-            $this->security->addAuthorizationVoter(new SecuredAccessVoter());
-            $this->register($this->security);
-
-            /* Login page (not using controller because too simple) */
-            $this->get('/login/', function(Request $request) {
-                return $this['twig']->render("login.twig", array(
-                        'error' => $this['security.last_error']($request),
-                ));
-            })->bind('login');
-        } else {
-            $this->firewall->addAuthenticationFactory($authFactory, $userProvider);
+        if ($this->security) {
+            return;
         }
+        $this->security = new ServiceProvider();
+        $this->firewall = new Firewall('/', 'login');
+
+        /* @var $em EntityManager */
+        $em = $this['em'];
+
+        foreach ($em->getRepository('\Renogen\Entity\AuthDriver')->findAll() as $driver) {
+            $driverName = $driver->name;
+            $className  = $driver->class;
+            if (($errors     = $className::checkParams($driver->parameters))) {
+                print_r($errors);
+                print json_encode($driver->parameters);
+                exit;
+            }
+            $driverClass = new $className($driver->parameters ?: array());
+            $this->firewall->addAuthenticationFactory($driverClass->getAuthenticationFactory(), new DoctrineMutableUserProvider($em, '\Renogen\Entity\User', 'username', array(
+                'auth' => $driverName)));
+        }
+
+        $this->security->addFirewall($this->firewall);
+        $this->security->addAuthorizationVoter(new SecuredAccessVoter());
+        $this->security->addAuthorizationVoter(\Securilex\Authorization\SubjectPrefixVoter::instance());
+        $this->register($this->security);
+
+        \Securilex\Authorization\SubjectPrefixVoter::instance()
+            ->addSubjectPrefix(array('admin', 'project_create'), 'ROLE_ADMIN');
+
+        /* Login page (not using controller because too simple) */
+        $this->get('/login/', function(Request $request) {
+            return $this['twig']->render("login.twig", array(
+                    'error' => $this['security.last_error']($request),
+            ));
+        })->bind('login');
+
+        $this->before(function(Request $request, \Silex\Application $app) {
+            if (!$app['securilex']->getFirewall()) {
+                return;
+            }
+
+            if (!($routeName = $request->get('_route')) ||
+                $app['securilex']->isGranted('prefix', $routeName)) {
+                return; // allow access
+            }
+
+            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+        });
     }
 
     /**
@@ -202,8 +261,14 @@ class Application extends \Silex\Application
 
     public function userEntity($username = null)
     {
-        return $this['em']->getRepository('\Renogen\Entity\User')->find($username
-                    ?: (isset($this['user']) ? $this['user']->getUsername() : null));
+        if (!$username) {
+            $username = (isset($this['user']) && !empty($this['user']) ? $this['user']->getUsername()
+                    : null);
+        }
+        if (!$username) {
+            return null;
+        }
+        return $this['em']->getRepository('\Renogen\Entity\User')->find($username);
     }
 
     static public function execute($debug = false)
@@ -245,12 +310,14 @@ class Application extends \Silex\Application
      */
     static public function instance()
     {
-        return static::$instance;
+        return static::$instance ?: new static();
     }
 
     public function initializeOrRefreshDatabaseSchemas()
     {
-        $tool    = new SchemaTool($this['em']);
+        /* @var $em EntityManager */
+        $em      = $this['em'];
+        $tool    = new SchemaTool($em);
         $classes = array();
         foreach (glob(__DIR__.'/Entity/*.php') as $entityfn) {
             $classes[] = $this['em']->getClassMetadata('Renogen\Entity\\'.basename($entityfn, '.php'));
@@ -260,6 +327,48 @@ class Application extends \Silex\Application
         $tool->updateSchema($classes, true);
         // update twice to ensure foreign keys are mapped completely
         $tool->updateSchema($classes, true);
+
+        if (count($em->getRepository('\Renogen\Entity\AuthDriver')->findAll()) == 0) {
+            $driver               = new AuthDriver('password');
+            $driver->class        = Auth\Driver\Password::class;
+            $driver->created_date = new \DateTime();
+            $driver->parameters   = array();
+            $em->persist($driver);
+            $em->flush();
+        }
+
+        $has_admin = false;
+        foreach ($em->getRepository('\Renogen\Entity\User')->findAll() as $user) {
+            if (in_array('ROLE_ADMIN', $user->roles)) {
+                $has_admin = true;
+                break;
+            }
+        }
+
+        // if no admin then create new admin user admin/admin123
+        if (!$has_admin) {
+            $newUser           = new User();
+            $newUser->username = 'admin';
+            $newUser->password = 'admin123';
+            $newUser->roles    = array('ROLE_ADMIN');
+            $newUser->auth     = 'password';
+            $authClass         = $this->getAuthClass('password');
+            $authClass->prepareNewUser($newUser);
+            $em->persist($newUser);
+            $em->flush($newUser);
+        }
+    }
+
+    protected function getAuthClass($classId)
+    {
+        /* @var $em EntityManager */
+        $em   = $this['em'];
+        if (($auth = $em->getRepository('\Renogen\Entity\AuthDriver')->find($classId))) {
+            /* @var $auth AuthDriver */
+            $authClass = new $auth->class($auth->parameters ?: array());
+            return $authClass;
+        }
+        return null;
     }
 
     public function addActivityTemplateClass(BaseClass $templateClass)
@@ -279,5 +388,10 @@ class Application extends \Silex\Application
         } else {
             return (!isset($this->_templateClasses[$name]) ? null : $this->_templateClasses[$name]);
         }
+    }
+
+    public function getAdminRoute()
+    {
+        return $this->admin_route;
     }
 }

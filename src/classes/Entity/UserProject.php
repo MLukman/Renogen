@@ -24,6 +24,11 @@ class UserProject extends \Renogen\Base\Entity
     /**
      * @Column(type="string", length=16)
      */
-    public $roles;
+    public $role;
 
+    public function __construct(Project $project, User $user)
+    {
+        $this->project = $project;
+        $this->user    = $user;
+    }
 }

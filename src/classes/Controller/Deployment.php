@@ -16,6 +16,7 @@ class Deployment extends RenoController
     {
         try {
             $project_obj = $this->fetchProject($project);
+            $this->checkAccess('approval', $project_obj);
             $this->addEntityCrumb($project_obj);
             $this->addCreateCrumb('Create deployment', $this->app->path('deployment_create', $this->entityParams($project_obj)));
             return $this->edit_or_create(new DeploymentEntity($project_obj), $request->request);
@@ -41,6 +42,7 @@ class Deployment extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
+            $this->checkAccess('approval', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addEditCrumb($this->app->path('deployment_edit', $this->entityParams($deployment_obj)));
             return $this->edit_or_create($deployment_obj, $request->request, array(
@@ -75,5 +77,4 @@ class Deployment extends RenoController
         $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);
     }
-
 }

@@ -71,7 +71,7 @@ class Firewall implements FirewallInterface
 
     /**
      * The Securilex service provider that registers this firewall. Remain null until this firewall is registered.
-     * @var ServiceProvider
+     * @var SecurityServiceProvider
      */
     protected $provider = null;
 
@@ -188,9 +188,9 @@ class Firewall implements FirewallInterface
 
     /**
      * Register the Firewall
-     * @param ServiceProvider $provider Service Provider
+     * @param SecurityServiceProvider $provider Service Provider
      */
-    public function register(ServiceProvider $provider)
+    public function register(SecurityServiceProvider $provider)
     {
         $this->provider = $provider;
 

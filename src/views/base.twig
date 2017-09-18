@@ -55,7 +55,9 @@
 
 			$(function () {
 				$('table.sortable').tablesort();
-				$('.ui.dropdown').dropdown();
+				$('.ui.dropdown').dropdown({
+					fullTextSearch: true
+				});
 				$('body').css('padding-top', $('#topbar').outerHeight(true));
 				setTimeout(function () {
 					$('.flash.message').fadeOut(1000);
@@ -85,10 +87,10 @@
 	<body>
 
 		<div id="topbar">
-			<div id="topmenu" class="ui menu inverted purple">
+			<div id="topmenu" class="ui menu inverted blue">
 
 				<div class="ui title item">
-					<a style="padding-right: 30pt" href="{{app.request.baseUrl}}">
+					<a style="padding-right: 30pt" href="{{app.request.baseUrl}}/">
 						{% block menutitle %}
 							{% set logo = app.logo %}
 							{% if logo %}
@@ -111,10 +113,16 @@
 					{% block menuright %}
 					{% endblock %}
 
+					{% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
+						{{ m.topmenu_dropdown_begin(null, 'setting') }}
+						{{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+						{{ m.topmenu_dropdown_end() }}
+					{% endif %}
+
 					{% if app.securilex is defined %}
-						{% if app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
+						{% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
 							<div class="ui dropdown item">
-								<i class="ui user icon"></i> {{app['user'].getUsername()}}
+								<i class="ui user icon"></i> {{app['user'].getName()}}
 								<i class="dropdown icon"></i>
 								<div class="menu">
 									<a class="item" href="{{app.securilex.getLogoutPath()}}">
