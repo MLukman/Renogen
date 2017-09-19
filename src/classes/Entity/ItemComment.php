@@ -27,6 +27,11 @@ class ItemComment extends Entity
     public $text;
 
     /**
+     * @Column(type="datetime", nullable=true)
+     */
+    public $deleted_date = null;
+
+    /**
      * Validation rules
      * @var array
      */

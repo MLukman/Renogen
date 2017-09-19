@@ -11,6 +11,12 @@
 		{% endif %}
 	</h1>
 
+	{% if errors|default(false) %}
+		<div class="ui error message">
+			Your input contains errors. Please fix below.
+		</div>
+	{% endif %}
+
 	<form method="POST">
 		<div class="ui form">
 			<div class="ui required field basic segment">

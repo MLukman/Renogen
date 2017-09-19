@@ -146,21 +146,32 @@
 					{% for comment in item.comments %}
 						<div class="comment">
 							<div class="content">
+								{% if comment.created_by == app.userEntity() and not comment.deleted_date %}
+									<a class="ui right floated compact very tiny icon button" 
+									   href="{{app.path('item_comment_delete',controller.entityParams(item)+{'comment':comment.id})}}"><i class="ui x icon"></i>
+									</a>
+								{% endif %}
 								<a class="author">{{comment.created_by.getName()}}</a>
 								<div class="metadata">
 									<span class="date">{{comment.created_date|date('d/m/Y h:ia')}}</span>
 								</div>
-								<div class="text">
-									{{comment.text}}
-								</div>
+								{% if comment.deleted_date %}
+									<div class="metadata">
+										<em>&raquo; Deleted on {{comment.deleted_date|date('d/m/Y h:ia')}}</em>
+									</div>
+								{% else %}
+									<div class="text">
+										{{comment.text|nl2br}}
+									</div>
+								{% endif %}	
 							</div>
 						</div>
 					{% endfor %}
-					<form class="ui form" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
+					<form class="ui center aligned form basic segment" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
 						<div class="field">
 							<textarea name="text" rows="3"></textarea>
 						</div>
-						<input class="ui blue button" type="submit" name="_action" value="Add Reply" />
+						<input class="ui blue centered button" type="submit" name="_action" value="Post" />
 					</form>
 				</div>			
 			</div>

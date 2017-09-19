@@ -37,7 +37,7 @@ class User extends Entity implements MutableUserInterface
     public $auth;
 
     /**
-     * @OneToMany(targetEntity="UserProject", mappedBy="user")
+     * @OneToMany(targetEntity="UserProject", mappedBy="user", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $userProjects = null;

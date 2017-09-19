@@ -47,7 +47,7 @@ class Deployment extends Entity
     public $execute_date;
 
     /**
-     * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id")
+     * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $items = null;
@@ -107,13 +107,5 @@ class Deployment extends Entity
         }
 
         return $rungroups;
-    }
-
-    public function delete(EntityManager $em)
-    {
-        foreach ($this->items as $item) {
-            $item->delete($em);
-        }
-        parent::delete($em);
     }
 }

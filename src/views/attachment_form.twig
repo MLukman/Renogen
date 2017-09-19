@@ -7,6 +7,12 @@
 		<i class="ui idea icon"></i>{{attachment.item.displayTitle}} &raquo; 
 		{% if is_existing %}Edit{% else %}Add{% endif %} attachment
 	</h1>
+
+	{% if errors|default(false) %}
+		<div class="ui error message">
+			Your input contains errors. Please fix below.
+		</div>
+	{% endif %}
 	<!-- debug errors: {{errors|default(null)|json_encode}} -->
 
 	<form method="POST" enctype="multipart/form-data">

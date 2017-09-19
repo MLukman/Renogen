@@ -2,7 +2,15 @@
 
 {% block content %}
 	{% set is_existing = (deployment.id|default(null) is not empty) %}
-	<h1 class="ui header">{% if is_existing %}Edit{% else %}Create{% endif %} deployment</h1>
+	<h1 class="ui header">
+		{% if is_existing %}Edit{% else %}Create{% endif %} deployment
+	</h1>
+
+	{% if errors|default(false) %}
+		<div class="ui error message">
+			Your input contains errors. Please fix below.
+		</div>
+	{% endif %}
 
 	<form method="POST">
 		<div class="ui form">

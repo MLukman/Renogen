@@ -183,6 +183,7 @@ class Application extends \Silex\Application
 
         /* Routes: Comment */
         $this->match('/{project}/{deployment}/{item}/@@', 'item.controller:comment_add')->bind('item_comment_add');
+        $this->match('/{project}/{deployment}/{item}/@@/{comment}/-', 'item.controller:comment_delete')->bind('item_comment_delete');
 
         /* Routes: Activity */
         $this['activity.controller'] = $this->share(function() {

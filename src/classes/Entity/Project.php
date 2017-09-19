@@ -8,14 +8,16 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
 use Renogen\Base\Entity;
+use Securilex\Authorization\SecuredAccessInterface;
+use Securilex\Authorization\SecuredAccessTrait;
 
 /**
  * @Entity @Table(name="projects")
  */
-class Project extends Entity implements \Securilex\Authorization\SecuredAccessInterface
+class Project extends Entity implements SecuredAccessInterface
 {
 
-    use \Securilex\Authorization\SecuredAccessTrait;
+    use SecuredAccessTrait;
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */
@@ -42,19 +44,19 @@ class Project extends Entity implements \Securilex\Authorization\SecuredAccessIn
     public $categories;
 
     /**
-     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="name")
+     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="name", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $deployments = null;
 
     /**
-     * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username")
+     * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $userProjects = null;
 
     /**
-     * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id")
+     * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $templates = null;
@@ -99,17 +101,6 @@ class Project extends Entity implements \Securilex\Authorization\SecuredAccessIn
             });
     }
 
-    public function delete(EntityManager $em)
-    {
-        foreach ($this->deployments as $c) {
-            $c->delete($em);
-        }
-        foreach ($this->templates as $c) {
-            $c->delete($em);
-        }
-        parent::delete($em);
-    }
-
     public function isUsernameAllowed($username, $attr = 'view')
     {
         $this->allowedRoles = array();
@@ -118,5 +109,18 @@ class Project extends Entity implements \Securilex\Authorization\SecuredAccessIn
         }
         return ($this->userProjects->containsKey($username) &&
             ($this->userProjects->get($username)->role == $attr || $attr == 'any'));
+    }
+
+    public function getAttachmentFolder()
+    {
+        return ROOTDIR.'/data/attachments/'.$this->name.'/';
+    }
+
+    public function delete(EntityManager $em)
+    {
+        if (file_exists($this->getAttachmentFolder())) {
+            rmdir($this->getAttachmentFolder());
+        }
+        parent::delete($em);
     }
 }

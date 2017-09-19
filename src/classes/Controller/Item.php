@@ -142,9 +142,25 @@ class Item extends RenoController
             $item_obj = $this->fetchItem($project, $deployment, $item);
             $comment  = new \Renogen\Entity\ItemComment($item_obj);
             if ($this->saveEntity($comment, array('text'), $request->request)) {
-                $this->app->addFlashMessage("Succesfully added a reply");
+                $this->app->addFlashMessage("Succesfully post a comment");
             } else {
-                $this->app->addFlashMessage("Failed to add a reply: please ensure you enter a reply and please try again");
+                $this->app->addFlashMessage("Failed to post a comment: please ensure you enter a reply and please try again");
+            }
+            return $this->redirect('item_view', $this->entityParams($item_obj));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
+    public function comment_delete(Request $request, $project, $deployment,
+                                   $item, $comment)
+    {
+        try {
+            $item_obj = $this->fetchItem($project, $deployment, $item);
+            if ($item_obj->comments->containsKey($comment)) {
+                $comment_obj               = $item_obj->comments->get($comment);
+                $comment_obj->deleted_date = new \DateTime();
+                $this->app['em']->flush($comment_obj);
             }
             return $this->redirect('item_view', $this->entityParams($item_obj));
         } catch (NoResultException $ex) {

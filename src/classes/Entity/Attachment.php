@@ -59,12 +59,20 @@ class Attachment extends Entity
 
     public function getFilesystemPath()
     {
-        return ROOTDIR.'/data/attachments/'.$this->item->deployment->project->name.'/'.$this->id;
+        return $this->item->deployment->project->getAttachmentFolder().$this->id;
     }
 
     public function delete(EntityManager $em)
     {
+        $this->deleteFile();
         parent::delete($em);
-        unlink($this->getFilesystemPath());
+    }
+
+    /** @PreRemove */
+    public function deleteFile()
+    {
+        if (file_exists($this->getFilesystemPath())) {
+            unlink($this->getFilesystemPath());
+        }
     }
 }

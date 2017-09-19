@@ -8,6 +8,12 @@
 		{% if is_existing %}Edit{% else %}Add{% endif %} activity
 	</h1>
 
+	{% if errors|default(false) %}
+		<div class="ui error message">
+			Your input contains errors. Please fix below.
+		</div>
+	{% endif %}
+
 	{% if activity.item.deployment.project.templates.count == 0 %}
 		<div class="ui error message">
 			There is no activity template found for project '{{activity.item.deployment.project.title}}'.
@@ -95,7 +101,7 @@
 					{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 				{% elseif parameter.type == 'multiselect' %}
 					<div class="grouped fields">
-							{% for v,t in template.parameters[param] %}
+						{% for v,t in template.parameters[param] %}
 							<div class="field">
 								<div class="ui checkbox">
 									<input type="checkbox" value="{{v}}" name="parameters[{{param}}][]" {% if v in activity.parameters[param]|default([]) %}checked="checked"{% endif %} />

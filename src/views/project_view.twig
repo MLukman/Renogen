@@ -26,7 +26,7 @@
 	{% if project.upcoming().count() > 0 %}
 		{{ mm.deploymentList(project.upcoming()) }}
 	{% else %}
-		<div class="ui warning message">This project has no upcoming deployments. Please create one.</div>
+		<div class="ui warning message">This project has no upcoming deployments yet. A user with 'approval' role needs to create a new deployment.</div>
 	{% endif %}
 
 	{% if project.past().count() > 0 %}
