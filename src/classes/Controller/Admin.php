@@ -42,13 +42,10 @@ class Admin extends RenoController
         $errors = array();
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
-                $has_other_admin = false;
-                $deployment->delete($this->app['em']);
+                $user->delete($this->app['em']);
                 $this->app['em']->flush();
-                $this->app->addFlashMessage("Deployment '$deployment->title' has been deleted");
-                return $this->redirect('project_view', array(
-                        'project' => $deployment->project->name,
-                ));
+                $this->app->addFlashMessage("User '$user->username' has been deleted");
+                return $this->redirect('admin_users');
             }
             if (!$post->has('roles')) {
                 $post->set('roles', array());

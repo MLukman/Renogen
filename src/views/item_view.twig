@@ -8,12 +8,12 @@
 			<i class="ui idea icon"></i>{{item.displayTitle}}
 		</span>
 		{% if not item.approved_date %}
-			{% if app.securilex.isGranted('entry',item.deployment.project) %}
+			{% if app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 				<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
 			{% endif %}
 		{% endif %}
 		{% if not item.submitted_date %}
-			{% if app.securilex.isGranted('entry',item.deployment.project) %}
+			{% if app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 				<a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
 				   onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
 			{% endif %}
@@ -38,7 +38,7 @@
 		<div class="twelve wide column">
 			<h2>
 				Activities
-				{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 					<a class="ui right floated primary button" href="{{app.path('activity_create',params)}}">
 						<i class="ui plus icon"></i>Add activity
 					</a>
@@ -51,7 +51,7 @@
 						<th class="ui collapsing">#</th>
 						<th class="ui collapsing">Category</th>
 						<th>Description</th>
-							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 							<th class="ui collapsing">Action</th>
 							{% endif %}
 					</tr>
@@ -72,7 +72,7 @@
 							<td class="ui top aligned">
 								{{ r.arrayTable(description) }}
 							</td>
-							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 								<td class="ui collapsing top aligned">
 									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
 										<i class="ui pencil icon"></i>
@@ -90,7 +90,7 @@
 
 			<h2>
 				Attachments
-				{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 					<a class="ui right floated primary button" href="{{app.path('attachment_create',params)}}">
 						<i class="ui plus icon"></i>Add attachment
 					</a>
@@ -105,7 +105,7 @@
 						<th>File Name</th>
 						<th class="ui collapsing">File Type</th>
 						<th class="ui collapsing">File Size</th>
-							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 							<th class="ui collapsing">Action</th>
 							{% endif %}
 					</tr>
@@ -122,7 +122,7 @@
 							</td>
 							<td class="ui collapsing">{{attachment.mime_type}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
-							{% if not item.approved_date and app.securilex.isGranted('entry',item.deployment.project) %}
+							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 								<td class="ui collapsing">
 									<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
 										<i class="ui pencil icon"></i>
@@ -167,12 +167,14 @@
 							</div>
 						</div>
 					{% endfor %}
-					<form class="ui center aligned form basic segment" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
-						<div class="field">
-							<textarea name="text" rows="3"></textarea>
-						</div>
-						<input class="ui blue centered button" type="submit" name="_action" value="Post" />
-					</form>
+					{% if app.securilex.isGranted(['execute','entry','approval'],item.deployment.project) %}
+						<form class="ui center aligned form basic segment" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
+							<div class="field">
+								<textarea name="text" rows="3"></textarea>
+							</div>
+							<input class="ui blue centered button" type="submit" name="_action" value="Post" />
+						</form>
+					{% endif %}
 				</div>			
 			</div>
 		</div>

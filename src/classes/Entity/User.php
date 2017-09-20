@@ -24,7 +24,7 @@ class User extends Entity implements MutableUserInterface
     /**
      * @Column(type="string", nullable=true, length=100)
      */
-    public $password;
+    public $password = '';
 
     /**
      * @Column(type="json_array", nullable=true)

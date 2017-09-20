@@ -4,7 +4,8 @@
 			<th class="three wide">Project</th>
 			<th class="three wide">Group</th>
 			<th class="three wide">Job</th>
-			<th>Options</th>
+			<th class="four wide">Options</th>
+			<th class="three wide">Remark</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -19,6 +20,9 @@
 					{% else %}
 						Not required
 					{% endif %}
+				</td>
+				<td>
+					{{row.remark|default('-')|nl2br}}
 				</td>
 			</tr>
 		{% endfor %}

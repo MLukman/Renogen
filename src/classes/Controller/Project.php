@@ -5,6 +5,7 @@ namespace Renogen\Controller;
 use Renogen\Base\RenoController;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class Project extends RenoController
 {
@@ -39,7 +40,7 @@ class Project extends RenoController
             }
         }
         if (!$this->app['securilex']->isGranted('ROLE_ADMIN') && !$this->app['securilex']->isGranted('approval', $project)) {
-            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+            throw new AccessDeniedException();
         }
         $this->addEntityCrumb($project);
         $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));

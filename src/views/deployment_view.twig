@@ -15,7 +15,7 @@
 
 	<h2 class="ui header">
 		Deployment Items
-		{% if app.securilex.isGranted('entry',deployment.project) %}
+		{% if app.securilex.isGranted(['entry','approval'],deployment.project) %}
 			<a class="ui right floated primary button" href="{{app.path('item_create',controller.entityParams(deployment))}}">
 				<i class="ui plus icon"></i>Add deployment item
 			</a>

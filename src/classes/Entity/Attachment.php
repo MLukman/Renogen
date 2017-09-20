@@ -2,41 +2,19 @@
 
 namespace Renogen\Entity;
 
-use Doctrine\ORM\EntityManager;
-use Renogen\Base\Entity;
-use const ROOTDIR;
+use Renogen\Base\FileEntity;
 
 /**
  * @Entity @Table(name="attachments")
  */
-class Attachment extends Entity
+class Attachment extends FileEntity
 {
-    /**
-     * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
-     */
-    public $id;
-
     /**
      * @ManyToOne(targetEntity="Item")
      * @JoinColumn(name="item_id", referencedColumnName="id", onDelete="CASCADE")
      * @var Item
      */
     public $item;
-
-    /**
-     * @Column(type="string")
-     */
-    public $filename;
-
-    /**
-     * @Column(type="integer")
-     */
-    public $filesize = 0;
-
-    /**
-     * @Column(type="string", nullable=true)
-     */
-    public $mime_type;
 
     /**
      * @Column(type="text")
@@ -57,22 +35,8 @@ class Attachment extends Entity
         $this->item = $item;
     }
 
-    public function getFilesystemPath()
+    public function getFolder()
     {
-        return $this->item->deployment->project->getAttachmentFolder().$this->id;
-    }
-
-    public function delete(EntityManager $em)
-    {
-        $this->deleteFile();
-        parent::delete($em);
-    }
-
-    /** @PreRemove */
-    public function deleteFile()
-    {
-        if (file_exists($this->getFilesystemPath())) {
-            unlink($this->getFilesystemPath());
-        }
+        return $this->item->deployment->project->getAttachmentFolder();
     }
 }

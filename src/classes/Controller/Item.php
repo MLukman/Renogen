@@ -4,6 +4,7 @@ namespace Renogen\Controller;
 
 use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
+use Renogen\Entity\ItemComment;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -15,7 +16,7 @@ class Item extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
-            $this->checkAccess('entry', $deployment_obj);
+            $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->entityParams($deployment_obj)));
             return $this->edit_or_create(new \Renogen\Entity\Item($deployment_obj), $request->request);
@@ -41,7 +42,7 @@ class Item extends RenoController
     {
         try {
             $item_obj = $this->fetchItem($project, $deployment, $item);
-            $this->checkAccess('entry', $item_obj);
+            $this->checkAccess(array('entry', 'approval'), $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
             return $this->edit_or_create($item_obj, $request->request);
@@ -58,7 +59,7 @@ class Item extends RenoController
             $actioned = null;
             switch ($action) {
                 case 'submit':
-                    $this->checkAccess('entry', $item_obj);
+                    $this->checkAccess(array('entry', 'approval'), $item_obj);
                     $item_obj->submit();
                     $actioned = 'submitted for approval';
                     break;
@@ -140,7 +141,7 @@ class Item extends RenoController
     {
         try {
             $item_obj = $this->fetchItem($project, $deployment, $item);
-            $comment  = new \Renogen\Entity\ItemComment($item_obj);
+            $comment  = new ItemComment($item_obj);
             if ($this->saveEntity($comment, array('text'), $request->request)) {
                 $this->app->addFlashMessage("Succesfully post a comment");
             } else {

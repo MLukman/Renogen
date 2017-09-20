@@ -21,7 +21,7 @@
 		</div>
 	{% endif %}
 
-	<form method="POST">
+	<form method="POST" enctype="multipart/form-data">
 		<div class="ui form">
 			{% if activity.template is empty %}
 				<div class="ui required field basic segment">
@@ -119,6 +119,35 @@
 									<label for="parameters-{{param}}-{{k}}">{{label}}</label>
 									<input id="parameters-{{param}}-{{k}}" type="text" name="parameters[{{param}}][{{k}}]" value="{{activity.parameters[param][k]|default(null)}}" />
 									{{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ k) }}
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<p><em>-- Not required --</em></p>
+					{% endif %}
+				{% elseif parameter.type == 'multifield' %}
+					{% if template.parameters[param]|length > 0 %}
+						<div class="ui form">
+							{% for p in template.parameters[param] %}
+								{% set pid='parameters-' ~ param ~ '-' ~ p.id %}
+								<div class="{% if p.required %}required {% endif %}field">
+									<label for="{{pid}}">{{p.title}}</label>
+									{% if p.type == 'dropdown' %}
+										<select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
+											<option value="">-- Please select --</option>
+											{% for v in p.details|split('\n') %}
+												<option value="{{v|trim}}" {% if v|trim == activity.parameters[param][p.id]|default(null) %}selected="selected"{% endif %}>{{v|trim}}</option>
+											{% endfor %}
+										</select>
+									{% elseif p.type == 'file' %}
+										<input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
+										{% if activity.parameters[param][p.id] %}
+											<em>Leave blank to keep existing file</em>
+										{% endif %}
+									{% else %}
+										<input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{activity.parameters[param][p.id]|default(null)}}" />
+									{% endif %}
+									{{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ p.id) }}
 								</div>
 							{% endfor %}
 						</div>

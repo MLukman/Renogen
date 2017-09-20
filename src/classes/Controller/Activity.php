@@ -4,8 +4,8 @@ namespace Renogen\Controller;
 
 use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class Activity extends RenoController
 {
@@ -16,11 +16,12 @@ class Activity extends RenoController
         try {
             $project_obj            = $this->fetchProject($project);
             $item_obj               = $this->fetchItem($project_obj, $deployment, $item);
+            $this->checkAccess(array('entry', 'approval'), $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add activity', $this->app->path('activity_create', $this->entityParams($item_obj)));
             $activity_obj           = new \Renogen\Entity\Activity($item_obj);
             $activity_obj->template = $project_obj->templates->get($request->request->get('template'));
-            return $this->edit_or_create($activity_obj, $request->request);
+            return $this->edit_or_create($activity_obj, $request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -31,18 +32,19 @@ class Activity extends RenoController
     {
         try {
             $activity_obj = $this->fetchActivity($project, $deployment, $item, $activity);
+            $this->checkAccess(array('entry', 'approval'), $activity_obj);
             $this->addEntityCrumb($activity_obj);
-            return $this->edit_or_create($activity_obj, $request->request, array(
-                    'activity' => $activity_obj));
+            return $this->edit_or_create($activity_obj, $request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
 
     protected function edit_or_create(\Renogen\Entity\Activity $activity,
-                                      ParameterBag $post,
-                                      array $context = array())
+                                      Request $request)
     {
+        $post    = $request->request;
+        $context = array();
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
@@ -63,6 +65,7 @@ class Activity extends RenoController
                         if (($templateClass      = $activity->template->templateClass())) {
                             $parameters = $post->get('parameters', array());
                             foreach ($templateClass->getParameters() as $param => $parameter) {
+                                $parameter->handleActivityFiles($request, $activity, $parameters, $param);
                                 $parameter->validateActivityInput($activity->template->parameters, $parameters, $param, $errors, 'parameters');
                             }
                             $post->set('parameters', $parameters);
@@ -72,6 +75,7 @@ class Activity extends RenoController
                     if ($this->prepareValidateEntity($activity, static::entityFields, $post)
                         && empty($errors)) {
                         $this->saveEntity($activity, static::entityFields, $post);
+                        $this->app['em']->flush();
                         $this->app->addFlashMessage("Activity has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($activity->item));
                     } else {
@@ -81,5 +85,21 @@ class Activity extends RenoController
         }
         $context['activity'] = $activity;
         return $this->render('activity_form', $context);
+    }
+
+    public function download_file(Request $request, $project, $deployment,
+                                  $item, $activity, $file)
+    {
+        try {
+            if (!($activity_file = $this->app['em']->getRepository('\Renogen\Entity\ActivityFile')->find($file))) {
+                throw new NoResultException();
+            }
+            return $this->app
+                    ->sendFile($activity_file->getFilesystemPath(), 200, array(
+                        'Content-type' => $activity_file->mime_type))
+                    ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $activity_file->filename);
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
     }
 }

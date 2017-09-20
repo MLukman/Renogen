@@ -2,13 +2,20 @@
 
 namespace Renogen\Controller;
 
-class Home extends \Renogen\Base\Controller
+use Renogen\Base\Controller;
+use Symfony\Component\HttpFoundation\Request;
+
+class Home extends Controller
 {
 
-    public function index(\Symfony\Component\HttpFoundation\Request $request)
+    public function index(Request $request)
     {
+        $projects = $this->queryMany('\Renogen\Entity\Project');
+        if (count($projects) == 0 && $this->app['securilex']->isGranted('ROLE_ADMIN')) {
+            return $this->redirect('project_create');
+        }
         return $this->render('home', array(
-                'projects' => $this->queryMany('\Renogen\Entity\Project'),
+                'projects' => $projects,
         ));
     }
 }

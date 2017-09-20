@@ -27,11 +27,16 @@
 		<div class="ui form">
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Authentication Method</label>
-				<select name="auth" class="ui dropdown" {% if is_existing %}disabled="disabled"{% endif %}>
+				<div class="inline fields">
 					{% for auth in auths %}
-						<option value="{{auth.name}}" {% if auth.name == user.auth|default(null) %}selected="selected"{% endif %}>{{auth.name}}</option>
+						<div class="field">
+							<div class="ui radio checkbox">
+								<input id="auth-{{auth.name}}" type="radio" name="auth" value="{{auth.name}}" {% if auth.name == user.auth|default(null) %}checked="checked"{% endif %} {% if is_existing %}disabled="disabled"{% endif %}>
+								<label for="auth-{{auth.name}}">{{auth.name}}</label>
+							</div>
+						</div>
 					{% endfor %}
-				</select>
+				</div>
 				{{ m.fieldError(errors|default([]), 'auth') }}
 			</div>
 			<div class="ui required field basic segment">

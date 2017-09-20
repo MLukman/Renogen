@@ -71,22 +71,15 @@ class Attachment extends RenoController
                             );
                         } else {
                             if ($file) {
-                                if ($file->isValid()) {
-                                    $attachment->filename  = $file->getClientOriginalName();
-                                    $attachment->filesize  = $file->getClientSize();
-                                    $attachment->mime_type = $file->getMimeType();
+                                $errors = array();
+                                $attachment->processUploadedFile($file, $errors);
+                                if (empty($errors)) {
                                     $this->saveEntity($attachment, static::entityFields, $post);
-                                    $targetpath            = $attachment->getFilesystemPath();
-                                    $targetdir             = dirname($targetpath).'/';
-                                    if (!file_exists($targetdir)) {
-                                        mkdir($targetdir, 0777, true);
-                                    }
-                                    $file->move($targetdir, $attachment->id);
                                     $this->app->addFlashMessage("Attachment has been successfully uploaded/saved");
                                     return $this->redirect('item_view', $this->entityParams($attachment->item));
                                 } else {
                                     $context['errors'] = array(
-                                        'file' => array('Unable to process uploaded file'),
+                                        'file' => $errors,
                                     );
                                 }
                             } else {

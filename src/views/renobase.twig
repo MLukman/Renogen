@@ -71,6 +71,8 @@
 						{{'<blank>'|trim}}
 					{% elseif val is iterable %}
 						{{r.arrayTable(val, true)}}
+					{% elseif val|first == '<' %}
+						{{val|raw}}
 					{% else %}
 						{{val}}
 					{% endif %}

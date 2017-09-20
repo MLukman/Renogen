@@ -2,6 +2,9 @@
 
 namespace Renogen\ActivityTemplate;
 
+use Renogen\Entity\ActivityFile;
+use Symfony\Component\HttpFoundation\Request;
+
 class Parameter
 {
     public $type;
@@ -72,6 +75,13 @@ class Parameter
                                          $activityDescription, $activityRequired)
     {
         return static::generateParameter('multifreetext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+    }
+
+    static public function MultiField($templateLabel, $templateDescription,
+                                      $templateRequired, $activityLabel,
+                                      $activityDescription, $activityRequired)
+    {
+        return static::generateParameter('multifield', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
     }
 
     static public function Dropdown($templateLabel, $templateDescription,
@@ -165,6 +175,19 @@ class Parameter
                 }
                 break;
 
+            case 'multifield':
+                $toremove = array();
+                foreach ($input[$key] as $i => $p) {
+                    if (empty($p['id']) && empty($p['title']) && empty($p['details'])
+                        && !isset($p['required'])) {
+                        $toremove[] = $i;
+                    }
+                }
+                foreach (array_reverse($toremove) as $i) {
+                    unset($input[$key][$i]);
+                }
+                break;
+
             default:
                 if (empty($input[$key]) && $this->templateRequired) {
                     $errors[$errkey] = array('Required');
@@ -207,13 +230,21 @@ class Parameter
                 }
                 break;
 
+            case 'multifield':
+                foreach ($template_parameters[$key] as $p) {
+                    if ($p['required'] && empty($input[$key][$p['id']])) {
+                        $errors[$errkey.'.'.$p['id']] = array('Required');
+                    }
+                }
+                break;
+
             default:
                 if (empty($input[$key]) && $this->activityRequired) {
                     $errors[$errkey] = array('Required');
                     return false;
                 }
         }
-        return true;
+        return empty($errors);
     }
 
     public function activityLabel(array $map)
@@ -267,6 +298,17 @@ class Parameter
                 }
                 return $cfg;
 
+            case 'multifield':
+                $cfg = array();
+                foreach ($parameter as $p) {
+                    if (empty($p['id']) && empty($p['title']) && empty($p['details'])
+                        && !isset($p['required'])) {
+                        continue;
+                    }
+                    $cfg[] = array_merge(array('required' => 0), $p);
+                }
+                return $cfg;
+
             default:
                 return $parameter;
         }
@@ -290,6 +332,68 @@ class Parameter
 
             default:
                 return $parameter;
+        }
+    }
+
+    public function activityDatabaseToForm(array $template_parameters,
+                                           array $parameters, $key,
+                                           \Renogen\Application $app)
+    {
+        switch ($this->type) {
+            case 'multifield':
+                $data = array();
+                foreach ($template_parameters[$key] as $p) {
+                    switch ($p['type']) {
+                        case 'file':
+                            if (($activity_file = $app['em']->getRepository('\Renogen\Entity\ActivityFile')->findOneBy(array(
+                                'stored_filename' => $parameters[$key])))) {
+                                /* @var $activity_file ActivityFile */
+                                $data[$p['id']] = array(
+                                    'fileid' => $activity_file->id,
+                                    'filename' => $activity_file->filename,
+                                    'filesize' => $activity_file->filesize,
+                                    'filepath' => $activity_file->getFilesystemPath(),
+                                );
+                            }
+                            break;
+                        default:
+                            $data[$p['id']] = $parameters[$key][$p['id']];
+                    }
+                }
+                return $data;
+            default:
+                return $parameters[$key];
+        }
+    }
+
+    public function handleActivityFiles(Request $request,
+                                        \Renogen\Entity\Activity $activity,
+                                        array &$input, $key)
+    {
+        switch ($this->type) {
+            case 'multifield':
+                foreach ($activity->template->parameters[$key] as $p) {
+                    if ($p['type'] == 'file') {
+                        $pid = $p['id'];
+                        if (isset($activity->parameters[$key][$pid]) && $activity->files->containsKey($activity->parameters[$key][$pid])) {
+                            $activity_file = $activity->files->get($activity->parameters[$key][$pid]);
+                        } else {
+                            $activity_file = new ActivityFile($activity);
+                        }
+
+                        $files = $request->files->get('parameters');
+                        if (isset($files[$key]) &&
+                            isset($files[$key][$pid]) &&
+                            ($file  = $files[$key][$pid])) {
+                            $activity_file->processUploadedFile($file);
+                            if (!$activity_file->id) {
+                                $activity->files->add($activity_file);
+                            }
+                        }
+                        $input[$key][$pid] = $activity_file->stored_filename;
+                    }
+                }
+                break;
         }
     }
 }

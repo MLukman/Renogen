@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 
 abstract class RenoController extends Controller
 {
-    const titleLength = 40;
+    const titleLength = 32;
 
     protected function addEntityCrumb(Entity $entity)
     {
@@ -24,7 +24,7 @@ abstract class RenoController extends Controller
         } elseif ($entity instanceof Deployment) {
             $deployment  = $entity;
             $this->addEntityCrumb($deployment->project);
-            $this->title = $deployment->displayTitle();
+            $this->title = $deployment->title;
             $this->addCrumb($this->title, $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
         } elseif ($entity instanceof Item) {
             $item        = $entity;
@@ -47,30 +47,30 @@ abstract class RenoController extends Controller
         }
     }
 
-    public function entityParams(Entity $entity)
+    static public function entityParams(Entity $entity)
     {
         if ($entity instanceof Project) {
             return array(
                 'project' => $entity->name,
             );
         } elseif ($entity instanceof Deployment) {
-            return $this->entityParams($entity->project) + array(
+            return static::entityParams($entity->project) + array(
                 'deployment' => $entity->name,
             );
         } elseif ($entity instanceof Item) {
-            return $this->entityParams($entity->deployment) + array(
+            return static::entityParams($entity->deployment) + array(
                 'item' => $entity->id,
             );
         } elseif ($entity instanceof Activity) {
-            return $this->entityParams($entity->item) + array(
+            return static::entityParams($entity->item) + array(
                 'activity' => $entity->id,
             );
         } elseif ($entity instanceof Attachment) {
-            return $this->entityParams($entity->item) + array(
+            return static::entityParams($entity->item) + array(
                 'attachment' => $entity->id,
             );
         } elseif ($entity instanceof Template) {
-            return $this->entityParams($entity->project) + array(
+            return static::entityParams($entity->project) + array(
                 'template' => $entity->id,
             );
         } else {

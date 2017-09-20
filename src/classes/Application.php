@@ -112,7 +112,69 @@ class Application extends \Silex\Application
         }
 
         $this->activateSecurity();
+        $this->configureRoutes();
 
+        /* Init activity template classes */
+        $this->addActivityTemplateClass(new Rundeck($this));
+
+        static::$instance = $this;
+    }
+
+    public function activateSecurity()
+    {
+        if ($this->security) {
+            return;
+        }
+        $this->security = new ServiceProvider();
+        $this->firewall = new Firewall('/', 'login');
+
+        /* @var $em EntityManager */
+        $em = $this['em'];
+
+        foreach ($em->getRepository('\Renogen\Entity\AuthDriver')->findAll() as $driver) {
+            $driverName = $driver->name;
+            $className  = $driver->class;
+            if (($errors     = $className::checkParams($driver->parameters))) {
+                print_r($errors);
+                print json_encode($driver->parameters);
+                exit;
+            }
+            $driverClass = new $className($driver->parameters ?: array());
+            $this->firewall->addAuthenticationFactory($driverClass->getAuthenticationFactory(), new DoctrineMutableUserProvider($em, '\Renogen\Entity\User', 'username', array(
+                'auth' => $driverName)));
+        }
+
+        $this->security->addFirewall($this->firewall);
+        $this->security->addAuthorizationVoter(new SecuredAccessVoter());
+        $this->security->addAuthorizationVoter(\Securilex\Authorization\SubjectPrefixVoter::instance());
+        $this->register($this->security);
+
+        \Securilex\Authorization\SubjectPrefixVoter::instance()
+            ->addSubjectPrefix(array('admin', 'project_create'), 'ROLE_ADMIN');
+
+        /* Login page (not using controller because too simple) */
+        $this->get('/login/', function(Request $request) {
+            return $this['twig']->render("login.twig", array(
+                    'error' => $this['security.last_error']($request),
+            ));
+        })->bind('login');
+
+        $this->before(function(Request $request, \Silex\Application $app) {
+            if (!$app['securilex']->getFirewall()) {
+                return;
+            }
+
+            if (!($routeName = $request->get('_route')) ||
+                $app['securilex']->isGranted('prefix', $routeName)) {
+                return; // allow access
+            }
+
+            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+        });
+    }
+
+    protected function configureRoutes()
+    {
         /* Routes: Home */
         $this['home.controller'] = $this->share(function() {
             return new Home($this);
@@ -191,64 +253,7 @@ class Application extends \Silex\Application
         });
         $this->match('/{project}/{deployment}/{item}/+', 'activity.controller:create')->bind('activity_create');
         $this->match('/{project}/{deployment}/{item}/{activity}/', 'activity.controller:edit')->bind('activity_edit');
-
-        /* Init activity template classes */
-        $this->addActivityTemplateClass(new Rundeck($this));
-
-        static::$instance = $this;
-    }
-
-    public function activateSecurity()
-    {
-        if ($this->security) {
-            return;
-        }
-        $this->security = new ServiceProvider();
-        $this->firewall = new Firewall('/', 'login');
-
-        /* @var $em EntityManager */
-        $em = $this['em'];
-
-        foreach ($em->getRepository('\Renogen\Entity\AuthDriver')->findAll() as $driver) {
-            $driverName = $driver->name;
-            $className  = $driver->class;
-            if (($errors     = $className::checkParams($driver->parameters))) {
-                print_r($errors);
-                print json_encode($driver->parameters);
-                exit;
-            }
-            $driverClass = new $className($driver->parameters ?: array());
-            $this->firewall->addAuthenticationFactory($driverClass->getAuthenticationFactory(), new DoctrineMutableUserProvider($em, '\Renogen\Entity\User', 'username', array(
-                'auth' => $driverName)));
-        }
-
-        $this->security->addFirewall($this->firewall);
-        $this->security->addAuthorizationVoter(new SecuredAccessVoter());
-        $this->security->addAuthorizationVoter(\Securilex\Authorization\SubjectPrefixVoter::instance());
-        $this->register($this->security);
-
-        \Securilex\Authorization\SubjectPrefixVoter::instance()
-            ->addSubjectPrefix(array('admin', 'project_create'), 'ROLE_ADMIN');
-
-        /* Login page (not using controller because too simple) */
-        $this->get('/login/', function(Request $request) {
-            return $this['twig']->render("login.twig", array(
-                    'error' => $this['security.last_error']($request),
-            ));
-        })->bind('login');
-
-        $this->before(function(Request $request, \Silex\Application $app) {
-            if (!$app['securilex']->getFirewall()) {
-                return;
-            }
-
-            if (!($routeName = $request->get('_route')) ||
-                $app['securilex']->isGranted('prefix', $routeName)) {
-                return; // allow access
-            }
-
-            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
-        });
+        $this->match('/{project}/{deployment}/{item}/{activity}/@/{file}', 'activity.controller:download_file')->bind('activity_file_download');
     }
 
     /**
@@ -330,11 +335,22 @@ class Application extends \Silex\Application
         $tool->updateSchema($classes, true);
 
         if (count($em->getRepository('\Renogen\Entity\AuthDriver')->findAll()) == 0) {
-            $driver               = new AuthDriver('password');
-            $driver->class        = Auth\Driver\Password::class;
-            $driver->created_date = new \DateTime();
-            $driver->parameters   = array();
-            $em->persist($driver);
+            $auth_password               = new AuthDriver('password');
+            $auth_password->class        = Auth\Driver\Password::class;
+            $auth_password->created_date = new \DateTime();
+            $auth_password->parameters   = array();
+            $em->persist($auth_password);
+
+            $auth_ldap               = new AuthDriver('gems');
+            $auth_ldap->class        = Auth\Driver\LDAP::class;
+            $auth_ldap->created_date = new \DateTime();
+            $auth_ldap->parameters   = array(
+                "host" => "10.41.86.223",
+                "port" => 389,
+                "dn" => "uid={username},ou=People,o=Telekom",
+            );
+            $em->persist($auth_ldap);
+
             $em->flush();
         }
 
@@ -348,12 +364,16 @@ class Application extends \Silex\Application
 
         // if no admin then create new admin user admin/admin123
         if (!$has_admin) {
-            $newUser           = new User();
-            $newUser->username = 'admin';
-            $newUser->password = 'admin123';
-            $newUser->roles    = array('ROLE_ADMIN');
-            $newUser->auth     = 'password';
-            $authClass         = $this->getAuthClass('password');
+            $newUser            = new User();
+            $newUser->username  = 'admin';
+            $newUser->shortname = 'Administrator';
+            $newUser->password  = 'admin'.date_format(new \DateTime(), 'Ymd');
+            $newUser->roles     = array('ROLE_ADMIN');
+            $newUser->auth      = 'password';
+
+            $this->addFlashMessage("Auto-created administrator id '{$newUser->username}' with password '{$newUser->password}'");
+
+            $authClass = $this->getAuthClass('password');
             $authClass->prepareNewUser($newUser);
             $em->persist($newUser);
             $em->flush($newUser);

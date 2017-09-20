@@ -17,7 +17,7 @@ class Rundeck extends BaseClass
         $this->addParameter('group', Parameter::Config('Job Group', 'The name of Rundeck group', false));
         $this->addParameter('job', Parameter::Dropdown('List of Jobs', 'List of Rundeck jobs', true, '{jobDropdownLabel}', 'The name of Rundeck job', true));
         $this->addParameter('jobDropdownLabel', Parameter::Config('Job Dropdown Label', 'The label that will be displayed in activity create/edit form (it should describe the texts in the list of jobs above)', true));
-        $this->addParameter('options', Parameter::MultiFreeText('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
+        $this->addParameter('options', Parameter::MultiField('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 
@@ -31,7 +31,7 @@ class Rundeck extends BaseClass
             "$jobLabel" => $jobName,
         );
 
-        $optParam = $this->getParameter('options', true);
+        $optParam = $this->getParameter('options');
         $options  = $this->getOptions($activity, true);
         $optLabel = $optParam->activityLabel($activity->template->parameters);
         if (!empty($options)) {
@@ -48,21 +48,22 @@ class Rundeck extends BaseClass
 
     protected function getOptions(Activity $activity, $useLabel = false)
     {
-        $options = array();
-        foreach ($activity->template->parameters['options'] as $key => $label) {
-            if (empty($key)) {
-                continue;
-            }
+        $options  = array();
+        $optParam = $this->getParameter('options');
+        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options', $this->app);
+        foreach ($activity->template->parameters['options'] as $p) {
             if ($useLabel) {
-                if (substr($label, -1) == '*') {
-                    $label = substr($label, 0, -1);
-                }
-                $d = $label;
+                $d = $p['title'];
             } else {
-                $d = $key;
+                $d = $p['id'];
             }
-            $options[$d] = (!isset($activity->parameters['options'][$key]) ? null
-                    : $activity->parameters['options'][$key]);
+
+            if (is_array($data[$p['id']])) {
+                $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', \Renogen\Base\RenoController::entityParams($activity)
+                            + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
+            } else {
+                $options[$d] = $data[$p['id']];
+            }
         }
         return $options;
     }
@@ -101,6 +102,7 @@ class Rundeck extends BaseClass
                         'group' => $templates[$template_id]->parameters['group'],
                         'job' => $activity->parameters['job'],
                         'options' => $this->getOptions($activity),
+                        'remark' => $activity->parameters['remark'],
                     ));
                 }
             }

@@ -18,7 +18,10 @@ RUN echo 'date.timezone = Asia/Kuala_Lumpur' > /usr/local/etc/php/conf.d/timezon
     && mkdir /data \
     && rm -fr /var/www/html/data \
     && ln -s /data /var/www/html/data \
-    && chown -R www-data:www-data /var/www \
-    && chown -R www-data:www-data /data
+    && chown -R www-data:www-data /var/www
+    
+CMD chown -R www-data:www-data /data \
+    && chmod 0777 /data \
+    && apache2-foreground
 
 VOLUME ["/data"]

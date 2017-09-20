@@ -57,7 +57,7 @@
 									</div>
 								</div>
 							{% elseif parameter.type == 'multifreetext' %}
-								{% set paramval = parameter.templateDatabaseToForm(template.parameters[param]|default(null)) %} 
+								{% set paramval = parameter.templateDatabaseToForm(template.parameters[param]|default([])) %} 
 								<p>{{parameter.templateDescription}}</p>
 								<div class="two fields">
 									<div class="ui field">
@@ -69,6 +69,47 @@
 										<textarea name="parameters[{{param}}][labels]" rows="3">{{paramval.labels|default(null)}}</textarea>
 									</div>
 								</div>
+							{% elseif parameter.type == 'multifield' %}
+								{% set paramval = parameter.templateDatabaseToForm(template.parameters[param]|default([])) %}
+								<table class="ui celled striped compact table">
+									<thead>
+										<tr>
+											<th>Id</th>
+											<th>Label</th>
+											<th>Type</th>
+											<th>Details</th>
+											<th>Required</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for i in range(0, paramval|length + 2) %}
+											<tr class="ui top aligned">
+												<td>
+													<input type="text" name="parameters[{{param}}][{{i}}][id]" value="{{paramval[i].id|default(null)}}" />
+												</td>
+												<td>
+													<input type="text" name="parameters[{{param}}][{{i}}][title]" value="{{paramval[i].title|default(null)}}" />
+												</td>
+												<td>
+													<select name="parameters[{{param}}][{{i}}][type]" class="ui fluid dropdown">
+														{% set types = ['freetext','dropdown','file'] %}
+														<option value="">- Select field type -</option>
+														{% for type in types %}
+															<option value="{{type}}" {% if type == paramval[i].type|default(null) %}selected="selected"{% endif %}>{{type}}</option>
+														{% endfor %}
+													</select>
+												</td>
+												<td>
+													<textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type=dropdown">{{paramval[i].details|default(null)}}</textarea>
+												</td>
+												<td class="ui center aligned collapsing">
+													<input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{i}}][required]" value="1" {% if paramval[i].required|default(null) %}checked="checked"{% endif %} />
+												</td>
+											</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+								<em>Note: to add more entries, save first and edit later</em>
 							{% else %}
 								<p>No configuration required</p>
 							{% endif %}

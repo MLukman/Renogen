@@ -2,6 +2,7 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Renogen\Base\ApproveableEntity;
 
 /**
@@ -44,6 +45,12 @@ class Activity extends ApproveableEntity
     public $parameters;
 
     /**
+     * @OneToMany(targetEntity="ActivityFile", mappedBy="activity", indexBy="stored_filename", orphanRemoval=true, cascade={"persist", "remove"})
+     * @var ArrayCollection
+     */
+    public $files = null;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -53,7 +60,8 @@ class Activity extends ApproveableEntity
 
     public function __construct(Item $item)
     {
-        $this->item = $item;
+        $this->item  = $item;
+        $this->files = new ArrayCollection();
     }
 
     public function displayTitle()

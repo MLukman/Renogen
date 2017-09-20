@@ -4,7 +4,6 @@ namespace Renogen\Controller;
 
 use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
 class Runbook extends RenoController
