@@ -2,26 +2,27 @@
 	<thead>
 		<tr>
 			<th class="three wide">Project</th>
-			<th class="three wide">Group</th>
-			<th class="three wide">Job</th>
-			<th class="four wide">Options</th>
-			<th class="three wide">Remark</th>
+			<th class="four wide">Job</th>
+			<th>Options</th>
+			<th class="four wide">Remark</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for row in data %}
 			<tr>
-				<td class="ui top aligned collapsing">{{row.project}}</td>
-				<td class="ui top aligned collapsing">{{row.group}}</td>
-				<td class="ui top aligned">{{row.job}}</td>
-				<td>
+				<td class="top aligned">{{row.project}}</td>
+				<td class="top aligned">
+					{% if row.group %}<small>{{row.group}} &raquo;</small><br />{% endif %}
+					<strong>{{row.job}}</strong>
+				</td>
+				<td class="top aligned">
 					{% if row.options %}
 						{{ r.arrayTable(row.options) }}
 					{% else %}
 						Not required
 					{% endif %}
 				</td>
-				<td>
+				<td class="top aligned">
 					{{row.remark|default('-')|nl2br}}
 				</td>
 			</tr>

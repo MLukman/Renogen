@@ -21,7 +21,7 @@
 				<label class="ui top attached large label">Upload File</label>
 				<input type="file" name="file" />
 				{% if is_existing %}
-					<p>Existing file: <strong>{{attachment.filename}}</strong> with size {{attachment.filesize}} bytes</p>
+					<p>Existing file: <strong>{{attachment.filename}}</strong> of type <strong>{{attachment.mime_type}}</strong> with size <strong>{{attachment.filesize}}</strong> bytes</p>
 				{% endif %}
 				{{ m.fieldError(errors|default([]), 'file') }}
 			</div>

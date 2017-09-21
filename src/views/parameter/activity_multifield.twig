@@ -1,0 +1,40 @@
+{% if template.parameters[param]|length > 0 %}
+	{% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,app) %} 
+	<div class="ui form">
+		{% for p in template.parameters[param] %}
+			{% set pid='parameters-' ~ param ~ '-' ~ p.id %}
+			<div class="{% if p.required %}required {% endif %}field">
+				<label for="{{pid}}">{{p.title}}</label>
+				{% if p.type == 'dropdown' %}
+					<select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
+						<option value="">-- Please select --</option>
+						{% for v in p.details|split('\n') %}
+							<option value="{{v|trim}}" {% if v|trim == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{v|trim}}</option>
+						{% endfor %}
+					</select>
+				{% elseif p.type == 'multiselect' %}
+					<div class="grouped fields">
+						{% for i,v in p.details|split('\n') %}
+							<div class="field">
+								<div class="ui checkbox">
+									<input type="checkbox" value="{{v}}" name="parameters[{{param}}][{{p.id}}][]" {% if v in paramval[p.id]|default([]) %}checked="checked"{% endif %} />
+									<label>{{v}}</label>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% elseif p.type == 'file' %}
+					<input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
+					{% if paramval[p.id]|default(null) %}
+						<p>Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes</p>
+					{% endif %}
+				{% else %}
+					<input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+				{% endif %}
+				{{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ p.id) }}
+			</div>
+		{% endfor %}
+	</div>
+{% else %}
+	<p><em>-- Not required --</em></p>
+{% endif %}

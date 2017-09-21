@@ -42,7 +42,7 @@ class Template extends Entity
     /**
      * @Column(type="integer")
      */
-    public $priority = 1;
+    public $priority;
 
     /**
      * @Column(type="json_array", nullable=true)

@@ -57,6 +57,7 @@ class Project extends Entity implements SecuredAccessInterface
 
     /**
      * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id", orphanRemoval=true)
+     * @OrderBy({"priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection
      */
     public $templates = null;

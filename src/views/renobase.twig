@@ -59,14 +59,16 @@
 	<table class="ui compact {% if child %}small{% endif %} table">
 		{% for key,val in arr %}
 			<tr>
-				<td class="top aligned right aligned collapsing">
-					{% if not child %}
-						<strong>{{key}}</strong>
-					{% else %}
-						{{key}}
-					{% endif %}
-				</td>
-				<td class="ui top aligned">
+				{% if not (key matches '/^[0-9]+$/') %}
+					<td class="top aligned right aligned collapsing">
+						{% if not child %}
+							<strong>{{key}}</strong>
+						{% else %}
+							{{key}}
+						{% endif %}
+					</td>
+				{% endif %}
+				<td class="ui top aligned" colspan="2">
 					{% if val is empty %}
 						{{'<blank>'|trim}}
 					{% elseif val is iterable %}

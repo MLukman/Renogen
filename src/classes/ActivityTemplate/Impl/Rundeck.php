@@ -4,12 +4,15 @@ namespace Renogen\ActivityTemplate\Impl;
 
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
+use Renogen\Application;
+use Renogen\Base\RenoController;
 use Renogen\Entity\Activity;
+use Renogen\Runbook\Group;
 
 class Rundeck extends BaseClass
 {
 
-    public function __construct(\Renogen\Application $app)
+    public function __construct(Application $app)
     {
         parent::__construct($app);
         $this->addParameter('url', Parameter::Config('Rundeck URL', 'The URL of the Rundeck portal', true));
@@ -17,7 +20,7 @@ class Rundeck extends BaseClass
         $this->addParameter('group', Parameter::Config('Job Group', 'The name of Rundeck group', false));
         $this->addParameter('job', Parameter::Dropdown('List of Jobs', 'List of Rundeck jobs', true, '{jobDropdownLabel}', 'The name of Rundeck job', true));
         $this->addParameter('jobDropdownLabel', Parameter::Config('Job Dropdown Label', 'The label that will be displayed in activity create/edit form (it should describe the texts in the list of jobs above)', true));
-        $this->addParameter('options', Parameter::MultiField('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
+        $this->addParameter('options', Parameter\MultiField::create('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 
@@ -58,8 +61,8 @@ class Rundeck extends BaseClass
                 $d = $p['id'];
             }
 
-            if (is_array($data[$p['id']])) {
-                $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', \Renogen\Base\RenoController::entityParams($activity)
+            if (is_array($data[$p['id']]) && isset($data[$p['id']]['fileid'])) {
+                $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', RenoController::entityParams($activity)
                             + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
             } else {
                 $options[$d] = $data[$p['id']];
@@ -90,7 +93,7 @@ class Rundeck extends BaseClass
 
         $groups = array();
         foreach ($activities_by_template as $template_id => $activities) {
-            $group = new \Renogen\Runbook\Group($templates[$template_id]->title);
+            $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Login to Rundeck @ ".$templates[$template_id]->parameters['url']." and run the following jobs:");
             $group->setTemplate('runbook/rundeck.twig');
             foreach ($activities as $activity) {
