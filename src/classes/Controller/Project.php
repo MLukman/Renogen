@@ -44,13 +44,13 @@ class Project extends RenoController
         }
         $this->addEntityCrumb($project);
         $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));
-        return $this->edit_or_create($project, $request->request, array('project' => $project));
+        return $this->edit_or_create($project, $request->request);
     }
 
     protected function edit_or_create(\Renogen\Entity\Project $project,
-                                      ParameterBag $post,
-                                      array $context = array())
+                                      ParameterBag $post)
     {
+        $context = array();
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
                 $project->delete($this->app['em']);
@@ -58,7 +58,6 @@ class Project extends RenoController
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->redirect('home');
             }
-            $context['project']  = $project;
             $categories          = trim($post->get('categories'));
             $project->categories = ($categories ?
                 explode("\n", str_replace("\r\n", "\n", $categories)) : null);
@@ -69,6 +68,7 @@ class Project extends RenoController
                 $context['errors'] = $project->errors;
             }
         }
+        $context['project'] = $project;
         return $this->render('project_form', $context);
     }
 }

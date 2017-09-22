@@ -27,7 +27,7 @@ class Deployment extends Entity
     public $project;
 
     /**
-     * @Column(type="string", length=16)
+     * @Column(type="string", length=40)
      */
     public $name;
 
@@ -42,7 +42,7 @@ class Deployment extends Entity
     public $description;
 
     /**
-     * @Column(type="date", nullable=true)
+     * @Column(type="datetime")
      */
     public $execute_date;
 
@@ -57,10 +57,10 @@ class Deployment extends Entity
      * @var array
      */
     protected $validation_rules = array(
-        'name' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 16,
+        'name' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 40,
             'preg_match' => '/^[0-9a-zA-Z_]+$/', 'invalidvalues' => array('templates')),
-        'title' => array('trim' => 1, 'required' => 1, 'unique' => 'project', 'maxlen' => 100),
-        'execute_date' => array('required' => 1),
+        'title' => array('trim' => 1, 'required' => 1, 'maxlen' => 100),
+        'execute_date' => array('required' => 1, 'unique' => 'project'),
     );
 
     public function __construct(Project $project)
@@ -71,7 +71,7 @@ class Deployment extends Entity
 
     public function displayTitle()
     {
-        return $this->execute_date->format('d/m/Y').' - '.$this->title;
+        return $this->execute_date->format('d/m/Y h:i A').' - '.$this->title;
     }
 
     public function generateRunbooks()

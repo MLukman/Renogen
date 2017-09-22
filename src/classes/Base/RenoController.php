@@ -230,8 +230,11 @@ abstract class RenoController extends Controller
                 continue;
             }
             if (substr($field, -5) == '_date') {
-                $raw_date       = $data->get($field);
-                $entity->$field = (!$raw_date ? null : \DateTime::createFromFormat('d/m/Y', $raw_date));
+                $raw_date = $data->get($field);
+                if (strlen($raw_date) <= 10) {
+                    $raw_date .= ' 00:00 AM';
+                }
+                $entity->$field = (!$raw_date ? null : \DateTime::createFromFormat('d/m/Y h:i A', $raw_date));
             } elseif (substr($field, -3) == '_by') {
                 $entity->$field = $this->queryOne('\Renogen\Entity\User', $data->get($field));
             } else {

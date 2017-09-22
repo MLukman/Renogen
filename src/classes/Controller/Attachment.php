@@ -53,7 +53,8 @@ class Attachment extends RenoController
     protected function edit_or_create(\Renogen\Entity\Attachment $attachment,
                                       Request $request)
     {
-        $post = $request->request;
+        $post    = $request->request;
+        $context = array('errors' => array());
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
@@ -63,33 +64,28 @@ class Attachment extends RenoController
                     return $this->redirect('item_view', $this->entityParams($attachment->item));
 
                 default:
-                    if ($this->prepareValidateEntity($attachment, static::entityFields, $post)) {
-                        $file = $request->files->get('file');
-                        if (!$file && !$attachment->filename) {
-                            $context['errors'] = $attachment->errors + array(
-                                'file' => array('Required'),
+                    $file = $request->files->get('file');
+                    if ($file) {
+                        $errors = array();
+                        $attachment->processUploadedFile($file, $errors);
+                        if (!empty($errors)) {
+                            $context['errors'] = $context['errors'] + array(
+                                'file' => $errors,
                             );
-                        } else {
-                            if ($file) {
-                                $errors = array();
-                                $attachment->processUploadedFile($file, $errors);
-                                if (empty($errors)) {
-                                    $this->saveEntity($attachment, static::entityFields, $post);
-                                    $this->app->addFlashMessage("Attachment has been successfully uploaded/saved");
-                                    return $this->redirect('item_view', $this->entityParams($attachment->item));
-                                } else {
-                                    $context['errors'] = array(
-                                        'file' => $errors,
-                                    );
-                                }
-                            } else {
-                                $this->saveEntity($attachment, static::entityFields, $post);
-                                $this->app->addFlashMessage("Attachment has been successfully update");
-                                return $this->redirect('item_view', $this->entityParams($attachment->item));
-                            }
                         }
+                    } elseif (!$attachment->filename) {
+                        $context['errors'] = $context['errors'] + array(
+                            'file' => array('Required'),
+                        );
+                    }
+                    if ($this->prepareValidateEntity($attachment, static::entityFields, $post)
+                        && empty($context['errors'])) {
+                        $this->saveEntity($attachment, static::entityFields, $post);
+                        $this->app->addFlashMessage("Attachment has been successfully saved");
+                        return $this->redirect('item_view', $this->entityParams($attachment->item));
                     } else {
-                        $context['errors'] = $attachment->errors;
+                        $context['errors'] = $context['errors'] + $attachment->errors
+                            + array('file' => array('Your file is fine but you need to re-upload your file since other field(s) failed validations'));
                     }
             }
         }

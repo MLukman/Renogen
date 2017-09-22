@@ -90,7 +90,7 @@ class Item extends RenoController
     protected function edit_or_create(\Renogen\Entity\Item $item,
                                       ParameterBag $post)
     {
-        $context = array('item' => $item);
+        $context = array();
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Move':
@@ -134,6 +134,7 @@ class Item extends RenoController
                     }
             }
         }
+        $context['item'] = $item;
         return $this->render('item_form', $context);
     }
 

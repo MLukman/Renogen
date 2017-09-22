@@ -21,22 +21,22 @@
 		<div class="ui form">
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Name</label>
-				<input placeholder="Project name (max 16 alphanumeric and underscore characters only)" type="text" name="name" value="{{app.request.request.get('name')|default(project.name|default(null))}}" {% if is_existing %}disabled="disabled"{% endif %} />
+				<input placeholder="Project name (max 16 alphanumeric and underscore characters only)" type="text" name="name" value="{{project.name|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
 				{{ m.fieldError(errors|default([]), 'name') }}
 			</div>
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Title</label>
-				<input placeholder="User friendly project title (max 100 characters)" type="text" name="title" value="{{app.request.request.get('title')|default(project.title|default(null))}}" />
+				<input placeholder="User friendly project title (max 100 characters)" type="text" name="title" value="{{project.title|default(null)}}" />
 				{{ m.fieldError(errors|default([]), 'title') }}
 			</div>
 			<div class="ui field basic segment">
 				<label class="ui top attached large label">Description</label>
-				<textarea name="description" rows="3">{{app.request.request.get('description')|default(project.description|default(null))}}</textarea>
+				<textarea name="description" rows="3">{{project.description|default(null)}}</textarea>
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Deployment Item Categories</label>
-				<textarea name="categories">{{app.request.request.get('categories')|default(project.categories|default([])|join("\n"))}}</textarea>
+				<textarea name="categories">{{project.categories|default([])|join("\n")}}</textarea>
 				{{ m.fieldError(errors|default([]), 'categories') }}
 			</div>
 			<div class="ui field">

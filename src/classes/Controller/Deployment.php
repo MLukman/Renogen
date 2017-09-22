@@ -45,17 +45,16 @@ class Deployment extends RenoController
             $this->checkAccess('approval', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addEditCrumb($this->app->path('deployment_edit', $this->entityParams($deployment_obj)));
-            return $this->edit_or_create($deployment_obj, $request->request, array(
-                    'deployment' => $deployment_obj));
+            return $this->edit_or_create($deployment_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Deployment not found', $ex->getMessage());
         }
     }
 
     protected function edit_or_create(DeploymentEntity $deployment,
-                                      ParameterBag $post,
-                                      array $context = array())
+                                      ParameterBag $post)
     {
+        $context = array();
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
                 $deployment->delete($this->app['em']);
@@ -65,7 +64,6 @@ class Deployment extends RenoController
                         'project' => $deployment->project->name,
                 ));
             }
-            $context['deployment'] = $deployment;
             if ($this->saveEntity($deployment, static::entityFields, $post)) {
                 $this->app->addFlashMessage("Deployment '$deployment->title' has been successfully saved");
                 return $this->redirect('deployment_view', $this->entityParams($deployment));
@@ -73,6 +71,7 @@ class Deployment extends RenoController
                 $context['errors'] = $deployment->errors;
             }
         }
+        $context['deployment'] = $deployment;
         $this->addCSS("ui/semantic2/library/calendar.css");
         $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);

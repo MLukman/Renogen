@@ -9,16 +9,18 @@
 					<select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
 						<option value="">-- Please select --</option>
 						{% for v in p.details|split('\n') %}
-							<option value="{{v|trim}}" {% if v|trim == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{v|trim}}</option>
+							{% set val = v|trim %}
+							<option value="{{val}}" {% if val == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{val}}</option>
 						{% endfor %}
 					</select>
 				{% elseif p.type == 'multiselect' %}
 					<div class="grouped fields">
 						{% for i,v in p.details|split('\n') %}
+							{% set val = v|trim %}
 							<div class="field">
 								<div class="ui checkbox">
-									<input type="checkbox" value="{{v}}" name="parameters[{{param}}][{{p.id}}][]" {% if v in paramval[p.id]|default([]) %}checked="checked"{% endif %} />
-									<label>{{v}}</label>
+									<input type="checkbox" value="{{val}}" name="parameters[{{param}}][{{p.id}}][]" {% if val in paramval[p.id]|default([]) %}checked="checked"{% endif %} />
+									<label>{{val}}</label>
 								</div>
 							</div>
 						{% endfor %}

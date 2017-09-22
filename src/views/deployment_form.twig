@@ -16,22 +16,22 @@
 		<div class="ui form">
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Name</label>
-				<input placeholder="Deployment name (max 16 alphanumeric and underscore characters only)" type="text" name="name" value="{{app.request.request.get('name')|default(deployment.name|default(null))}}" />
+				<input placeholder="Deployment name (max 40 alphanumeric and underscore characters only)" type="text" name="name" value="{{deployment.name|default(null)}}" />
 				{{ m.fieldError(errors|default([]), 'name') }}
 			</div>
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Deployment Date</label>
-				{{ m.dateField('execute_date','execute_date',(deployment.execute_date|default(false) ? deployment.execute_date|date('d/m/Y') : null),'Deployment date') }}
+				{{ m.dateField('execute_date','execute_date',(deployment.execute_date|default(false) ? deployment.execute_date|date('d/m/Y h:i A') : null),'Deployment date', true) }}
 				{{ m.fieldError(errors|default([]), 'execute_date') }}
 			</div>
 			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Title</label>
-				<input placeholder="User friendly deployment title (max 100 characters)" type="text" name="title" value="{{app.request.request.get('title')|default(deployment.title|default(null))}}" />
+				<input placeholder="User friendly deployment title (max 100 characters)" type="text" name="title" value="{{deployment.title|default(null)}}" />
 				{{ m.fieldError(errors|default([]), 'title') }}
 			</div>
 			<div class="ui field basic segment">
 				<label class="ui top attached large label">Description</label>
-				<textarea name="description" rows="3">{{app.request.request.get('description')|default(deployment.description|default(null))}}</textarea>
+				<textarea name="description" rows="3">{{deployment.description|default(null)}}</textarea>
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
 			<div class="ui field">

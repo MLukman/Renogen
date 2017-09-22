@@ -21,19 +21,39 @@
 				if (!text) {
 					return null;
 				}
-				var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
-				var dateArray = reggie.exec(text);
+				var dateArray = null;
+				switch (text.length) {
+					case 19:
+						var reggie = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}) (\w{2})/;
+						dateArray = reggie.exec(text);
+						if (dateArray[6] == 'PM') {
+							dateArray[4] = parseInt(dateArray[4]) + 12 + "";
+						} else if (dateArray[4] == 12) {
+							dateArray[4] = "00";
+						}
+						break;
+
+					case 10:
+						var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
+						dateArray = reggie.exec(text);
+						dateArray[4] = "00";
+						dateArray[5] = "00";
+						break;
+
+				}
 				var dateObject = new Date(
 						(+dateArray[3]),
 						(+dateArray[2]) - 1, // Careful, month starts at 0!
-						(+dateArray[1])
+						(+dateArray[1]),
+						(+dateArray[4]),
+						(+dateArray[5])
 						);
 				return dateObject;
 			}
-			function dateFieldConfig(minDate) {
+			function dateFieldConfig(minDate, datetime_mode) {
 				return {
-					type: 'date',
-					minDate: (minDate ? minDate : new Date()),
+					type: datetime_mode ? 'datetime' : 'date',
+					minDate: minDate ? new Date(Math.min(minDate, new Date())) : new Date(),
 					formatter: {
 						date: function (date, settings) {
 							if (!date)
@@ -42,6 +62,23 @@
 							var month = date.getMonth() + 1;
 							var year = date.getFullYear();
 							return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
+						},
+						time: function (date, settings) {
+							if (!date)
+								return '';
+							var hour = date.getHours();
+							var ampm = '';
+							if (hour > 12) {
+								hour -= 12;
+								ampm = 'PM';
+							} else {
+								ampm = 'AM';
+								if (hour == 0) {
+									hour = 12;
+								}
+							}
+							var minute = date.getMinutes();
+							return ("00" + hour).slice(-2) + ':' + ("00" + minute).slice(-2) + ' ' + ampm;
 						}
 					}
 					,
@@ -187,7 +224,7 @@
 	{% endfor %}{% endif %}
 {% endmacro %}
 
-{% macro dateField(id, name, value, placeholder) %}
+{% macro dateField(id, name, value, placeholder, datetime_mode) %}
 	<div class="ui calendar" id="{{id}}">
 		{% if value %}Current value = {{value}}{% endif %}
 		<div class="ui input left icon action">
@@ -199,7 +236,7 @@
 	</div>
 	<script>
 		$(function () {
-			$('#{{id}}').calendar(dateFieldConfig(dateParser("{{value}}")));
+			$('#{{id}}').calendar(dateFieldConfig(dateParser("{{value}}"), {{datetime_mode ? 1:0}}));
 		});
 	</script>
 {% endmacro %}

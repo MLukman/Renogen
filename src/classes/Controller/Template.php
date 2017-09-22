@@ -60,10 +60,10 @@ class Template extends RenoController
     }
 
     protected function edit_or_create(\Renogen\Entity\Template $template,
-                                      ParameterBag $post,
-                                      array $context = array())
+                                      ParameterBag $post)
     {
-        if (($class = ($template->class ?: $post->get('class')))) {
+        $context = array();
+        if (($class   = ($template->class ?: $post->get('class')))) {
             $templateClass = $this->app->getActivityTemplateClass($class);
             if ($templateClass) {
                 $context['class']          = $class;
