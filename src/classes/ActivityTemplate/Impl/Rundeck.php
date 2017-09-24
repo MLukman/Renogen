@@ -61,11 +61,15 @@ class Rundeck extends BaseClass
                 $d = $p['id'];
             }
 
-            if (is_array($data[$p['id']]) && isset($data[$p['id']]['fileid'])) {
-                $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', RenoController::entityParams($activity)
-                            + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
+            if (isset($data[$p['id']])) {
+                if (is_array($data[$p['id']]) && isset($data[$p['id']]['fileid'])) {
+                    $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', RenoController::entityParams($activity)
+                                + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
+                } else {
+                    $options[$d] = $data[$p['id']];
+                }
             } else {
-                $options[$d] = $data[$p['id']];
+                $options[$d] = null;
             }
         }
         return $options;

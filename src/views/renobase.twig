@@ -54,6 +54,13 @@
 	</span>
 {% endmacro %}
 
+{% macro itemModulesLabel(item) %}
+	<span class="ui grey label">
+		<i class="ui plug icon"></i>
+		{{ item.modules|join(' + ') }}
+	</span>
+{% endmacro %}
+
 {% macro arrayTable(arr, child) %}
 	{% import _self as r %}	
 	<table class="ui compact {% if child %}small{% endif %} table">

@@ -74,6 +74,26 @@ class Deployment extends Entity
         return $this->execute_date->format('d/m/Y h:i A').' - '.$this->title;
     }
 
+    /**
+     *
+     * @return ArrayCollection
+     */
+    public function getApprovedItems()
+    {
+        return $this->items->matching(Criteria::create()->where(
+                    new Comparison('approved_date', '<>', null)));
+    }
+
+    /**
+     *
+     * @return ArrayCollection
+     */
+    public function getUnapprovedItems()
+    {
+        return $this->items->matching(Criteria::create()->where(
+                    new Comparison('approved_date', '=', null)));
+    }
+
     public function generateRunbooks()
     {
         $activities = array(
@@ -81,8 +101,7 @@ class Deployment extends Entity
             0 => array(),
             1 => array(),
         );
-        foreach ($this->items->matching(Criteria::create()->where(
-                new Comparison('approved_date', '<>', null))) as $item) {
+        foreach ($this->getApprovedItems() as $item) {
             foreach ($item->activities as $activity) {
                 $templateClass = $activity->template->class;
                 $array         = &$activities[$activity->stage ?: 0];

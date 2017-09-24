@@ -114,6 +114,7 @@ class MultiField extends Parameter
                     $activity_file = new ActivityFile($activity);
                 }
 
+                $post  = $request->request->get('parameters');
                 $files = $request->files->get('parameters');
                 if (isset($files[$key]) &&
                     isset($files[$key][$pid]) &&
@@ -122,6 +123,12 @@ class MultiField extends Parameter
                     if (!$activity_file->id) {
                         $activity->files->add($activity_file);
                     }
+                } elseif (isset($post[$key]) &&
+                    isset($post[$key][$pid.'_delete']) &&
+                    $post[$key][$pid.'_delete']) {
+                    $input[$key][$pid] = null;
+                    $activity->files->removeElement($activity_file);
+                    continue;
                 }
                 $input[$key][$pid] = $activity_file->stored_filename;
             }

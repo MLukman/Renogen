@@ -58,9 +58,10 @@ class Project extends RenoController
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->redirect('home');
             }
-            $categories          = trim($post->get('categories'));
-            $project->categories = ($categories ?
-                explode("\n", str_replace("\r\n", "\n", $categories)) : null);
+            $project->categories = (($categories          = trim($post->get('categories')))
+                    ? explode("\n", str_replace("\r\n", "\n", $categories)) : null);
+            $project->modules    = (($modules             = trim($post->get('modules')))
+                    ? explode("\n", str_replace("\r\n", "\n", $modules)) : null);
             if ($this->saveEntity($project, static::entityFields, $post)) {
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");
                 return $this->redirect('project_view', $this->entityParams($project));

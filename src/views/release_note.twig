@@ -1,0 +1,49 @@
+{% extends "renobase.twig" %}
+
+{% block content %}
+	<h1 class="ui dividing header">
+		<small>{{deployment.project.title}} Deployment Release Note &raquo;</small><br />
+		<span>
+			{{deployment.displayTitle}}
+		</span>
+	</h1>
+
+	{% if deployment.description %}
+		<h2>{{deployment.description}}</h2>
+	{% endif %}
+
+	<div class="ui basic segment">
+		{% for category,catitems in items %}
+			{% if catitems %}
+				<h3 class="ui dividing header">{{category}}</h3>
+				<ol>
+					{% for item in catitems %}
+						<li>
+							<strong>{{item.displayTitle()}}</strong>
+							<div class="ui right floated">
+								<p>
+									({{item.modules|join(' + ')}})
+									{{item.description}}
+								</p>
+							</div>
+						</li>
+					{% endfor %}
+				</ol>
+			{% endif %}
+		{% endfor %}
+	</div>
+
+	<div class="ui vertical footer segment">
+		<p><em>Auto-generated on {{'now'|date('d/m/Y h:i A')}}</em></p>
+		{% set unapproveds = deployment.getUnapprovedItems() %}
+		{% if unapproveds.count() > 0 %}
+			<p><em>Note: there are still unapproved deployment items as follow:</em></p>
+			<ul>
+				{% for item in unapproveds %}
+					<li>{{item.displayTitle()}}
+					</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	</div>
+{% endblock %}

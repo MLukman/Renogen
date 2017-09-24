@@ -39,6 +39,11 @@ class Item extends ApproveableEntity
     public $category;
 
     /**
+     * @Column(type="json_array", nullable=true)
+     */
+    public $modules = array();
+
+    /**
      * @Column(type="text", nullable=true)
      */
     public $description;
@@ -72,6 +77,7 @@ class Item extends ApproveableEntity
         'refnum' => array('trim' => 1, 'maxlen' => 16),
         'title' => array('trim' => 1, 'required' => 1, 'maxlen' => 100, 'unique' => 'deployment'),
         'category' => array('required' => 1),
+        'modules' => array('required' => 1),
     );
 
     public function __construct(Deployment $deployment)

@@ -217,12 +217,13 @@ class Application extends \Silex\Application
         $this->match('/{project}/+', 'deployment.controller:create')->bind('deployment_create');
         $this->match('/{project}/{deployment}/', 'deployment.controller:view')->bind('deployment_view');
         $this->match('/{project}/{deployment}/!', 'deployment.controller:edit')->bind('deployment_edit');
+        $this->match('/{project}/{deployment}/*', 'deployment.controller:release_note')->bind('release_note');
 
         /* Routes: Run Book */
         $this['runbook.controller'] = $this->share(function() {
             return new Runbook($this);
         });
-        $this->match('/{project}/{deployment}/*', 'runbook.controller:view')->bind('runbook_view');
+        $this->match('/{project}/{deployment}/**', 'runbook.controller:view')->bind('runbook_view');
 
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {

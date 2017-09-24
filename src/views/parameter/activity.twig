@@ -3,7 +3,7 @@
 	<input id="parameters-{{param}}" type="text" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" value="{{paramval}}" />
 	{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 {% elseif parameter.type == 'multilinetext' %}
-	<textarea id="parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}">{{paramval}}</textarea>
+	<textarea id="parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" rows="3">{{paramval}}</textarea>
 	{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 {% elseif parameter.type == 'dropdown' %}
 	{% if template.parameters[param]|length == 1 and parameter.activityRequired %}
@@ -21,6 +21,7 @@
 	{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 {% elseif parameter.type == 'multiselect' %}
 	<div class="grouped fields">
+		<input type="hidden" name="parameters[{{param}}]" value="" />
 		{% for v,t in template.parameters[param] %}
 			<div class="field">
 				<div class="ui checkbox">

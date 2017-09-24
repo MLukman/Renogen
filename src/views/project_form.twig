@@ -35,8 +35,13 @@
 				{{ m.fieldError(errors|default([]), 'description') }}
 			</div>
 			<div class="ui required field basic segment">
+				<label class="ui top attached large label">Modules</label>
+				<textarea name="modules" placeholder="List of modules (e.g. web, backend, mobile etc)">{{project.modules|default([])|join("\n")}}</textarea>
+				{{ m.fieldError(errors|default([]), 'modules') }}
+			</div>
+			<div class="ui required field basic segment">
 				<label class="ui top attached large label">Deployment Item Categories</label>
-				<textarea name="categories">{{project.categories|default([])|join("\n")}}</textarea>
+				<textarea name="categories" placeholder="List of deployment item categories">{{project.categories|default([])|join("\n")}}</textarea>
 				{{ m.fieldError(errors|default([]), 'categories') }}
 			</div>
 			<div class="ui field">

@@ -91,12 +91,12 @@
 			}
 
 			$(function () {
+				$('#topfiller').css('height', $('#topbar').outerHeight(true));
 				$('table.sortable').tablesort();
 				$('.ui.checkbox').checkbox();
 				$('.ui.dropdown').dropdown({
 					fullTextSearch: true
 				});
-				$('body').css('padding-top', $('#topbar').outerHeight(true));
 				setTimeout(function () {
 					$('.flash.message').fadeOut(1000);
 				}, 3000);
@@ -120,11 +120,19 @@
 				border-radius: 0px;
 				box-shadow: inset 0px -3px 0px rgba(191,191,191,0.5);
 			}
+
+			@media print
+			{    
+				.no-print, .no-print *
+				{
+					display: none !important;
+				}
+			}
 		</style>
 	</head>
 	<body>
 
-		<div id="topbar">
+		<div id="topbar" class="no-print">
 			<div id="topmenu" class="ui menu inverted blue">
 
 				<div class="ui title item">
@@ -178,6 +186,8 @@
 			{% block belowtopmenu %}
 			{% endblock %}
 		</div>
+
+		<div id="topfiller" class="no-print"></div>
 
 		{% for message in app.session.flashbag.get('message') %}
 			<div class="ui floating notice flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">{{message}}</div>

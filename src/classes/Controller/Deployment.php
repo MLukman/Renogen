@@ -76,4 +76,26 @@ class Deployment extends RenoController
         $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);
     }
+
+    public function release_note(Request $request, $project, $deployment)
+    {
+        $deployment_obj = $this->fetchDeployment($project, $deployment);
+        $this->addEntityCrumb($deployment_obj);
+        $this->addCrumb('Release Note', $this->app->path('release_note', $this->entityParams($deployment_obj)), 'ordered list');
+        $context        = array(
+            'deployment' => $deployment_obj,
+            'items' => array(),
+        );
+
+        foreach ($deployment_obj->project->categories as $category) {
+            $context['items'][$category] = array();
+        }
+
+        foreach ($deployment_obj->getApprovedItems() as $item) {
+            /* @var $item \Renogen\Entity\Item  */
+            $context['items'][$item->category][] = $item;
+        }
+
+        return $this->render('release_note', $context);
+    }
 }

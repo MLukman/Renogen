@@ -7,7 +7,7 @@
 			<i class="ui cube icon"></i>{{project.title}}
 		</span>
 		{% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
-			<a class="ui right floated button" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
+			<a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
 		{% endif %}
 	</h1>
 
@@ -16,7 +16,7 @@
 	<h2>
 		Deployments
 		{% if app.securilex.isGranted('approval',project) %}
-			<a class="ui right floated primary button" href="{{app.path('deployment_create',controller.entityParams(project))}}">
+			<a class="ui right floated primary button no-print" href="{{app.path('deployment_create',controller.entityParams(project))}}">
 				<i class="ui plus icon"></i>Create deployment
 			</a>
 		{% endif %}

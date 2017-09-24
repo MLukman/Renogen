@@ -15,6 +15,7 @@
 					</select>
 				{% elseif p.type == 'multiselect' %}
 					<div class="grouped fields">
+						<input type="hidden" name="parameters[{{param}}][{{p.id}}]" value="" />
 						{% for i,v in p.details|split('\n') %}
 							{% set val = v|trim %}
 							<div class="field">
@@ -26,10 +27,20 @@
 						{% endfor %}
 					</div>
 				{% elseif p.type == 'file' %}
-					<input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
-					{% if paramval[p.id]|default(null) %}
-						<p>Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes</p>
-					{% endif %}
+					<div class="ui basic secondary segment">
+						<input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
+						{% if paramval[p.id]|default(null) %}
+							<div>
+								Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes
+							</div>
+							{% if not p.required %}
+								<div class="ui checkbox">
+									<label>Tick to remove the file</label> 
+									<input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{p.id}}_delete]" value="1" />
+								</div>
+							{% endif %}
+						{% endif %}
+					</div>
 				{% else %}
 					<input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
 				{% endif %}

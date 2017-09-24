@@ -6,9 +6,10 @@
 			<i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
 		</span>
 		{% if app.securilex.isGranted('approval',deployment.project) %}
-			<a class="ui right floated button" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
+			<a class="ui right floated button no-print" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
 		{% endif %}
-		<a class="ui right floated primary button" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui eye icon"></i>View Run Book</a>
+		<a class="ui right floated primary button no-print" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui checkmark box icon"></i>Run Book</a>
+		<a class="ui right floated primary button no-print" href="{{app.path('release_note',controller.entityParams(deployment))}}"><i class="ui ordered list icon"></i>Release Note</a>
 	</h1>
 
 	<p>{{deployment.description|nl2br}}</p>
@@ -16,7 +17,7 @@
 	<h2 class="ui header">
 		Deployment Items
 		{% if app.securilex.isGranted(['entry','approval'],deployment.project) %}
-			<a class="ui right floated primary button" href="{{app.path('item_create',controller.entityParams(deployment))}}">
+			<a class="ui right floated primary button no-print" href="{{app.path('item_create',controller.entityParams(deployment))}}">
 				<i class="ui plus icon"></i>Add deployment item
 			</a>
 		{% endif %}
@@ -28,6 +29,7 @@
 				<th class="ui collapsing">Reference #</th>
 				<th>Title</th>
 				<th class="ui collapsing">Category</th>
+				<th class="ui collapsing">Modules</th>
 				<th class="ui collapsing">Status</th>
 			</tr>
 		</thead>
@@ -41,6 +43,9 @@
 					</td>
 					<td class="ui collapsing">
 						{{ r.itemCategoryLabel(item) }}
+					</td>
+					<td class="ui collapsing">
+						{{ r.itemModulesLabel(item) }}
 					</td>
 					<td class="ui collapsing">
 						{{ r.itemStatusLabel(item) }}

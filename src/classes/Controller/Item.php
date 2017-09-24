@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Item extends RenoController
 {
-    const entityFields = array('refnum', 'title', 'category', 'description');
+    const entityFields = array('refnum', 'title', 'category', 'modules', 'description');
 
     public function create(Request $request, $project, $deployment)
     {

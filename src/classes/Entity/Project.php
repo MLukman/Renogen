@@ -39,9 +39,14 @@ class Project extends Entity implements SecuredAccessInterface
     public $description;
 
     /**
-     * @Column(type="json_array")
+     * @Column(type="json_array", nullable=true)
      */
-    public $categories;
+    public $modules = array();
+
+    /**
+     * @Column(type="json_array", nullable=true)
+     */
+    public $categories = array();
 
     /**
      * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="name", orphanRemoval=true)
@@ -72,6 +77,7 @@ class Project extends Entity implements SecuredAccessInterface
             'invalidvalues' => array('login', 'admin')),
         'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),
         'categories' => array('required' => 1),
+        'modules' => array('required' => 1),
     );
     protected $validation_default = array('trim' => 1);
 

@@ -19,16 +19,17 @@
 			{% endif %}
 		{% elseif not item.approved_date %}
 			{% if app.securilex.isGranted('approval',item.deployment.project) %}
-				<a class="ui right floated primary button" href="{{app.path('item_approve',params)}}"
+				<a class="ui right floated primary button no-print" href="{{app.path('item_approve',params)}}"
 				   onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
 			{% endif %}
 		{% else %}
 			{% if app.securilex.isGranted('approval',item.deployment.project) %}
-				<a class="ui right floated red button" href="{{app.path('item_unapprove',params)}}"
+				<a class="ui right floated red button no-print" href="{{app.path('item_unapprove',params)}}"
 				   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
 			{% endif %}
 		{% endif %}
 		{{ r.itemCategoryLabel(item) }}
+		{{ r.itemModulesLabel(item) }}
 		{{ r.itemStatusLabel(item, true) }}
 	</h1>
 
@@ -39,7 +40,7 @@
 			<h2>
 				Activities
 				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-					<a class="ui right floated primary button" href="{{app.path('activity_create',params)}}">
+					<a class="ui right floated primary button no-print" href="{{app.path('activity_create',params)}}">
 						<i class="ui plus icon"></i>Add activity
 					</a>
 				{% endif %}
@@ -52,7 +53,7 @@
 						<th>Category</th>
 						<th>Description</th>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-							<th class="ui collapsing">Action</th>
+							<th class="ui collapsing no-print">Action</th>
 							{% endif %}
 					</tr>
 				</thead>
@@ -73,7 +74,7 @@
 								{{ r.arrayTable(description) }}
 							</td>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-								<td class="ui top aligned collapsing">
+								<td class="ui top aligned collapsing no-print">
 									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
 										<i class="ui pencil icon"></i>
 									</a>
@@ -91,7 +92,7 @@
 			<h2>
 				Attachments
 				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-					<a class="ui right floated primary button" href="{{app.path('attachment_create',params)}}">
+					<a class="ui right floated primary button no-print" href="{{app.path('attachment_create',params)}}">
 						<i class="ui plus icon"></i>Add attachment
 					</a>
 				{% endif %}
@@ -106,7 +107,7 @@
 						<th class="ui collapsing">File Type</th>
 						<th class="ui collapsing">File Size</th>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-							<th class="ui collapsing">Action</th>
+							<th class="ui collapsing no-print">Action</th>
 							{% endif %}
 					</tr>
 				</thead>
@@ -123,7 +124,7 @@
 							<td class="ui collapsing">{{attachment.mime_type}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-								<td class="ui collapsing">
+								<td class="ui collapsing no-print">
 									<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
 										<i class="ui pencil icon"></i>
 									</a>
@@ -168,7 +169,7 @@
 						</div>
 					{% endfor %}
 					{% if app.securilex.isGranted(['execute','entry','approval'],item.deployment.project) %}
-						<form class="ui center aligned form basic segment" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
+						<form class="ui center aligned form basic segment no-print" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
 							<div class="field">
 								<textarea name="text" rows="3"></textarea>
 							</div>
