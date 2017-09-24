@@ -108,6 +108,26 @@ class Project extends Entity implements SecuredAccessInterface
             });
     }
 
+    public function getDeploymentsByDateString($datestring)
+    {
+        $criteria = Criteria::create();
+        switch (strlen($datestring)) {
+            case 12:
+                $criteria->where(Criteria::expr()->in('execute_date', array(\DateTime::createFromFormat('!YmdHi', $datestring))));
+                break;
+
+            case 8:
+                $criteria->where(new Comparison('execute_date', '>=', \DateTime::createFromFormat('!Ymd', $datestring)))
+                    ->andWhere(new Comparison('execute_date', '<', \DateTime::createFromFormat('!Ymd', $datestring)->add(new \DateInterval("P1D"))))
+                    ->orderBy(array('execute_date' => 'ASC'));
+                break;
+
+            default:
+                return null;
+        }
+        return $this->deployments->matching($criteria);
+    }
+
     public function isUsernameAllowed($username, $attr = 'view')
     {
         $this->allowedRoles = array();

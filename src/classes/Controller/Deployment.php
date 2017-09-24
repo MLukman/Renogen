@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Deployment extends RenoController
 {
-    const entityFields = array('name', 'title', 'execute_date', 'description');
+    const entityFields = array('execute_date', 'title', 'description');
 
     public function create(Request $request, $project)
     {

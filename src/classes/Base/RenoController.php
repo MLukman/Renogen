@@ -2,6 +2,8 @@
 
 namespace Renogen\Base;
 
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\NoResultException;
 use Renogen\Entity\Activity;
 use Renogen\Entity\Attachment;
@@ -10,6 +12,7 @@ use Renogen\Entity\Item;
 use Renogen\Entity\Project;
 use Renogen\Entity\Template;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 abstract class RenoController extends Controller
 {
@@ -24,8 +27,8 @@ abstract class RenoController extends Controller
         } elseif ($entity instanceof Deployment) {
             $deployment  = $entity;
             $this->addEntityCrumb($deployment->project);
-            $this->title = $deployment->title;
-            $this->addCrumb($this->title, $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
+            $this->title = $deployment->displayTitle();
+            $this->addCrumb($deployment->execute_date->format('d/m/Y h:i A'), $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
         } elseif ($entity instanceof Item) {
             $item        = $entity;
             $this->addEntityCrumb($item->deployment);
@@ -55,7 +58,7 @@ abstract class RenoController extends Controller
             );
         } elseif ($entity instanceof Deployment) {
             return static::entityParams($entity->project) + array(
-                'deployment' => $entity->name,
+                'deployment' => $entity->execute_date->format('YmdHi'),
             );
         } elseif ($entity instanceof Item) {
             return static::entityParams($entity->deployment) + array(
@@ -114,14 +117,19 @@ abstract class RenoController extends Controller
      */
     protected function fetchDeployment($project, $deployment)
     {
-        if (!($deployment instanceof Deployment)) {
-            $name        = $deployment;
-            $project_obj = $this->fetchProject($project);
-            if (!($deployment  = $project_obj->deployments->get($name))) {
-                throw new NoResultException("There is not such deployment with name '$name'");
-            }
+        if ($deployment instanceof Deployment) {
+            return $deployment;
         }
-        return $deployment;
+
+        $name           = $deployment;
+        $project_obj    = $this->fetchProject($project);
+        if (($deployment_obj = $project_obj->deployments->get($name))) {
+            return $deployment_obj;
+        } elseif (($deployments = $project_obj->getDeploymentsByDateString($deployment))
+            && $deployments->count() > 0) {
+            return $deployments->first();
+        }
+        throw new NoResultException("There is not such deployment matching '$deployment'");
     }
 
     /**
@@ -248,7 +256,7 @@ abstract class RenoController extends Controller
     {
         if ($entity instanceof Project) {
             if (!$this->app['securilex']->isGranted($attr, $entity)) {
-                throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+                throw new AccessDeniedException();
             }
         } elseif ($entity instanceof Deployment) {
             $this->checkAccess($attr, $entity->project);
