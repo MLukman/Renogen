@@ -30,6 +30,7 @@
 				</div>
 			</div>
 		{% endfor %}
+		{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 	</div>
 {% elseif parameter.type == 'multifreetext' %}
 	{% if template.parameters[param]|length > 0 %}

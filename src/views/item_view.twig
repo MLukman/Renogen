@@ -3,7 +3,11 @@
 {% block content %}
 	{% set params = controller.entityParams(item) %}
 	<h1 class="ui dividing header">
-		<small><i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;</small><br />
+		<div>
+			<small>
+				<i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;
+			</small>
+		</div>
 		<span>
 			<i class="ui idea icon"></i>{{item.displayTitle}}
 		</span>
@@ -28,8 +32,7 @@
 				   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
 			{% endif %}
 		{% endif %}
-		{{ r.itemCategoryLabel(item) }}
-		{{ r.itemModulesLabel(item) }}
+		{{ r.itemDetailsLabel(item) }}
 		{{ r.itemStatusLabel(item, true) }}
 	</h1>
 

@@ -202,12 +202,15 @@ class Parameter
                 $cfg    = array();
                 $values = static::linesToCleanArray($parameter['values']);
                 $texts  = static::linesToCleanArray($parameter['texts']);
-                $size   = min(count($values), count($texts));
+                $size   = count($values);
                 for ($i = 0; $i < $size; $i++) {
-                    if (empty($values[$i]) || empty($texts[$i])) {
+                    if (empty($values[$i])) {
                         continue;
                     }
-                    $cfg[$values[$i]] = $texts[$i];
+                    $text = trim(isset($texts[$i]) && !empty(trim($texts[$i])) ?
+                        $texts[$i] : $values[$i]);
+
+                    $cfg[$values[$i]] = $text;
                 }
                 return $cfg;
 

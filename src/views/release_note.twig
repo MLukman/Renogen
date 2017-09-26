@@ -19,11 +19,14 @@
 				<ol>
 					{% for item in catitems %}
 						<li>
+							{% if item.approved_date is empty %}
+								<em>[Not approved yet]</em>
+							{% endif %}
 							<strong>{{item.displayTitle()}}</strong>
-							<div class="ui right floated">
+							<div>
 								<p>
-									({{item.modules|join(' + ')}})
 									{{item.description}}
+									({{item.modules|join(' + ')}})
 								</p>
 							</div>
 						</li>
@@ -35,15 +38,5 @@
 
 	<div class="ui vertical footer segment">
 		<p><em>Auto-generated on {{'now'|date('d/m/Y h:i A')}}</em></p>
-		{% set unapproveds = deployment.getUnapprovedItems() %}
-		{% if unapproveds.count() > 0 %}
-			<p><em>Note: there are still unapproved deployment items as follow:</em></p>
-			<ul>
-				{% for item in unapproveds %}
-					<li>{{item.displayTitle()}}
-					</li>
-				{% endfor %}
-			</ul>
-		{% endif %}
 	</div>
 {% endblock %}

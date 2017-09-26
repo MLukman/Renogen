@@ -48,6 +48,16 @@
 	{% endif %}
 {% endmacro %}
 
+{% macro itemDetailsLabel(item) %}
+	<span class="ui label">
+		<i class="ui tag icon"></i>{{item.category}}
+		<span class="detail">
+			<i class="ui plug icon"></i>
+			{{ item.modules|join(' + ') }}
+		</span>
+	</span>
+{% endmacro %}
+
 {% macro itemCategoryLabel(item) %}
 	<span class="ui label">
 		<i class="ui tag icon"></i>{{item.category}}

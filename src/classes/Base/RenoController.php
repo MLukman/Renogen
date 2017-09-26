@@ -28,7 +28,7 @@ abstract class RenoController extends Controller
             $deployment  = $entity;
             $this->addEntityCrumb($deployment->project);
             $this->title = $deployment->displayTitle();
-            $this->addCrumb($deployment->execute_date->format('d/m/Y h:i A'), $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
+            $this->addCrumb($deployment->datetimeString(true), $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
         } elseif ($entity instanceof Item) {
             $item        = $entity;
             $this->addEntityCrumb($item->deployment);

@@ -64,7 +64,12 @@ class Deployment extends Entity
 
     public function displayTitle()
     {
-        return $this->execute_date->format('d/m/Y h:i A').' - '.$this->title;
+        return $this->datetimeString(true).' - '.$this->title;
+    }
+
+    public function datetimeString($pretty = false)
+    {
+        return $this->execute_date->format($pretty ? 'd/m/Y h:i A' : 'YmdHi');
     }
 
     /**

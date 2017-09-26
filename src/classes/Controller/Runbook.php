@@ -13,6 +13,9 @@ class Runbook extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
+            if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
+                return $this->redirect('runbook_view', $this->entityParams($deployment_obj));
+            }
             $this->addEntityCrumb($deployment_obj);
             $this->addCrumb('Run Book', $this->app->path('runbook_view', $this->entityParams($deployment_obj)), 'checkmark box');
             return $this->render('runbook_view', array(

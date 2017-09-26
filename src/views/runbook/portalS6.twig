@@ -1,0 +1,25 @@
+<table class="ui striped very compact table">
+	<thead>
+		<tr>
+			<th>Modules</th>
+			<th class="four wide">Branch</th>
+			<th class="four wide">Remark</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in data %}
+			<tr>
+				<td class="top aligned">
+					{{ r.arrayTable(row.modules) }}
+				</td>
+				<td class="top aligned">
+					{{row.branch}}
+				</td>
+				<td class="top aligned">
+					{{row.remark|default('-')|nl2br}}
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+

@@ -40,6 +40,11 @@ class Template extends Entity
     public $class;
 
     /**
+     * @Column(type="integer", nullable=true)
+     */
+    public $stage = 0;
+
+    /**
      * @Column(type="integer")
      */
     public $priority;

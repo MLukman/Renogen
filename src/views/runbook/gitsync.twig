@@ -1,0 +1,25 @@
+<table class="ui striped very compact table">
+	<thead>
+		<tr>
+			<th class="four wide">Folder</th>
+			<th class="four wide">Version</th>
+			<th>Remark</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in data %}
+			<tr>
+				<td class="top aligned">
+					{{row.folder}}
+				</td>
+				<td class="top aligned">
+					{{row.version}}
+				</td>
+				<td class="top aligned">
+					{{row.remark|default('-')|nl2br}}
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+

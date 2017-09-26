@@ -115,7 +115,10 @@ class Application extends \Silex\Application
         $this->configureRoutes();
 
         /* Init activity template classes */
-        $this->addActivityTemplateClass(new Rundeck($this));
+        foreach (glob(__DIR__.'/ActivityTemplate/Impl/*.php') as $templateClass) {
+            $templateClassName = 'Renogen\ActivityTemplate\Impl\\'.basename($templateClass, '.php');
+            $this->addActivityTemplateClass(new $templateClassName($this));
+        }
 
         static::$instance = $this;
     }
@@ -199,7 +202,7 @@ class Application extends \Silex\Application
         });
         $this->match('/+', 'project.controller:create')->bind('project_create');
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
-        $this->match('/{project}/!', 'project.controller:edit')->bind('project_edit');
+        $this->match('/{project}/edit', 'project.controller:edit')->bind('project_edit');
 
         /* Routes: Template */
         $this['template.controller'] = $this->share(function() {
@@ -208,7 +211,7 @@ class Application extends \Silex\Application
         $this->match('/{project}/templates/', 'template.controller:index')->bind('template_list');
         $this->match('/{project}/templates/+', 'template.controller:create')->bind('template_create');
         $this->match('/{project}/templates/{template}/', 'template.controller:view')->bind('template_view');
-        $this->match('/{project}/templates/{template}/!', 'template.controller:edit')->bind('template_edit');
+        $this->match('/{project}/templates/{template}/edit', 'template.controller:edit')->bind('template_edit');
 
         /* Routes: Deployment */
         $this['deployment.controller'] = $this->share(function() {
@@ -216,14 +219,14 @@ class Application extends \Silex\Application
         });
         $this->match('/{project}/+', 'deployment.controller:create')->bind('deployment_create');
         $this->match('/{project}/{deployment}/', 'deployment.controller:view')->bind('deployment_view');
-        $this->match('/{project}/{deployment}/!', 'deployment.controller:edit')->bind('deployment_edit');
-        $this->match('/{project}/{deployment}/*', 'deployment.controller:release_note')->bind('release_note');
+        $this->match('/{project}/{deployment}/edit', 'deployment.controller:edit')->bind('deployment_edit');
+        $this->match('/{project}/{deployment}/releasenote', 'deployment.controller:release_note')->bind('release_note');
 
         /* Routes: Run Book */
         $this['runbook.controller'] = $this->share(function() {
             return new Runbook($this);
         });
-        $this->match('/{project}/{deployment}/**', 'runbook.controller:view')->bind('runbook_view');
+        $this->match('/{project}/{deployment}/runbook', 'runbook.controller:view')->bind('runbook_view');
 
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {
@@ -231,22 +234,22 @@ class Application extends \Silex\Application
         });
         $this->match('/{project}/{deployment}/+', 'item.controller:create')->bind('item_create');
         $this->match('/{project}/{deployment}/{item}/', 'item.controller:view')->bind('item_view');
-        $this->match('/{project}/{deployment}/{item}/!', 'item.controller:edit')->bind('item_edit');
-        $this->match('/{project}/{deployment}/{item}/!!', 'item.controller:action')->value('action', 'submit')->bind('item_submit');
-        $this->match('/{project}/{deployment}/{item}/!!!', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
-        $this->match('/{project}/{deployment}/{item}/!!-', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
+        $this->match('/{project}/{deployment}/{item}/edit', 'item.controller:edit')->bind('item_edit');
+        $this->match('/{project}/{deployment}/{item}/submit', 'item.controller:action')->value('action', 'submit')->bind('item_submit');
+        $this->match('/{project}/{deployment}/{item}/approve', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
+        $this->match('/{project}/{deployment}/{item}/unapprove', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
 
         /* Routes: Attachment */
         $this['attachment.controller'] = $this->share(function() {
             return new Attachment($this);
         });
-        $this->match('/{project}/{deployment}/{item}/@', 'attachment.controller:create')->bind('attachment_create');
-        $this->match('/{project}/{deployment}/{item}/@/{attachment}/', 'attachment.controller:download')->bind('attachment_download');
-        $this->match('/{project}/{deployment}/{item}/@/{attachment}/!', 'attachment.controller:edit')->bind('attachment_edit');
+        $this->match('/{project}/{deployment}/{item}/attachments', 'attachment.controller:create')->bind('attachment_create');
+        $this->match('/{project}/{deployment}/{item}/attachments/{attachment}/', 'attachment.controller:download')->bind('attachment_download');
+        $this->match('/{project}/{deployment}/{item}/attachments/{attachment}/edit', 'attachment.controller:edit')->bind('attachment_edit');
 
         /* Routes: Comment */
-        $this->match('/{project}/{deployment}/{item}/@@', 'item.controller:comment_add')->bind('item_comment_add');
-        $this->match('/{project}/{deployment}/{item}/@@/{comment}/-', 'item.controller:comment_delete')->bind('item_comment_delete');
+        $this->match('/{project}/{deployment}/{item}/comments', 'item.controller:comment_add')->bind('item_comment_add');
+        $this->match('/{project}/{deployment}/{item}/comments/{comment}/delete', 'item.controller:comment_delete')->bind('item_comment_delete');
 
         /* Routes: Activity */
         $this['activity.controller'] = $this->share(function() {
@@ -254,7 +257,7 @@ class Application extends \Silex\Application
         });
         $this->match('/{project}/{deployment}/{item}/+', 'activity.controller:create')->bind('activity_create');
         $this->match('/{project}/{deployment}/{item}/{activity}/', 'activity.controller:edit')->bind('activity_edit');
-        $this->match('/{project}/{deployment}/{item}/{activity}/@/{file}', 'activity.controller:download_file')->bind('activity_file_download');
+        $this->match('/{project}/{deployment}/{item}/{activity}/{file}', 'activity.controller:download_file')->bind('activity_file_download');
     }
 
     /**

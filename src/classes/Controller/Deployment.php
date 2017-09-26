@@ -29,6 +29,9 @@ class Deployment extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
+            if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
+                return $this->redirect('deployment_view', $this->entityParams($deployment_obj));
+            }
             $this->addEntityCrumb($deployment_obj);
             return $this->render('deployment_view', array(
                     'deployment' => $deployment_obj,
@@ -42,6 +45,9 @@ class Deployment extends RenoController
     {
         try {
             $deployment_obj = $this->fetchDeployment($project, $deployment);
+            if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
+                return $this->redirect('deployment_edit', $this->entityParams($deployment_obj));
+            }
             $this->checkAccess('approval', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addEditCrumb($this->app->path('deployment_edit', $this->entityParams($deployment_obj)));
@@ -80,9 +86,12 @@ class Deployment extends RenoController
     public function release_note(Request $request, $project, $deployment)
     {
         $deployment_obj = $this->fetchDeployment($project, $deployment);
+        if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
+            return $this->redirect('release_note', $this->entityParams($deployment_obj));
+        }
         $this->addEntityCrumb($deployment_obj);
         $this->addCrumb('Release Note', $this->app->path('release_note', $this->entityParams($deployment_obj)), 'ordered list');
-        $context        = array(
+        $context = array(
             'deployment' => $deployment_obj,
             'items' => array(),
         );
@@ -91,7 +100,7 @@ class Deployment extends RenoController
             $context['items'][$category] = array();
         }
 
-        foreach ($deployment_obj->getApprovedItems() as $item) {
+        foreach ($deployment_obj->items as $item) {
             /* @var $item \Renogen\Entity\Item  */
             $context['items'][$item->category][] = $item;
         }

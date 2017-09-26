@@ -108,24 +108,30 @@ class Project extends Entity implements SecuredAccessInterface
             });
     }
 
-    public function getDeploymentsByDateString($datestring)
+    public function getDeploymentsByDateString($datestring,
+                                               $include_future = false)
     {
         $criteria = Criteria::create();
         switch (strlen($datestring)) {
             case 12:
                 $criteria->where(Criteria::expr()->in('execute_date', array(\DateTime::createFromFormat('!YmdHi', $datestring))));
-                break;
+                $matching = $this->deployments->matching($criteria);
+                if ($matching->count() == 0) {
+                    return $this->getDeploymentsByDateString(substr($datestring, 0, 8), true);
+                }
+                return $matching;
 
             case 8:
-                $criteria->where(new Comparison('execute_date', '>=', \DateTime::createFromFormat('!Ymd', $datestring)))
-                    ->andWhere(new Comparison('execute_date', '<', \DateTime::createFromFormat('!Ymd', $datestring)->add(new \DateInterval("P1D"))))
+                $criteria->andWhere(new Comparison('execute_date', '>=', \DateTime::createFromFormat('!Ymd', $datestring)))
                     ->orderBy(array('execute_date' => 'ASC'));
-                break;
+                if (!$include_future) {
+                    $criteria->andWhere(new Comparison('execute_date', '<', \DateTime::createFromFormat('!Ymd', $datestring)->add(new \DateInterval("P1D"))));
+                }
+                return $this->deployments->matching($criteria);
 
             default:
                 return null;
         }
-        return $this->deployments->matching($criteria);
     }
 
     public function isUsernameAllowed($username, $attr = 'view')
