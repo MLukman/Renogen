@@ -9,14 +9,15 @@
 	</h1>
 
 	{% if deployment.description %}
-		<h2>{{deployment.description}}</h2>
+		<h3>{{deployment.description}}</h3>
 	{% endif %}
 
 	<div class="ui basic segment">
 		{% for category,catitems in items %}
 			{% if catitems %}
-				<h3 class="ui dividing header">{{category}}</h3>
-				<ol>
+				<h2 class="ui dividing header">{{category}}</h2>
+				<div class="ui basic segment">
+				<ol class="ui relaxed large list">
 					{% for item in catitems %}
 						<li>
 							{% if item.approved_date is empty %}
@@ -32,6 +33,7 @@
 						</li>
 					{% endfor %}
 				</ol>
+							</div>
 			{% endif %}
 		{% endfor %}
 	</div>

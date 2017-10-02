@@ -16,7 +16,7 @@
 
 	<h2 class="ui header">
 		Deployment Items
-		{% if app.securilex.isGranted(['entry','approval'],deployment.project) %}
+		{% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
 			<a class="ui right floated primary button no-print" href="{{app.path('item_create',controller.entityParams(deployment))}}">
 				<i class="ui plus icon"></i>Add deployment item
 			</a>
@@ -30,13 +30,15 @@
 				<th>Title</th>
 				<th class="ui collapsing">Category</th>
 				<th class="ui collapsing">Modules</th>
+				<th class="ui collapsing"><i class="ui add to cart icon" title="Activity Count"></i></th>
+				<th class="ui collapsing"><i class="ui attach icon" title="Attachment Count"></i></th>
 				<th class="ui collapsing">Status</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for item in deployment.items %}
 				<tr>
-					<td class="ui collapsing">{{item.refnum|default('-')}}</td>
+					<td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
 					<td>
 						<h3 class="ui header" style="margin-bottom: 0"><a href="{{app.path('item_view',controller.entityParams(item))}}">{{item.title}}</a></h3>
 						{% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
@@ -46,6 +48,12 @@
 					</td>
 					<td class="ui collapsing">
 						{{ r.itemModulesLabel(item) }}
+					</td>
+					<td class="ui collapsing center aligned">
+						<span class="ui circular label">{{item.activities.count()}}</span>
+					</td>
+					<td class="ui collapsing center aligned">
+						<span class="ui circular label">{{item.attachments.count()}}</span>
 					</td>
 					<td class="ui collapsing">
 						{{ r.itemStatusLabel(item) }}

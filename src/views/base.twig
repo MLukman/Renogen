@@ -94,7 +94,10 @@
 				$('#topfiller').css('height', $('#topbar').outerHeight(true));
 				$('table.sortable').tablesort();
 				$('.ui.checkbox').checkbox();
-				$('.ui.dropdown').dropdown({
+				$('.ui.dropdown.action-nothing').dropdown({
+					action: 'nothing'
+				});
+				$('.ui.dropdown:not(.action-nothing)').dropdown({
 					fullTextSearch: true
 				});
 				setTimeout(function () {
@@ -133,7 +136,7 @@
 	<body>
 
 		<div id="topbar" class="no-print">
-			<div id="topmenu" class="ui menu inverted blue">
+			<div id="topmenu" class="ui stackable menu inverted blue">
 
 				<div class="ui title item">
 					<a style="padding-right: 30pt" href="{{app.request.baseUrl}}/">

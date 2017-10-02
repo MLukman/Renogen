@@ -8,7 +8,7 @@
 	</h1>
 	<h3>Please select a project below <i class="ui level down icon"></i></h3>
 	<p>&nbsp;</p>
-	<div class="ui three cards secondary segment">
+	<div class="ui three stackable cards secondary segment">
 		{% for project in projects %}
 			<a class="ui card" href="{{app.path('project_view', { project: project.name })}}">
 				<div class="content">
@@ -17,11 +17,13 @@
 					</div>
 					<p>&nbsp;</p>
 					{% if project.description %}
-						<div class="ui meta">
+						<div class="ui description">
 							{{project.description}}
 						</div>
 					{% endif %}
-					<div class="ui description">
+				</div>
+				<div class="extra content">
+					<div class="ui meta">
 						{{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
 					</div>
 				</div>

@@ -4,8 +4,14 @@
 {% block content %}
 	{% set is_existing = (activity.id|default(null) is not empty) %}
 	<h1 class="ui header">
-		<i class="ui idea icon"></i>{{activity.item.displayTitle}} &raquo; 
-		{% if is_existing %}Edit{% else %}Add{% endif %} activity
+		<div>
+			<small>
+				<i class="ui idea icon"></i>{{activity.item.displayTitle}} &raquo; 
+			</small>
+		</div>
+		<span>
+			<i class="ui add to cart icon"></i>{% if is_existing %}Edit{% else %}Add{% endif %} activity
+		</span>
 	</h1>
 
 	{% if errors|default(false) %}

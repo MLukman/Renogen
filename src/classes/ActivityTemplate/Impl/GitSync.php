@@ -59,7 +59,7 @@ class GitSync extends BaseClass
                     $added[$signature] = true;
                     $group->addRow(array(
                         'folder' => $activity->parameters['folder'],
-                        'version' => $activity->parameters['version'],
+                        'revision' => $activity->parameters['revision'],
                         'remark' => $activity->parameters['remark'],
                     ));
                 }

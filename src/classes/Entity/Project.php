@@ -93,7 +93,7 @@ class Project extends Entity implements SecuredAccessInterface
         return $this->cached('upcoming', function() {
                 return $this->deployments->matching(
                         Criteria::create()
-                            ->where(new Comparison('execute_date', '>=', (new DateTime())->setTime(0, 0, 0)))
+                            ->where(new Comparison('execute_date', '>=', date_create()->setTime(0, 0, 0)))
                             ->orderBy(array('execute_date' => 'ASC')));
             });
     }
@@ -103,7 +103,7 @@ class Project extends Entity implements SecuredAccessInterface
         return $this->cached('past', function() {
                 return $this->deployments->matching(
                         Criteria::create()
-                            ->where(new Comparison('execute_date', '<', (new DateTime())->setTime(0, 0, 0)))
+                            ->where(new Comparison('execute_date', '<', date_create()->setTime(0, 0, 0)))
                             ->orderBy(array('execute_date' => 'DESC')));
             });
     }

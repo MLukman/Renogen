@@ -72,6 +72,11 @@ class Deployment extends Entity
         return $this->execute_date->format($pretty ? 'd/m/Y h:i A' : 'YmdHi');
     }
 
+    public function isActive()
+    {
+        return (date_create()->setTime(0, 0, 0) < $this->execute_date);
+    }
+
     /**
      *
      * @return ArrayCollection
@@ -101,12 +106,12 @@ class Deployment extends Entity
         );
         foreach ($this->getApprovedItems() as $item) {
             foreach ($item->activities as $activity) {
-                $templateClass = $activity->template->class;
-                $array         = &$activities[$activity->stage ?: 0];
-                if (!isset($array[$templateClass])) {
-                    $array[$templateClass] = array();
+                $tid   = sprintf("%03d:%s", $activity->template->priority, $activity->template->id);
+                $array = &$activities[$activity->stage ?: 0];
+                if (!isset($array[$tid])) {
+                    $array[$tid] = array();
                 }
-                $array[$templateClass][] = $activity;
+                $array[$tid][] = $activity;
             }
         }
 
@@ -117,8 +122,9 @@ class Deployment extends Entity
         );
         $templates = Application::instance()->getActivityTemplateClass();
         foreach (array_keys($rungroups) as $stage) {
-            foreach ($activities[$stage] as $templateClass => $acts) {
-                $rungroups[$stage] = array_merge($rungroups[$stage], $templates[$templateClass]
+            ksort($activities[$stage]);
+            foreach ($activities[$stage] as $acts) {
+                $rungroups[$stage] = array_merge($rungroups[$stage], $templates[$acts[0]->template->class]
                         ->convertActivitiesToRunbookGroups($acts));
             }
         }

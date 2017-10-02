@@ -2,8 +2,6 @@
 
 namespace Renogen\Base;
 
-use Doctrine\Common\Collections\Criteria;
-use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\NoResultException;
 use Renogen\Entity\Activity;
 use Renogen\Entity\Attachment;
@@ -40,7 +38,7 @@ abstract class RenoController extends Controller
             $this->addEntityCrumb($activity->item);
             $this->title = $activity->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
-                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('activity_edit', $this->entityParams($activity)), 'list');
+                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('activity_edit', $this->entityParams($activity)), 'add to cart');
         } elseif ($entity instanceof Template) {
             $template    = $entity;
             $this->addEntityCrumb($template->project);

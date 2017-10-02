@@ -75,7 +75,7 @@
 					<label class="ui top attached large label">Deployment</label>
 					<select name="deployment" class="ui dropdown">
 						{% for deployment in item.deployment.project.upcoming() %}
-							<option value="{{deployment.name}}" {% if deployment == item.deployment %}selected="selected"{% endif %}>{{deployment.displayTitle()}}</option>
+							<option value="{{deployment.id}}" {% if deployment == item.deployment %}selected="selected"{% endif %}>{{deployment.displayTitle()}}</option>
 						{% endfor %}
 					</select>
 					{{ m.fieldError(errors|default([]), 'deployment') }}

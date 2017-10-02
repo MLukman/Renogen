@@ -37,27 +37,72 @@
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-	<table class="ui very basic padded table">
+	<div class="ui two stackable cards">
+		{% for deployment in deployments %}
+			<div class="ui blue card">
+				<div class="content">
+					<a  class="ui header" href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}">
+						<small class="ui right floated">
+							{{deployment.datetimeString(true)}}
+						</small>
+						<i class="calendar check o icon"></i>
+						<div class="content">
+							{{deployment.title}}
+						</div>
+					</a>
+					{% if deployment.description %}
+						<div class="ui description">
+							{{deployment.description|nl2br}}
+						</div>
+					{% endif %}
+					{% set item_count = deployment.items.count() %}
+					{% if item_count > 0 %}
+						<div class="ui list">
+							{% for item in deployment.items %}
+								<a href="{{app.path('item_view',app.controller.entityParams(item))}}" class="ui item">
+									<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
+									{{item.displayTitle}}
+								</a>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div class="meta">
+							<i class="ui warning sign icon"></i>
+							No deployment item has been added to this deployment yet
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+{% endmacro %}
+
+{% macro deploymentList2(deployments) %}
+	<table class="ui padded table">
 		{% for deployment in deployments %}
 			<tr>
-				<td class="ui collapsing"><i class="large calendar check o icon"></i></td>
-				<td class="ui collapsing">
+				<td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
+				<td class="ui eight wide top aligned">
 					<a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
 						<h3>{{deployment.displayTitle}}</h3>
 					</a>
 					<div>{{deployment.description|nl2br}}</div>
 				</td>
-				<td>
+				<td class="ui eight wide top aligned">
 					{% if deployment.items.count() > 0 %}
-						<div class="ui horizontal list">
-							{% for item in deployment.items %}
-								<span class="ui item">
-									<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
-										<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-										{{item.displayTitle}}
-									</a>
-								</span>
-							{% endfor %}
+						<div class="ui dropdown action-nothing">
+							<div class="text">{{deployment.items.count()}} items</div>
+							<i class="dropdown icon"></i>
+							<div class="menu">
+								{% for item in deployment.items %}
+									<div class="item">
+										<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+											<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
+											{{item.displayTitle}}
+										</a>
+									</div>
+								{% endfor %}
+							</div>
 						</div>
 					{% endif %}
 				</td>

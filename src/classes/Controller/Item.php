@@ -157,11 +157,23 @@ class Item extends RenoController
     public function comment_delete(Request $request, $project, $deployment,
                                    $item, $comment)
     {
+        return $this->comment_setDeletedDate($project, $deployment, $item, $comment, new \DateTime());
+    }
+
+    public function comment_undelete(Request $request, $project, $deployment,
+                                     $item, $comment)
+    {
+        return $this->comment_setDeletedDate($project, $deployment, $item, $comment, null);
+    }
+
+    protected function comment_setDeletedDate($project, $deployment, $item,
+                                              $comment, \DateTime $date = null)
+    {
         try {
             $item_obj = $this->fetchItem($project, $deployment, $item);
             if ($item_obj->comments->containsKey($comment)) {
                 $comment_obj               = $item_obj->comments->get($comment);
-                $comment_obj->deleted_date = new \DateTime();
+                $comment_obj->deleted_date = $date;
                 $this->app['em']->flush($comment_obj);
             }
             return $this->redirect('item_view', $this->entityParams($item_obj));

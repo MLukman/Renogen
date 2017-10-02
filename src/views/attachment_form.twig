@@ -4,8 +4,14 @@
 {% block content %}
 	{% set is_existing = (attachment.id|default(null) is not empty) %}
 	<h1 class="ui header">
-		<i class="ui idea icon"></i>{{attachment.item.displayTitle}} &raquo; 
-		{% if is_existing %}Edit{% else %}Add{% endif %} attachment
+		<div>
+			<small>
+				<i class="ui idea icon"></i>{{attachment.item.displayTitle}} &raquo; 
+			</small>
+		</div>
+		<span>
+			<i class="ui attach icon"></i>{% if is_existing %}Edit{% else %}Add{% endif %} attachment
+		</span>
 	</h1>
 
 	{% if errors|default(false) %}
