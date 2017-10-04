@@ -41,10 +41,11 @@
 		</div>
 	</h1>
 
-	<p>{{item.description|nl2br}}</p>
-
 	<div class="ui grid">
 		<div class="twelve wide column">
+			{% if item.description %}
+				<div class="ui info message">{{item.description|nl2br}}</div>
+			{% endif %}
 			<h2 class="ui header">
 				<span>
 					<i class="ui add to cart icon"></i> Activities
@@ -80,7 +81,7 @@
 								{% endif %}
 								{{activity.template.title}}
 							</td>
-							<td class="ui top aligned">
+							<td class="ui top aligned" style="max-width: 600px; overflow-x: auto">
 								{{ r.arrayTable(description) }}
 							</td>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
@@ -114,9 +115,8 @@
 				<thead>
 					<tr>
 						<th class="ui collapsing">#</th>
+						<th>File Name &amp; Type</th>
 						<th>Description</th>
-						<th>File Name</th>
-						<th class="ui collapsing">File Type</th>
 						<th class="ui collapsing">File Size</th>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 							<th class="ui collapsing no-print">Action</th>
@@ -127,13 +127,15 @@
 					{% for attachment in item.attachments %}
 						<tr>
 							<td class="ui collapsing">{{loop.index}}</td>
-							<td>{{attachment.description}}</td>
 							<td>
 								<a title="Download" href="{{app.path('attachment_download',controller.entityParams(attachment))}}">
-									{{attachment.filename}}
+									<strong>{{attachment.filename}}</strong>
 								</a>
+								<div>
+									<small>{{attachment.mime_type}}</small>
+								</div>
 							</td>
-							<td class="ui collapsing">{{attachment.mime_type}}</td>
+							<td>{{attachment.description}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
 							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
 								<td class="ui collapsing no-print">

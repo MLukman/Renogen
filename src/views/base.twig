@@ -92,6 +92,9 @@
 
 			$(function () {
 				$('#topfiller').css('height', $('#topbar').outerHeight(true));
+				$(window).resize(function () {
+					$('#topfiller').css('height', $('#topbar').outerHeight(true));
+				});
 				$('table.sortable').tablesort();
 				$('.ui.checkbox').checkbox();
 				$('.ui.dropdown.action-nothing').dropdown({
@@ -163,7 +166,7 @@
 					{% endblock %}
 
 					{% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
-						{{ m.topmenu_dropdown_begin(null, 'setting') }}
+						{{ m.topmenu_dropdown_begin('Settings', 'setting') }}
 						{{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
 						{{ m.topmenu_dropdown_end() }}
 					{% endif %}

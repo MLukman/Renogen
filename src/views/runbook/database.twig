@@ -1,0 +1,23 @@
+<table class="ui striped very compact table">
+	<thead>
+		<tr>
+			<th>Login</th>
+			<th>SQL Script</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for row in data %}
+			<tr>
+				<td class="ui collapsing top aligned">
+					{{row.login}}
+				</td>
+				<td class="top aligned">
+					<div class="ui form">
+						<textarea readonly="readonly" style="font-family: monospace">{{row.sql}}</textarea>
+					</div>
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+

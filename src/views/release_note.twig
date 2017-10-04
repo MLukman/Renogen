@@ -12,28 +12,30 @@
 		<h3>{{deployment.description}}</h3>
 	{% endif %}
 
-	<div class="ui basic segment">
+	<div class="ui basic segment" style="font-family: monospace">
 		{% for category,catitems in items %}
 			{% if catitems %}
 				<h2 class="ui dividing header">{{category}}</h2>
 				<div class="ui basic segment">
-				<ol class="ui relaxed large list">
-					{% for item in catitems %}
-						<li>
-							{% if item.approved_date is empty %}
-								<em>[Not approved yet]</em>
-							{% endif %}
-							<strong>{{item.displayTitle()}}</strong>
-							<div>
-								<p>
-									{{item.description}}
-									({{item.modules|join(' + ')}})
-								</p>
-							</div>
-						</li>
-					{% endfor %}
-				</ol>
-							</div>
+					<ol class="ui relaxed large list">
+						{% for item in catitems %}
+							<li>
+								{% if item.approved_date is empty %}
+									<em>[Not approved yet]</em>
+								{% endif %}
+								<strong>{{item.displayTitle()}}</strong>
+								({{item.modules|join(' + ')}})
+								{% if item.description %}
+									<div>
+										<small>
+											<pre>{{item.description}}</pre>
+										</small>
+									</div>
+								{% endif %}
+							</li>
+						{% endfor %}
+					</ol>
+				</div>
 			{% endif %}
 		{% endfor %}
 	</div>

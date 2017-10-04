@@ -5,15 +5,23 @@ namespace Renogen\Base;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\MappedSuperclass;
 use Renogen\Application;
 use Renogen\Validation\DoctrineValidator;
+use Securilex\Authorization\SecuredAccessInterface;
+use Securilex\Authorization\SecuredAccessTrait;
 use Symfony\Component\Security\Core\User\User;
 
 /**
  * @MappedSuperclass @HasLifecycleCallbacks
  */
-class Entity
+class Entity implements SecuredAccessInterface
 {
+
+    use SecuredAccessTrait;
     /**
      * @ManyToOne(targetEntity="User")
      * @JoinColumn(name="created_by", referencedColumnName="username", onDelete="CASCADE")
@@ -107,5 +115,18 @@ class Entity
     public function delete(EntityManager $em)
     {
         $em->remove($this);
+    }
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        $allowed = false;
+
+        switch ($attribute) {
+            case 'delete':
+                $allowed = ($this->created_by->username == $username);
+                break;
+        }
+
+        return $allowed;
     }
 }

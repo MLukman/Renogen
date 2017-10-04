@@ -3,14 +3,18 @@
 namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
 use Renogen\Base\ApproveableEntity;
+use Securilex\Authorization\SecuredAccessInterface;
+use Securilex\Authorization\SecuredAccessTrait;
+use Silex\Application;
 
 /**
  * @Entity @Table(name="items")
  */
-class Item extends ApproveableEntity
+class Item extends ApproveableEntity implements SecuredAccessInterface
 {
+
+    use SecuredAccessTrait;
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */
@@ -112,5 +116,20 @@ class Item extends ApproveableEntity
         } else {
             return 'warning';
         }
+    }
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        $allowed = false;
+
+        switch ($attribute) {
+            case 'delete':
+            case 'move':
+                $allowed   = ($this->created_by->username == $username);
+                $attribute = 'approval';
+                break;
+        }
+
+        return $allowed || $this->deployment->isUsernameAllowed($username, $attribute);
     }
 }

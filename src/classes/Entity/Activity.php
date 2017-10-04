@@ -3,6 +3,11 @@
 namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Renogen\Base\ApproveableEntity;
 
 /**
@@ -67,5 +72,11 @@ class Activity extends ApproveableEntity
     public function displayTitle()
     {
         return 'Activity: '.$this->template->title;
+    }
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        return parent::isUsernameAllowed($username, $attribute) ||
+            $this->item->isUsernameAllowed($username, $attribute);
     }
 }

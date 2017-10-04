@@ -2,7 +2,6 @@
 
 namespace Renogen\Entity;
 
-use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
@@ -14,10 +13,9 @@ use Securilex\Authorization\SecuredAccessTrait;
 /**
  * @Entity @Table(name="projects")
  */
-class Project extends Entity implements SecuredAccessInterface
+class Project extends Entity
 {
 
-    use SecuredAccessTrait;
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */

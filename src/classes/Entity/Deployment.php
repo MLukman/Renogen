@@ -5,9 +5,10 @@ namespace Renogen\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\ORM\EntityManager;
 use Renogen\Application;
 use Renogen\Base\Entity;
+use Securilex\Authorization\SecuredAccessInterface;
+use Securilex\Authorization\SecuredAccessTrait;
 
 /**
  * @Entity @Table(name="deployments")

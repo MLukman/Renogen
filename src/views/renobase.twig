@@ -93,7 +93,7 @@
 					{% elseif val|first == '<' %}
 						{{val|raw}}
 					{% else %}
-						{{val}}
+						{{val|nl2br}}
 					{% endif %}
 				</td>
 			</tr>

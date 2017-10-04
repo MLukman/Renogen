@@ -39,4 +39,10 @@ class Attachment extends FileEntity
     {
         return $this->item->deployment->project->getAttachmentFolder();
     }
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        return parent::isUsernameAllowed($username, $attribute) ||
+            $this->item->isUsernameAllowed($username, $attribute);
+    }
 }
