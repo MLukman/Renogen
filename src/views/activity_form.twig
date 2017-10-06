@@ -32,12 +32,16 @@
 			{% if activity.template is empty %}
 				<div class="ui required field basic segment">
 					<label class="ui top attached large label">Template</label>
-					<select name="template" class="ui dropdown">
-						<option value="">-- Select one --</option>
+					<div class="ui basic segment grouped fields">
 						{% for template in activity.item.deployment.project.templates %}
-							<option value="{{template.id}}">{{template.title}}</option>
+							<div class="field">
+								<div class="ui radio checkbox">
+									<input type="radio" name="template" value="{{template.id}}" />
+									<label>{{template.title}}</label>
+								</div>
+							</div>
 						{% endfor %}
-					</select>
+					</div>
 					{{ m.fieldError(errors|default([]), 'template') }}
 				</div>
 				<div class="ui field">

@@ -75,8 +75,17 @@ class Item extends RenoController
                     $item_obj->unapprove();
                     $actioned = 'unapproved';
                     break;
+                case 'reject':
+                    $this->checkAccess('approval', $item_obj);
+                    $item_obj->reject();
+                    $actioned = 'rejected';
+
+                    $comment        = new \Renogen\Entity\ItemComment($item_obj);
+                    $comment->event = 'Rejected';
+                    $comment->text  = $request->request->get('reason', '-');
+                    $item_obj->comments->add($comment);
+                    break;
             }
-            $item_obj->submit();
             $this->app['em']->flush($item_obj);
             if ($actioned) {
                 $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");

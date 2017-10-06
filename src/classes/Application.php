@@ -238,6 +238,7 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/{item}/submit', 'item.controller:action')->value('action', 'submit')->bind('item_submit');
         $this->match('/{project}/{deployment}/{item}/approve', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
         $this->match('/{project}/{deployment}/{item}/unapprove', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
+        $this->match('/{project}/{deployment}/{item}/reject', 'item.controller:action')->value('action', 'reject')->bind('item_reject');
 
         /* Routes: Attachment */
         $this['attachment.controller'] = $this->share(function() {

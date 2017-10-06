@@ -3,10 +3,15 @@
 namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Query\Expr\OrderBy;
 use Renogen\Base\ApproveableEntity;
 use Securilex\Authorization\SecuredAccessInterface;
 use Securilex\Authorization\SecuredAccessTrait;
-use Silex\Application;
 
 /**
  * @Entity @Table(name="items")
@@ -67,7 +72,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public $attachments = null;
 
     /**
-     * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"})
      * @OrderBy({"created_date" = "asc"})
      * @var ArrayCollection
      */
@@ -100,6 +105,8 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     {
         if ($this->approved_date) {
             return 'Approved';
+        } elseif ($this->rejected_date) {
+            return 'Rejected';
         } elseif ($this->submitted_date) {
             return 'Pending Approval';
         } else {
@@ -109,12 +116,15 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
 
     public function statusIcon()
     {
-        if ($this->approved_date) {
-            return 'check';
-        } elseif ($this->submitted_date) {
-            return 'help';
-        } else {
-            return 'warning';
+        switch ($this->status()) {
+            case 'Approved':
+                return 'check';
+            case 'Rejected':
+                return 'x';
+            case 'Pending Approval':
+                return 'help';
+            default:
+                return 'warning';
         }
     }
 

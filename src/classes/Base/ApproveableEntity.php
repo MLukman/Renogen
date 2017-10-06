@@ -32,6 +32,18 @@ class ApproveableEntity extends Entity
     public $approved_date;
 
     /**
+     * @ManyToOne(targetEntity="User")
+     * @JoinColumn(name="approved_by", referencedColumnName="username", onDelete="CASCADE")
+     * @var User
+     */
+    public $rejected_by;
+
+    /**
+     * @Column(type="datetime", nullable=true)
+     */
+    public $rejected_date;
+
+    /**
      * Approve this entity
      * @param \Renogen\Entity\User $user Approved by
      */
@@ -39,6 +51,8 @@ class ApproveableEntity extends Entity
     {
         $this->submitted_date = new \DateTime();
         $this->submitted_by   = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->rejected_date  = null;
+        $this->rejected_by    = null;
     }
 
     /**
@@ -67,5 +81,17 @@ class ApproveableEntity extends Entity
     {
         $this->approved_date = null;
         $this->approved_by   = null;
+    }
+
+    /**
+     * Approve this entity
+     * @param \Renogen\Entity\User $user Approved by
+     */
+    public function reject(\Renogen\Entity\User $user = null)
+    {
+        $this->rejected_date  = new \DateTime();
+        $this->rejected_by    = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->submitted_date = null;
+        $this->submitted_by   = null;
     }
 }

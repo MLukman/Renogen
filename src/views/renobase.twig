@@ -40,6 +40,19 @@
 				</span>
 			{% endif %}
 		</div>
+	{% elseif item.rejected_date %}
+		<div class="ui red tag label">
+			<i class="ui {{item.statusIcon}} icon"></i>
+			{{item.status}}
+			{% if detailed %}
+				<span class="detail">
+					<i class="ui clock icon"></i>{{item.rejected_date|date('d/m/Y h:ia')}}
+				</span>
+				<span class="detail">
+					<i class="ui user icon"></i>{{item.rejected_by.getName()|default('Anonymous')}}
+				</span>
+			{% endif %}
+		</div>
 	{% else %}
 		<div class="ui red tag label">
 			<i class="ui {{item.statusIcon}} icon"></i>
@@ -73,7 +86,7 @@
 
 {% macro arrayTable(arr, child) %}
 	{% import _self as r %}	
-	<table class="ui compact {% if child %}small{% endif %} table">
+	<table class="ui compact {% if child %}small{% endif %} tablet stackable table">
 		{% for key,val in arr %}
 			<tr>
 				{% if not (key matches '/^[0-9]+$/') %}
