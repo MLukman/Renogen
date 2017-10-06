@@ -97,6 +97,9 @@ class Application extends \Silex\Application
             $this->initializeOrRefreshDatabaseSchemas();
         }
 
+        /* Data Store */
+        $app->register(new DataStore());
+
         /* Twig Template Engine */
         $app->register(new TwigServiceProvider(), array(
             'twig.path' => realpath(__DIR__."/../views"),
@@ -295,9 +298,13 @@ class Application extends \Silex\Application
         return $this['request_stack']->getMasterRequest()->getRequestUri();
     }
 
-    public function addFlashMessage($message)
+    public function addFlashMessage($message, $title = '', $type = 'notice')
     {
-        $this['session']->getFlashBag()->add('message', $message);
+        $this['session']->getFlashBag()->add('message', array(
+            'title' => $title,
+            'text' => $message,
+            'type' => $type,
+        ));
     }
 
     public function title()

@@ -14,7 +14,7 @@ class Attachment extends RenoController
     public function create(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj       = $this->fetchItem($project, $deployment, $item);
+            $item_obj       = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add attachment', $this->app->path('attachment_create', $this->entityParams($item_obj)));
             $attachment_obj = new \Renogen\Entity\Attachment($item_obj);
@@ -28,7 +28,7 @@ class Attachment extends RenoController
                              $attachment)
     {
         try {
-            $attachment_obj = $this->fetchAttachment($project, $deployment, $item, $attachment);
+            $attachment_obj = $this->app['datastore']->fetchAttachment($project, $deployment, $item, $attachment);
             return $this->app
                     ->sendFile($attachment_obj->getFilesystemPath(), 200, array(
                         'Content-type' => $attachment_obj->mime_type))
@@ -42,7 +42,7 @@ class Attachment extends RenoController
                          $attachment)
     {
         try {
-            $attachment_obj = $this->fetchAttachment($project, $deployment, $item, $attachment);
+            $attachment_obj = $this->app['datastore']->fetchAttachment($project, $deployment, $item, $attachment);
             $this->addEntityCrumb($attachment_obj);
             return $this->edit_or_create($attachment_obj, $request);
         } catch (NoResultException $ex) {
@@ -58,8 +58,8 @@ class Attachment extends RenoController
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
-                    $attachment->delete($this->app['em']);
-                    $this->app['em']->flush();
+                    $this->app['datastore']->deleteEntity($attachment);
+                    $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Attachment has been deleted");
                     return $this->redirect('item_view', $this->entityParams($attachment->item));
 
@@ -78,9 +78,9 @@ class Attachment extends RenoController
                             'file' => array('Required'),
                         );
                     }
-                    if ($this->prepareValidateEntity($attachment, static::entityFields, $post)
+                    if ($this->app['datastore']->prepareValidateEntity($attachment, static::entityFields, $post)
                         && empty($context['errors'])) {
-                        $this->saveEntity($attachment, static::entityFields, $post);
+                        $this->app['datastore']->commit($attachment);
                         $this->app->addFlashMessage("Attachment has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($attachment->item));
                     } else {

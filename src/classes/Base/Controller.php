@@ -2,7 +2,8 @@
 
 namespace Renogen\Base;
 
-use Symfony\Component\HttpFoundation\ParameterBag;
+use ReflectionClass;
+use Renogen\Application;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class Controller
@@ -14,7 +15,7 @@ abstract class Controller
     public $title = null;
 
     /**
-     * @var \Renogen\Application
+     * @var Application
      */
     protected $app = null;
 
@@ -27,14 +28,14 @@ abstract class Controller
         'extra_css' => array(),
     );
 
-    public function __construct(\Renogen\Application $app)
+    public function __construct(Application $app)
     {
         $this->app                   = $app;
         $this->app['controller']     = $this;
         $this->basectx['controller'] = $this;
         $this->basectx['crumbs']     = array();
         if (empty($this->title)) {
-            $reflect     = new \ReflectionClass($this);
+            $reflect     = new ReflectionClass($this);
             $this->title = $reflect->getShortName();
         }
     }
@@ -70,25 +71,6 @@ abstract class Controller
             $file = $this->request->getBaseUrl().'/'.$file;
         }
         return $file;
-    }
-
-    public function queryOne($entity, $id_or_criteria)
-    {
-        if (empty($id_or_criteria)) {
-            return null;
-        }
-
-        $repo = $this->em->getRepository($entity);
-        return (is_array($id_or_criteria) ?
-            $repo->findOneBy($id_or_criteria) :
-            $repo->find($id_or_criteria));
-    }
-
-    public function queryMany($entity, Array $criteria = array(),
-                              Array $sort = array())
-    {
-        $repo = $this->em->getRepository($entity);
-        return $repo->findBy($criteria, $sort);
     }
 
     public function redirect($path, Array $params = array())

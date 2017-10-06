@@ -2,6 +2,13 @@
 
 namespace Renogen\Base;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\MappedSuperclass;
+use Doctrine\ORM\Mapping\PreRemove;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 /**
  * @MappedSuperclass @HasLifecycleCallbacks
  */
@@ -34,13 +41,13 @@ abstract class FileEntity extends Entity
 
     /**
      * Temporary uploaded file
-     * @var \Symfony\Component\HttpFoundation\File\UploadedFile
+     * @var UploadedFile
      */
     protected $uploaded_file;
 
     abstract public function getFolder();
 
-    public function delete(\Doctrine\ORM\EntityManager $em)
+    public function delete(EntityManager $em)
     {
         $this->deleteFile();
         parent::delete($em);
@@ -51,7 +58,9 @@ abstract class FileEntity extends Entity
         return $this->getFolder().$this->stored_filename;
     }
 
-    /** @PreRemove */
+    /**
+     * @PreRemove 
+     */
     public function deleteFile()
     {
         if (file_exists($this->getFilesystemPath())) {
@@ -59,7 +68,7 @@ abstract class FileEntity extends Entity
         }
     }
 
-    public function processUploadedFile(\Symfony\Component\HttpFoundation\File\UploadedFile $file,
+    public function processUploadedFile(UploadedFile $file,
                                         array &$errors = array())
     {
         if ($file->isValid()) {
@@ -77,7 +86,9 @@ abstract class FileEntity extends Entity
         }
     }
 
-    /** @PreFlush */
+    /**
+     * @PreFlush 
+     */
     public function storeFile()
     {
         if (!$this->uploaded_file) {

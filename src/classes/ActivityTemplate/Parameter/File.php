@@ -50,7 +50,7 @@ class File extends Parameter
                                            array $parameters, $key,
                                            Application $app)
     {
-        if (isset($parameters[$key]) && ($activity_file = $app['em']->getRepository('\Renogen\Entity\ActivityFile')->findOneBy(array(
+        if (isset($parameters[$key]) && ($activity_file = $app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
             'stored_filename' => $parameters[$key])))) {
             /* @var $activity_file ActivityFile */
             return array(

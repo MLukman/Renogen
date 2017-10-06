@@ -82,7 +82,7 @@ class MultiField extends Parameter
             }
             switch ($p['type']) {
                 case 'file':
-                    if (($activity_file = $app['em']->getRepository('\Renogen\Entity\ActivityFile')->findOneBy(array(
+                    if (($activity_file = $app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
                         'stored_filename' => $parameters[$key][$p['id']])))) {
                         /* @var $activity_file ActivityFile */
                         $data[$p['id']] = array(

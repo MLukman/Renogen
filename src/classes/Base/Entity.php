@@ -2,6 +2,7 @@
 
 namespace Renogen\Base;
 
+use DateTime;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
@@ -9,6 +10,8 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\MappedSuperclass;
+use Doctrine\ORM\Mapping\PrePersist;
+use Doctrine\ORM\Mapping\PreUpdate;
 use Renogen\Application;
 use Renogen\Validation\DoctrineValidator;
 use Securilex\Authorization\SecuredAccessInterface;
@@ -90,17 +93,21 @@ class Entity implements SecuredAccessInterface
         return empty($this->errors);
     }
 
-    /** @PrePersist */
+    /**
+     * @PrePersist 
+     */
     public function defaultCreatedDate()
     {
-        $this->created_date = new \DateTime();
+        $this->created_date = new DateTime();
         $this->created_by   = Application::instance()->userEntity();
     }
 
-    /** @PreUpdate */
+    /**
+     * @PreUpdate 
+     */
     public function defaultUpdatedDate()
     {
-        $this->updated_date = new \DateTime();
+        $this->updated_date = new DateTime();
         $this->updated_by   = Application::instance()->userEntity();
     }
 

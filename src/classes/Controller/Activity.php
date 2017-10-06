@@ -14,8 +14,8 @@ class Activity extends RenoController
     public function create(Request $request, $project, $deployment, $item)
     {
         try {
-            $project_obj            = $this->fetchProject($project);
-            $item_obj               = $this->fetchItem($project_obj, $deployment, $item);
+            $project_obj            = $this->app['datastore']->fetchProject($project);
+            $item_obj               = $this->app['datastore']->fetchItem($project_obj, $deployment, $item);
             $this->checkAccess(array('entry', 'approval'), $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add activity', $this->app->path('activity_create', $this->entityParams($item_obj)));
@@ -31,7 +31,7 @@ class Activity extends RenoController
                          $activity)
     {
         try {
-            $activity_obj = $this->fetchActivity($project, $deployment, $item, $activity);
+            $activity_obj = $this->app['datastore']->fetchActivity($project, $deployment, $item, $activity);
             $this->checkAccess(array('entry', 'approval'), $activity_obj);
             $this->addEntityCrumb($activity_obj);
             return $this->edit_or_create($activity_obj, $request);
@@ -48,13 +48,13 @@ class Activity extends RenoController
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
-                    $activity->delete($this->app['em']);
-                    $this->app['em']->flush();
+                    $this->app['datastore']->deleteEntity($activity);
+                    $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Activity has been deleted");
                     return $this->redirect('item_view', $this->entityParams($activity->item));
 
                 case 'Next':
-                    $this->prepareValidateEntity($activity, static::entityFields, $post);
+                    $this->app['datastore']->prepareValidateEntity($activity, static::entityFields, $post);
                     $context['errors'] = $activity->errors;
                     break;
 
@@ -72,10 +72,9 @@ class Activity extends RenoController
                         }
                     }
 
-                    if ($this->prepareValidateEntity($activity, static::entityFields, $post)
+                    if ($this->app['datastore']->prepareValidateEntity($activity, static::entityFields, $post)
                         && empty($errors)) {
-                        $this->saveEntity($activity, static::entityFields, $post);
-                        $this->app['em']->flush();
+                        $this->app['datastore']->commit();
                         $this->app->addFlashMessage("Activity has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($activity->item));
                     } else {
@@ -91,7 +90,7 @@ class Activity extends RenoController
                                   $item, $activity, $file)
     {
         try {
-            if (!($activity_file = $this->app['em']->getRepository('\Renogen\Entity\ActivityFile')->find($file))) {
+            if (!($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', $file))) {
                 throw new NoResultException();
             }
             return $this->app

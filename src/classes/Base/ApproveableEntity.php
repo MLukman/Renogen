@@ -2,6 +2,14 @@
 
 namespace Renogen\Base;
 
+use DateTime;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\MappedSuperclass;
+use Renogen\Application;
+use Renogen\Entity\User;
+
 /**
  * @MappedSuperclass
  */
@@ -45,12 +53,12 @@ class ApproveableEntity extends Entity
 
     /**
      * Approve this entity
-     * @param \Renogen\Entity\User $user Approved by
+     * @param User $user Approved by
      */
-    public function submit(\Renogen\Entity\User $user = null)
+    public function submit(User $user = null)
     {
-        $this->submitted_date = new \DateTime();
-        $this->submitted_by   = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->submitted_date = new DateTime();
+        $this->submitted_by   = $user ?: Application::instance()->userEntity();
         $this->rejected_date  = null;
         $this->rejected_by    = null;
     }
@@ -66,12 +74,12 @@ class ApproveableEntity extends Entity
 
     /**
      * Approve this entity
-     * @param \Renogen\Entity\User $user Approved by
+     * @param User $user Approved by
      */
-    public function approve(\Renogen\Entity\User $user = null)
+    public function approve(User $user = null)
     {
-        $this->approved_date = new \DateTime();
-        $this->approved_by   = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->approved_date = new DateTime();
+        $this->approved_by   = $user ?: Application::instance()->userEntity();
     }
 
     /**
@@ -85,12 +93,12 @@ class ApproveableEntity extends Entity
 
     /**
      * Approve this entity
-     * @param \Renogen\Entity\User $user Approved by
+     * @param User $user Approved by
      */
-    public function reject(\Renogen\Entity\User $user = null)
+    public function reject(User $user = null)
     {
-        $this->rejected_date  = new \DateTime();
-        $this->rejected_by    = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->rejected_date  = new DateTime();
+        $this->rejected_by    = $user ?: Application::instance()->userEntity();
         $this->submitted_date = null;
         $this->submitted_by   = null;
     }

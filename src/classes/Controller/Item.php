@@ -15,7 +15,7 @@ class Item extends RenoController
     public function create(Request $request, $project, $deployment)
     {
         try {
-            $deployment_obj = $this->fetchDeployment($project, $deployment);
+            $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->entityParams($deployment_obj)));
@@ -28,7 +28,7 @@ class Item extends RenoController
     public function view(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $this->addEntityCrumb($item_obj);
             return $this->render('item_view', array(
                     'item' => $item_obj,
@@ -41,8 +41,12 @@ class Item extends RenoController
     public function edit(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj = $this->fetchItem($project, $deployment, $item);
-            $this->checkAccess(array('entry', 'approval'), $item_obj);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
+            if ($item_obj->approved_date) {
+                $this->checkAccess(array('approval'), $item_obj);
+            } else {
+                $this->checkAccess(array('entry', 'approval'), $item_obj);
+            }
             $this->addEntityCrumb($item_obj);
             $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
             return $this->edit_or_create($item_obj, $request->request);
@@ -55,7 +59,7 @@ class Item extends RenoController
                            $action)
     {
         try {
-            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $actioned = null;
             switch ($action) {
                 case 'submit':
@@ -86,7 +90,7 @@ class Item extends RenoController
                     $item_obj->comments->add($comment);
                     break;
             }
-            $this->app['em']->flush($item_obj);
+            $this->app['datastore']->commit($item_obj);
             if ($actioned) {
                 $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");
             }
@@ -104,16 +108,13 @@ class Item extends RenoController
             switch ($post->get('_action')) {
                 case 'Move':
                     try {
-                        $ndeployment = $this->fetchDeployment($item->deployment->project, $post->get('deployment'));
+                        $ndeployment = $this->app['datastore']->fetchDeployment($item->deployment->project, $post->get('deployment'));
                         if ($ndeployment != $item->deployment) {
                             $data = new ParameterBag(array(
                                 'deployment' => $ndeployment,
-                                'approved_date' => null,
-                                'approved_by' => null,
-                                'submitted_date' => null,
-                                'submitted_by' => null,
                             ));
-                            if ($this->saveEntity($item, $data->keys(), $data)) {
+                            if ($this->app['datastore']->prepareValidateEntity($item, $data->keys(), $data)) {
+                                $this->app['datastore']->commit($item);
                                 $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
                                 return $this->redirect('item_view', $this->entityParams($item));
                             }
@@ -129,13 +130,14 @@ class Item extends RenoController
                     break;
 
                 case 'Delete':
-                    $item->delete($this->app['em']);
-                    $this->app['em']->flush();
+                    $this->app['datastore']->deleteEntity($item);
+                    $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
                     return $this->redirect('deployment_view', $this->entityParams($item->deployment));
 
                 default:
-                    if ($this->saveEntity($item, static::entityFields, $post)) {
+                    if ($this->app['datastore']->prepareValidateEntity($item, static::entityFields, $post)) {
+                        $this->app['datastore']->commit($item);
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($item));
                     } else {
@@ -150,9 +152,10 @@ class Item extends RenoController
     public function comment_add(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $comment  = new ItemComment($item_obj);
-            if ($this->saveEntity($comment, array('text'), $request->request)) {
+            if ($this->app['datastore']->prepareValidateEntity($comment, array('text'), $request->request)) {
+                $this->app['datastore']->commit($comment);
                 $this->app->addFlashMessage("Succesfully post a comment");
             } else {
                 $this->app->addFlashMessage("Failed to post a comment: please ensure you enter a reply and please try again");
@@ -179,11 +182,11 @@ class Item extends RenoController
                                               $comment, \DateTime $date = null)
     {
         try {
-            $item_obj = $this->fetchItem($project, $deployment, $item);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             if ($item_obj->comments->containsKey($comment)) {
                 $comment_obj               = $item_obj->comments->get($comment);
                 $comment_obj->deleted_date = $date;
-                $this->app['em']->flush($comment_obj);
+                $this->app['datastore']->commit($comment_obj);
             }
             return $this->redirect('item_view', $this->entityParams($item_obj));
         } catch (NoResultException $ex) {

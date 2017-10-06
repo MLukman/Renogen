@@ -2,20 +2,25 @@
 
 namespace Renogen\Entity;
 
+use DateInterval;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
 use Renogen\Base\Entity;
-use Securilex\Authorization\SecuredAccessInterface;
-use Securilex\Authorization\SecuredAccessTrait;
+use Twig\Template;
+use const ROOTDIR;
 
 /**
  * @Entity @Table(name="projects")
  */
 class Project extends Entity
 {
-
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */
@@ -47,7 +52,7 @@ class Project extends Entity
     public $categories = array();
 
     /**
-     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="name", orphanRemoval=true)
+     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true)
      * @var ArrayCollection
      */
     public $deployments = null;
@@ -112,7 +117,7 @@ class Project extends Entity
         $criteria = Criteria::create();
         switch (strlen($datestring)) {
             case 12:
-                $criteria->where(Criteria::expr()->in('execute_date', array(\DateTime::createFromFormat('!YmdHi', $datestring))));
+                $criteria->where(Criteria::expr()->eq('execute_date', DateTime::createFromFormat('!YmdHi', $datestring)));
                 $matching = $this->deployments->matching($criteria);
                 if ($matching->count() == 0) {
                     return $this->getDeploymentsByDateString(substr($datestring, 0, 8), true);
@@ -120,10 +125,10 @@ class Project extends Entity
                 return $matching;
 
             case 8:
-                $criteria->andWhere(new Comparison('execute_date', '>=', \DateTime::createFromFormat('!Ymd', $datestring)))
+                $criteria->andWhere(new Comparison('execute_date', '>=', DateTime::createFromFormat('!Ymd', $datestring)))
                     ->orderBy(array('execute_date' => 'ASC'));
                 if (!$include_future) {
-                    $criteria->andWhere(new Comparison('execute_date', '<', \DateTime::createFromFormat('!Ymd', $datestring)->add(new \DateInterval("P1D"))));
+                    $criteria->andWhere(new Comparison('execute_date', '<', DateTime::createFromFormat('!Ymd', $datestring)->add(new DateInterval("P1D"))));
                 }
                 return $this->deployments->matching($criteria);
 

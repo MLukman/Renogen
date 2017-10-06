@@ -12,7 +12,7 @@ class Runbook extends RenoController
     public function view(Request $request, $project, $deployment)
     {
         try {
-            $deployment_obj = $this->fetchDeployment($project, $deployment);
+            $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
                 return $this->redirect('runbook_view', $this->entityParams($deployment_obj));
             }

@@ -2,6 +2,9 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Renogen\Base\FileEntity;
 
 /**

@@ -51,9 +51,12 @@
 				return dateObject;
 			}
 			function dateFieldConfig(minDate, datetime_mode) {
-				return {
+				var cfg = {
 					type: datetime_mode ? 'datetime' : 'date',
-					minDate: minDate ? new Date(Math.min(minDate, new Date())) : new Date(),
+					//today: true,
+					className: {
+						todayCell: 'ui header today'
+					},
 					formatter: {
 						date: function (date, settings) {
 							if (!date)
@@ -88,6 +91,10 @@
 						}
 					}
 				};
+				if (minDate !== null) {
+					cfg.minDate = new Date(Math.min(minDate, new Date()));
+				}
+				return cfg;
 			}
 
 			$(function () {
@@ -196,7 +203,14 @@
 		<div id="topfiller" class="no-print"></div>
 
 		{% for message in app.session.flashbag.get('message') %}
-			<div class="ui floating notice flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">{{message}}</div>
+			<div class="ui floating {{message.type}} flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">
+				{% if message.title %}
+					<div class="header">
+						{{message.title}}
+					</div>
+				{% endif %}
+				<p>{{message.text|nl2br}}</p>
+			</div>
 		{% endfor %}
 
 		<div class="ui basic segment">
@@ -252,7 +266,7 @@
 	</div>
 	<script>
 		$(function () {
-			$('#{{id}}').calendar(dateFieldConfig(dateParser("{{value}}"), {{datetime_mode ? 1:0}}));
+			$('#{{id}}').calendar(dateFieldConfig(null, {{datetime_mode ? 1:0}}));
 		});
 	</script>
 {% endmacro %}

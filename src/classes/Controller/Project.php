@@ -21,7 +21,8 @@ class Project extends RenoController
     {
         if (!($project instanceof \Renogen\Entity\Project)) {
             $name    = $project;
-            if (!($project = $this->queryOne('\Renogen\Entity\Project', array('name' => $name)))) {
+            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
+                'name' => $name)))) {
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
@@ -35,7 +36,8 @@ class Project extends RenoController
     {
         if (!($project instanceof \Renogen\Entity\Project)) {
             $name    = $project;
-            if (!($project = $this->queryOne('\Renogen\Entity\Project', array('name' => $name)))) {
+            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
+                'name' => $name)))) {
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
@@ -53,8 +55,8 @@ class Project extends RenoController
         $context = array();
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
-                $project->delete($this->app['em']);
-                $this->app['em']->flush();
+                $this->app['datastore']->deleteEntity($project);
+                $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->redirect('home');
             }
@@ -62,7 +64,8 @@ class Project extends RenoController
                     ? explode("\n", str_replace("\r\n", "\n", $categories)) : null);
             $project->modules    = (($modules             = trim($post->get('modules')))
                     ? explode("\n", str_replace("\r\n", "\n", $modules)) : null);
-            if ($this->saveEntity($project, static::entityFields, $post)) {
+            if ($this->app['datastore']->prepareValidateEntity($project, static::entityFields, $post)) {
+                $this->app['datastore']->commit($project);
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");
                 return $this->redirect('project_view', $this->entityParams($project));
             } else {

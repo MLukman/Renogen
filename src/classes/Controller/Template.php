@@ -9,12 +9,13 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Template extends RenoController
 {
-    const entityFields = array('class', 'title', 'description', 'stage', 'priority', 'parameters');
+    const entityFields = array('class', 'title', 'description', 'stage', 'priority',
+        'parameters');
 
     public function index(Request $request, $project)
     {
         try {
-            $project_obj = $this->fetchProject($project);
+            $project_obj = $this->app['datastore']->fetchProject($project);
             $this->addEntityCrumb($project_obj);
             $this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
             return $this->render('template_list', array('project' => $project_obj));
@@ -26,7 +27,7 @@ class Template extends RenoController
     public function create(Request $request, $project)
     {
         try {
-            $project_obj = $this->fetchProject($project);
+            $project_obj = $this->app['datastore']->fetchProject($project);
             $this->addEntityCrumb($project_obj);
             $this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
             $this->addCreateCrumb('Create activity template', $this->app->path('template_create', $this->entityParams($project_obj)));
@@ -39,7 +40,7 @@ class Template extends RenoController
     public function view(Request $request, $project, $template)
     {
         try {
-            $template_obj = $this->fetchTemplate($project, $template);
+            $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
             return $this->render('template_view', array('template' => $template_obj));
         } catch (NoResultException $ex) {
@@ -50,7 +51,7 @@ class Template extends RenoController
     public function edit(Request $request, $project, $template)
     {
         try {
-            $template_obj = $this->fetchTemplate($project, $template);
+            $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
             $this->addEditCrumb($this->app->path('template_edit', $this->entityParams($template_obj)));
             return $this->edit_or_create($template_obj, $request->request);
@@ -75,7 +76,7 @@ class Template extends RenoController
             $post->get('_action') != 'Next') {
 
             if ($post->get('_action') == 'Delete') {
-                $template->delete($this->app['em']);
+                $this->app['datastore']->deleteEntity($template);
                 // Adjust priority of the other templates
                 $qb = $this->app['em']->createQueryBuilder()
                     ->select('e')
@@ -85,7 +86,7 @@ class Template extends RenoController
                 foreach ($qb->getQuery()->getResult() as $atemplate) {
                     $atemplate->priority--;
                 }
-                $this->app['em']->flush();
+                $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Template '$template->title' has been deleted");
                 return $this->redirect('template_list', $this->entityParams($template));
             }
@@ -99,7 +100,7 @@ class Template extends RenoController
             $oldpriority = $template->priority ?:
                 $template->project->templates->count() + 1;
 
-            if ($this->prepareValidateEntity($template, static::entityFields, $post)
+            if ($this->app['datastore']->prepareValidateEntity($template, static::entityFields, $post)
                 && empty($errors)) {
                 if ($oldpriority != $template->priority) {
                     $qb = $this->app['em']->createQueryBuilder()
@@ -120,9 +121,9 @@ class Template extends RenoController
                             $atemplate->priority--;
                         }
                     }
-                    $this->app['em']->flush();
                 }
-                $this->saveEntity($template, static::entityFields, $post);
+                $this->app['datastore']->prepareValidateEntity($template, static::entityFields, $post);
+                $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
                 return $this->redirect('template_view', $this->entityParams($template));
             } else {

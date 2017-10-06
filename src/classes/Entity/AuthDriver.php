@@ -2,6 +2,8 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
 use Renogen\Base\Entity;
 
 /**

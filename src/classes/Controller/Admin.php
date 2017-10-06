@@ -2,6 +2,7 @@
 
 namespace Renogen\Controller;
 
+use Exception;
 use Renogen\Base\RenoController;
 use Renogen\Entity\User;
 use Renogen\Entity\UserProject;
@@ -19,7 +20,7 @@ class Admin extends RenoController
     public function users(Request $request)
     {
         $this->addCrumb('Users', $this->app->path('admin_users'), 'users');
-        return $this->render('admin_user_list', array('users' => $this->queryMany('\Renogen\Entity\User')));
+        return $this->render('admin_user_list', array('users' => $this->app['datastore']->queryMany('\Renogen\Entity\User')));
     }
 
     public function user_create(Request $request)
@@ -31,7 +32,7 @@ class Admin extends RenoController
 
     public function user_edit(Request $request, $username)
     {
-        $user = $this->queryOne('\Renogen\Entity\User', $username);
+        $user = $this->app['datastore']->queryOne('\Renogen\Entity\User', $username);
         $this->addCrumb('Users', $this->app->path('admin_users'), 'users');
         $this->addEditCrumb($this->app->path('admin_user_edit', array('username' => $username)));
         return $this->edit_or_create($user, $request->request);
@@ -42,38 +43,36 @@ class Admin extends RenoController
         $errors = array();
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
-                $user->delete($this->app['em']);
-                $this->app['em']->flush();
+                $this->app['datastore']->deleteEntity($user);
+                $this->app['datastore']->commit();
                 $this->app->addFlashMessage("User '$user->username' has been deleted");
                 return $this->redirect('admin_users');
             }
             if (!$post->has('roles')) {
                 $post->set('roles', array());
             }
-            if ($this->saveEntity($user, array('auth', 'username', 'shortname', 'roles'), $post)) {
+            if ($this->app['datastore']->prepareValidateEntity($user, array('auth',
+                    'username', 'shortname', 'roles'), $post)) {
                 foreach ($post->get('project_role', array()) as $project_name => $role) {
                     try {
-                        $project      = $this->fetchProject($project_name);
+                        $project      = $this->app['datastore']->fetchProject($project_name);
                         $project_role = $project->userProjects->containsKey($user->username)
                                 ? $project->userProjects->get($user->username) : null;
                         if ($role == 'none') {
                             if ($project_role) {
-                                $project_role->delete($this->app['em']);
+                                $this->app['datastore']->deleteEntity($project_role);
                             }
                         } else {
                             if (!$project_role) {
                                 $project_role = new UserProject($project, $user);
-                                $this->app['em']->persist($project_role);
                             }
                             $project_role->role = $role;
                         }
-                        if ($project_role) {
-                            $this->app['em']->flush($project_role);
-                        }
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         continue;
                     }
                 }
+                $this->app['datastore']->commit();
                 return $this->redirect('admin_users');
             } else {
                 $errors = $user->errors;
@@ -82,8 +81,8 @@ class Admin extends RenoController
 
         return $this->render('admin_user_form', array(
                 'user' => $user,
-                'auths' => $this->queryMany('\Renogen\Entity\AuthDriver'),
-                'projects' => $this->queryMany('\Renogen\Entity\Project'),
+                'auths' => $this->app['datastore']->queryMany('\Renogen\Entity\AuthDriver'),
+                'projects' => $this->app['datastore']->queryMany('\Renogen\Entity\Project'),
                 'errors' => $errors,
         ));
     }

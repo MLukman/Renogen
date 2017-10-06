@@ -2,14 +2,12 @@
 
 namespace Renogen\Base;
 
-use Doctrine\ORM\NoResultException;
 use Renogen\Entity\Activity;
 use Renogen\Entity\Attachment;
 use Renogen\Entity\Deployment;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
 use Renogen\Entity\Template;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 abstract class RenoController extends Controller
@@ -92,167 +90,6 @@ abstract class RenoController extends Controller
     protected function addCreateCrumb($text, $path)
     {
         $this->addCrumb($text, $path, 'plus');
-    }
-
-    /**
-     *
-     * @param type $project
-     * @return Project
-     * @throws NoResultException
-     */
-    protected function fetchProject($project)
-    {
-        if (!($project instanceof Project)) {
-            $name    = $project;
-            if (!($project = $this->queryOne('\Renogen\Entity\Project', array('name' => $name)))) {
-                throw new NoResultException("There is not such project with name '$name'");
-            }
-        }
-        return $project;
-    }
-
-    /**
-     *
-     * @param type $project
-     * @param type $deployment
-     * @return Deployment
-     * @throws NoResultException
-     */
-    protected function fetchDeployment($project, $deployment)
-    {
-        if ($deployment instanceof Deployment) {
-            return $deployment;
-        }
-
-        $name           = $deployment;
-        $project_obj    = $this->fetchProject($project);
-        if (($deployment_obj = $project_obj->deployments->get($name))) {
-            return $deployment_obj;
-        } elseif (($deployments = $project_obj->getDeploymentsByDateString($deployment))
-            && $deployments->count() > 0) {
-            return $deployments->first();
-        }
-        throw new NoResultException("There is not such deployment matching '$deployment'");
-    }
-
-    /**
-     *
-     * @param type $project
-     * @param type $deployment
-     * @param type $item
-     * @return Item
-     * @throws NoResultException
-     */
-    protected function fetchItem($project, $deployment, $item)
-    {
-        if (!($item instanceof Item)) {
-            $id   = $item;
-            if (!($item = $this->queryOne('\Renogen\Entity\Item', array('id' => $id)))) {
-                throw new NoResultException("There is not such deployment with id '$id'");
-            }
-        }
-        return $item;
-    }
-
-    /**
-     *
-     * @param type $project
-     * @param type $deployment
-     * @param type $item
-     * @param type $activity
-     * @return Activity
-     * @throws NoResultException
-     */
-    protected function fetchActivity($project, $deployment, $item, $activity)
-    {
-        if (!($activity instanceof Activity)) {
-            $id       = $activity;
-            $item_obj = $this->fetchItem($project, $deployment, $item);
-            if (!($activity = $item_obj->activities->get($id))) {
-                throw new NoResultException("There is not such activity with id '$id'");
-            }
-        }
-        return $activity;
-    }
-
-    /**
-     *
-     * @param type $project
-     * @param type $deployment
-     * @param type $item
-     * @param type $attachment
-     * @return Attachment
-     * @throws NoResultException
-     */
-    protected function fetchAttachment($project, $deployment, $item, $attachment)
-    {
-        if (!($attachment instanceof Attachment)) {
-            $id         = $attachment;
-            $item_obj   = $this->fetchItem($project, $deployment, $item);
-            if (!($attachment = $item_obj->attachments->get($id))) {
-                throw new NoResultException("There is not such attachment with id '$id'");
-            }
-        }
-        return $attachment;
-    }
-
-    /**
-     *
-     * @param type $project
-     * @param type $template
-     * @return Template
-     * @throws NoResultException
-     */
-    protected function fetchTemplate($project, $template)
-    {
-        if (!($template instanceof Template)) {
-            $id          = $template;
-            $project_obj = $this->fetchProject($project);
-            if (!($template    = $project_obj->templates->get($id))) {
-                throw new NoResultException("There is not such template with id '$name'");
-            }
-        }
-        return $template;
-    }
-
-    /**
-     * 
-     * @param Entity $entity
-     * @param type $fields
-     * @param ParameterBag $data
-     * @return boolean
-     */
-    protected function saveEntity(Entity &$entity, $fields, ParameterBag $data)
-    {
-        if ($this->prepareValidateEntity($entity, $fields, $data)) {
-            $this->app['em']->persist($entity);
-            $this->app['em']->flush($entity);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    protected function prepareValidateEntity(Entity &$entity, $fields,
-                                             ParameterBag $data)
-    {
-        foreach ($fields as $field) {
-            if (!$data->has($field)) {
-                continue;
-            }
-            if (substr($field, -5) == '_date') {
-                $raw_date = $data->get($field);
-                if (strlen($raw_date) <= 10) {
-                    $raw_date .= ' 00:00 AM';
-                }
-                $entity->$field = (!$raw_date ? null : \DateTime::createFromFormat('d/m/Y h:i A', $raw_date));
-            } elseif (substr($field, -3) == '_by') {
-                $entity->$field = $this->queryOne('\Renogen\Entity\User', $data->get($field));
-            } else {
-                $entity->$field = $data->get($field);
-            }
-        }
-        return $entity->validate($this->app['em']);
     }
 
     protected function checkAccess($attr, Entity $entity)

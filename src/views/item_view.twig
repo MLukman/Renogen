@@ -2,6 +2,9 @@
 
 {% block content %}
 	{% set params = controller.entityParams(item) %}
+	{% set is_acl_approval = app.securilex.isGranted('approval',item.deployment.project) %}
+	{% set is_acl_entry = app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+	{% set is_acl_execute = app.securilex.isGranted(['execute','entry','approval'],item.deployment.project) %}
 	<h1 class="ui dividing header">
 		<div>
 			<small>
@@ -12,18 +15,16 @@
 			<i class="ui idea icon"></i>{{item.displayTitle}}
 		</span>
 		<div>
-			{% if not item.approved_date %}
-				{% if app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
-					<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
-				{% endif %}
+			{% if (item.approved_date and is_acl_approval) or (not item.approved_date and is_acl_entry) %}
+				<a class="ui right floated button" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
 			{% endif %}
 			{% if not item.submitted_date %}
-				{% if app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+				{% if is_acl_approval or is_acl_entry %}
 					<a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
 					   onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
 				{% endif %}
 			{% elseif not item.approved_date %}
-				{% if app.securilex.isGranted('approval',item.deployment.project) %}
+				{% if is_acl_approval %}
 					<button id="reject_button" class="ui right floated red button no-print"><i class="ui x icon"></i>Reject</button>
 					<div class="ui popup">
 						<form class="ui form center aligned basic segment" style="width: 400px" method="POST" action="{{app.path('item_reject',params)}}">
@@ -40,7 +41,7 @@
 					   onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
 				{% endif %}
 			{% else %}
-				{% if app.securilex.isGranted('approval',item.deployment.project) %}
+				{% if is_acl_approval %}
 					<a class="ui right floated red button no-print" href="{{app.path('item_unapprove',params)}}"
 					   onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
 				{% endif %}
@@ -62,7 +63,7 @@
 				<span>
 					<i class="ui add to cart icon"></i> Activities
 				</span>
-				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+				{% if not item.approved_date and is_acl_entry %}
 					<a class="ui right floated primary button no-print" href="{{app.path('activity_create',params)}}">
 						<i class="ui plus icon"></i>Add activity
 					</a>
@@ -75,7 +76,7 @@
 						<th class="ui collapsing">#</th>
 						<th>Template</th>
 						<th>Description</th>
-							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+							{% if not item.approved_date and is_acl_entry %}
 							<th class="ui collapsing no-print">Action</th>
 							{% endif %}
 					</tr>
@@ -93,10 +94,12 @@
 								{% endif %}
 								{{activity.template.title}}
 							</td>
-							<td class="ui top aligned" style="max-width: 600px; overflow-x: auto">
-								{{ r.arrayTable(description) }}
+							<td class="ui top aligned" style="max-width: 600px; overflow-x: auto;">
+								<div style="max-height: 400px; overflow-y: auto;">
+									{{ r.arrayTable(description) }}
+								</div>
 							</td>
-							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+							{% if not item.approved_date and is_acl_entry %}
 								<td class="ui top aligned collapsing no-print">
 									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
 										<i class="ui pencil icon"></i>
@@ -116,7 +119,7 @@
 				<span>
 					<i class="ui attach icon"></i> Attachments
 				</span>
-				{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+				{% if not item.approved_date and is_acl_entry %}
 					<a class="ui right floated primary button no-print" href="{{app.path('attachment_create',params)}}">
 						<i class="ui plus icon"></i>Add attachment
 					</a>
@@ -130,7 +133,7 @@
 						<th>File Name &amp; Type</th>
 						<th>Description</th>
 						<th class="ui collapsing">File Size</th>
-							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+							{% if not item.approved_date and is_acl_entry %}
 							<th class="ui collapsing no-print">Action</th>
 							{% endif %}
 					</tr>
@@ -149,7 +152,7 @@
 							</td>
 							<td>{{attachment.description}}</td>
 							<td class="ui collapsing">{{attachment.filesize}}</td>
-							{% if not item.approved_date and app.securilex.isGranted(['entry','approval'],item.deployment.project) %}
+							{% if not item.approved_date and is_acl_entry %}
 								<td class="ui collapsing no-print">
 									<a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
 										<i class="ui pencil icon"></i>
@@ -208,7 +211,7 @@
 					{% else %}
 						<em>No comments yet</em>
 					{% endfor %}
-					{% if app.securilex.isGranted(['execute','entry','approval'],item.deployment.project) %}
+					{% if is_acl_execute %}
 						<form class="ui center aligned form basic segment no-print" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
 							<h4 class="ui horizontal divider header">
 								Add comment

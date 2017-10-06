@@ -5,10 +5,13 @@ namespace Renogen\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToMany;
 use Renogen\Application;
 use Renogen\Base\Entity;
-use Securilex\Authorization\SecuredAccessInterface;
-use Securilex\Authorization\SecuredAccessTrait;
 
 /**
  * @Entity @Table(name="deployments")
@@ -61,6 +64,11 @@ class Deployment extends Entity
     {
         $this->project = $project;
         $this->items   = new ArrayCollection();
+    }
+
+    public function name()
+    {
+        return $this->datetimeString();
     }
 
     public function displayTitle()
