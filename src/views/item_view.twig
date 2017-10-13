@@ -28,9 +28,9 @@
 					<button id="reject_button" class="ui right floated red button no-print"><i class="ui x icon"></i>Reject</button>
 					<div class="ui popup">
 						<form class="ui form center aligned basic segment" style="width: 400px" method="POST" action="{{app.path('item_reject',params)}}">
-							<div class="ui field">
-								<label class="ui top attached large label">Rejection reason</label>
-								<textarea placeholder="Explain briefly why this item is to be rejected" name="reason"></textarea>
+							<div class="ui required field">
+								<label class="ui top attached large label">Rejection remark</label>
+								<textarea placeholder="Explain briefly why this item is to be rejected" name="remark"></textarea>
 							</div>
 							<div class="ui field">
 								<input class="ui red button" type="submit" value="Confirm reject" />

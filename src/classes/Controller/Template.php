@@ -121,9 +121,9 @@ class Template extends RenoController
                             $atemplate->priority--;
                         }
                     }
+                    $this->app['datastore']->commit();
                 }
-                $this->app['datastore']->prepareValidateEntity($template, static::entityFields, $post);
-                $this->app['datastore']->commit();
+                $this->app['datastore']->commit($template);
                 $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
                 return $this->redirect('template_view', $this->entityParams($template));
             } else {

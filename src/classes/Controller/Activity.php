@@ -74,7 +74,7 @@ class Activity extends RenoController
 
                     if ($this->app['datastore']->prepareValidateEntity($activity, static::entityFields, $post)
                         && empty($errors)) {
-                        $this->app['datastore']->commit();
+                        $this->app['datastore']->commit($activity);
                         $this->app->addFlashMessage("Activity has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($activity->item));
                     } else {

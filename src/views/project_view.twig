@@ -8,6 +8,7 @@
 		</span>
 		{% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
 			<a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
+			<a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
 		{% endif %}
 	</h1>
 

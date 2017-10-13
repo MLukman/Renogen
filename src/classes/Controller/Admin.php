@@ -53,6 +53,7 @@ class Admin extends RenoController
             }
             if ($this->app['datastore']->prepareValidateEntity($user, array('auth',
                     'username', 'shortname', 'roles'), $post)) {
+                $this->app['datastore']->commit($user);
                 foreach ($post->get('project_role', array()) as $project_name => $role) {
                     try {
                         $project      = $this->app['datastore']->fetchProject($project_name);
@@ -67,12 +68,12 @@ class Admin extends RenoController
                                 $project_role = new UserProject($project, $user);
                             }
                             $project_role->role = $role;
+                            $this->app['datastore']->commit($project_role);
                         }
                     } catch (Exception $e) {
                         continue;
                     }
                 }
-                $this->app['datastore']->commit();
                 return $this->redirect('admin_users');
             } else {
                 $errors = $user->errors;

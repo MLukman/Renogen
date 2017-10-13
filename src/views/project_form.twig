@@ -5,7 +5,6 @@
 	<h1 class="ui header">
 		{% if is_existing %}
 			Edit project
-			<a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
 		{% else %}
 			Create project
 		{% endif %}
@@ -47,7 +46,7 @@
 			<div class="ui field">
 				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} project" />
 				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-				{% if is_existing %}
+				{% if is_existing and app.securilex.isGranted('ROLE_ADMIN') %}
 					<input type="submit" class="ui red right floated button" name="_action" value="Delete"
 						   onclick="return prompt('Are you sure you want to delete? Enter project title to delete') == '{{project.title}}'" />
 				{% endif %}

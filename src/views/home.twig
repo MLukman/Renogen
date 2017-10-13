@@ -10,7 +10,8 @@
 	<p>&nbsp;</p>
 	<div class="ui three stackable cards secondary segment">
 		{% for project in projects %}
-			<a class="ui card" href="{{app.path('project_view', { project: project.name })}}">
+			{% set has_access = app.securilex.isGranted(['view','execute','entry','approval'],project) %}
+			<a class="ui card" {% if has_access %}href="{{app.path('project_view', { project: project.name })}}"{% endif %}>
 				<div class="content">
 					<div class="ui top left blue ribbon label">
 						<h2><i class="ui cube icon"></i> {{project.title}}</h2>
@@ -24,7 +25,11 @@
 				</div>
 				<div class="extra content">
 					<div class="ui meta">
-						{{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
+						{% if has_access %}
+							{{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
+						{% else %}
+							You have no access to this project
+						{% endif %}
 					</div>
 				</div>
 			</a>

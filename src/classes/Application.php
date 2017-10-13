@@ -4,6 +4,7 @@ namespace Renogen;
 
 define('ROOTDIR', realpath(__DIR__.'/../..'));
 
+use DateTime;
 use Doctrine\Common\Cache\ArrayCache;
 use Doctrine\Common\Proxy\AbstractProxyFactory;
 use Doctrine\DBAL\DriverManager;
@@ -11,8 +12,10 @@ use Doctrine\DBAL\Logging\DebugStack;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
+use Exception;
 use Renogen\ActivityTemplate\BaseClass;
-use Renogen\ActivityTemplate\Impl\Rundeck;
+use Renogen\Auth\Driver\LDAP;
+use Renogen\Auth\Driver\Password;
 use Renogen\Controller\Activity;
 use Renogen\Controller\Admin;
 use Renogen\Controller\Attachment;
@@ -24,8 +27,8 @@ use Renogen\Controller\Runbook;
 use Renogen\Controller\Template;
 use Renogen\Entity\AuthDriver;
 use Renogen\Entity\User;
-use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
 use Securilex\Authorization\SecuredAccessVoter;
+use Securilex\Authorization\SubjectPrefixVoter;
 use Securilex\Doctrine\DoctrineMutableUserProvider;
 use Securilex\Firewall;
 use Securilex\ServiceProvider;
@@ -35,8 +38,9 @@ use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
  * The main Application class for GitSync. This class is the entrypoint for all
@@ -152,10 +156,10 @@ class Application extends \Silex\Application
 
         $this->security->addFirewall($this->firewall);
         $this->security->addAuthorizationVoter(new SecuredAccessVoter());
-        $this->security->addAuthorizationVoter(\Securilex\Authorization\SubjectPrefixVoter::instance());
+        $this->security->addAuthorizationVoter(SubjectPrefixVoter::instance());
         $this->register($this->security);
 
-        \Securilex\Authorization\SubjectPrefixVoter::instance()
+        SubjectPrefixVoter::instance()
             ->addSubjectPrefix(array('admin', 'project_create'), 'ROLE_ADMIN');
 
         /* Login page (not using controller because too simple) */
@@ -175,7 +179,22 @@ class Application extends \Silex\Application
                 return; // allow access
             }
 
-            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+            throw new AccessDeniedException();
+        });
+
+        $this->error(function (Exception $e, $code) {
+            $error = array(
+                'message' => $e->getMessage(),
+            );
+
+            if ($e instanceof AccessDeniedHttpException) {
+                $error['message'] = 'You are not authorized to access this page.';
+                $error['title']   = 'Access Denied';
+            }
+
+            return $this['twig']->render("exception.twig", array(
+                    'error' => $error,
+            ));
         });
     }
 
@@ -349,14 +368,14 @@ class Application extends \Silex\Application
 
         if (count($em->getRepository('\Renogen\Entity\AuthDriver')->findAll()) == 0) {
             $auth_password               = new AuthDriver('password');
-            $auth_password->class        = Auth\Driver\Password::class;
-            $auth_password->created_date = new \DateTime();
+            $auth_password->class        = Password::class;
+            $auth_password->created_date = new DateTime();
             $auth_password->parameters   = array();
             $em->persist($auth_password);
 
             $auth_ldap               = new AuthDriver('gems');
-            $auth_ldap->class        = Auth\Driver\LDAP::class;
-            $auth_ldap->created_date = new \DateTime();
+            $auth_ldap->class        = LDAP::class;
+            $auth_ldap->created_date = new DateTime();
             $auth_ldap->parameters   = array(
                 "host" => "10.41.86.223",
                 "port" => 389,
@@ -380,7 +399,7 @@ class Application extends \Silex\Application
             $newUser            = new User();
             $newUser->username  = 'admin';
             $newUser->shortname = 'Administrator';
-            $newUser->password  = 'admin'.date_format(new \DateTime(), 'Ymd');
+            $newUser->password  = 'admin'.date_format(new DateTime(), 'Ymd');
             $newUser->roles     = array('ROLE_ADMIN');
             $newUser->auth      = 'password';
 

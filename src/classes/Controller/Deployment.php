@@ -70,7 +70,7 @@ class Deployment extends RenoController
                     $this->app->addFlashMessage("Deployment '$deployment->title' has been deleted");
                     return $this->redirect('project_view', $this->entityParams($deployment->project));
                 } else {
-                    $this->app->addFlashMessage("Deployment '$deployment->title' cannot be deleted because it contains item(s).\nMove or delete the item(s) first.", "Error!", "error");
+                    $this->app->addFlashMessage("Deployment '$deployment->title' cannot be deleted because it contains item(s).\nMove or delete the item(s) first.", "Invalid action", "error");
                     return $this->redirect('deployment_edit', $this->entityParams($deployment));
                 }
             }

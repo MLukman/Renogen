@@ -64,6 +64,10 @@ class Item extends RenoController
             switch ($action) {
                 case 'submit':
                     $this->checkAccess(array('entry', 'approval'), $item_obj);
+                    if (!$item_obj->deployment->isActive() && !$this->app['securilex']->isGranted('approval', $item_obj)) {
+                        $this->app->addFlashMessage("You cannot submit an item for a deployment that was in the past.\nPlease move to another upcoming deployment and submit for approval there.", "Invalid action", "error");
+                        break;
+                    }
                     $item_obj->submit();
                     $actioned = 'submitted for approval';
                     break;
@@ -79,19 +83,26 @@ class Item extends RenoController
                     $item_obj->unapprove();
                     $actioned = 'unapproved';
                     break;
+
                 case 'reject':
                     $this->checkAccess('approval', $item_obj);
-                    $item_obj->reject();
-                    $actioned = 'rejected';
+                    $remark = trim($request->request->get('remark', '-'));
 
+                    if (empty($remark)) {
+                        $this->app->addFlashMessage("Rejection remark is required", "Unable to reject", "error");
+                        break;
+                    }
+
+                    $item_obj->reject();
+                    $actioned       = 'rejected';
                     $comment        = new \Renogen\Entity\ItemComment($item_obj);
                     $comment->event = 'Rejected';
-                    $comment->text  = $request->request->get('reason', '-');
+                    $comment->text  = $remark;
                     $item_obj->comments->add($comment);
                     break;
             }
-            $this->app['datastore']->commit($item_obj);
             if ($actioned) {
+                $this->app['datastore']->commit($item_obj);
                 $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");
             }
             return $this->redirect('item_view', $this->entityParams($item_obj));

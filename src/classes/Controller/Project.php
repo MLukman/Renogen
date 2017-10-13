@@ -26,6 +26,7 @@ class Project extends RenoController
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
+        $this->checkAccess(array('view', 'execute', 'entry', 'approval'), $project);
         $this->addEntityCrumb($project);
         return $this->render('project_view', array(
                 'project' => $project
