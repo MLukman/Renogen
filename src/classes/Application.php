@@ -174,12 +174,10 @@ class Application extends \Silex\Application
                 return;
             }
 
-            if (!($routeName = $request->get('_route')) ||
-                $app['securilex']->isGranted('prefix', $routeName)) {
-                return; // allow access
+            if (($routeName = $request->get('_route')) &&
+                !$app['securilex']->isGranted('prefix', $routeName)) {
+                throw new AccessDeniedException();
             }
-
-            throw new AccessDeniedException();
         });
 
         $this->error(function (Exception $e, $code) {

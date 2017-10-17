@@ -1,6 +1,6 @@
 FROM php:5.6-apache
 
-RUN apt-get update && apt-get install -y libldap2-dev \
+RUN apt-get update && apt-get install -y libldap2-dev wget \
     && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
     && docker-php-ext-install -j$(nproc) ldap \
     && apt-get autoremove -y libldap2-dev \
@@ -20,7 +20,13 @@ RUN echo 'date.timezone = Asia/Kuala_Lumpur' > /usr/local/etc/php/conf.d/timezon
     && ln -s /data /var/www/html/data \
     && chown -R www-data:www-data /var/www
     
-CMD chown -R www-data:www-data /data \
-    && apache2-foreground
+RUN wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
+   chmod +x /usr/local/bin/dumb-init
+
+HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 
 VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+
+CMD ["bash", "-c", "chown -R www-data:www-data /data && exec apache2-foreground"]
