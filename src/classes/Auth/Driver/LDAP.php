@@ -29,7 +29,7 @@ class LDAP extends Driver
         if (!isset($params['host']) || empty($params['host'])) {
             $errors['host'] = 'Host Name is required';
         }
-        if (!isset($params['port']) || empty($params['port']) || !is_int($params['port'])) {
+        if (!isset($params['port']) || empty($params['port']) || !is_numeric($params['port'])) {
             $errors['port'] = 'Port is required and must be integer';
         }
         if (!isset($params['dn']) || empty($params['dn']) || strpos($params['dn'], '{username}')

@@ -375,9 +375,9 @@ class Application extends \Silex\Application
             $auth_ldap->class        = LDAP::class;
             $auth_ldap->created_date = new DateTime();
             $auth_ldap->parameters   = array(
-                "host" => "10.41.86.223",
-                "port" => 389,
-                "dn" => "uid={username},ou=People,o=Telekom",
+                "host" => getenv("LDAP_HOST") ?: "10.14.73.107",
+                "port" => getenv("LDAP_PORT") ?: 389,
+                "dn" => getenv("LDAP_DN") ?: "uid={username},ou=People,o=Telekom",
             );
             $em->persist($auth_ldap);
 

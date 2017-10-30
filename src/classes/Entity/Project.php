@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Renogen\Base\Entity;
-use Twig\Template;
 use const ROOTDIR;
 
 /**

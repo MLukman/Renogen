@@ -54,8 +54,14 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
      */
     public function __construct($host, $port, $dnString, $version = 3)
     {
-        $this->ldapClient = Ldap::create('ext_ldap',
-                array('host' => $host, 'port' => $port, 'version' => $version));
+        $config = array('host' => $host, 'port' => $port, 'version' => $version);
+        if (substr($host, 0, 8) === 'ldaps://') {
+            $config['host']       = substr($host, 8);
+            $config['encryption'] = 'ssl';
+        } elseif (substr($host, 0, 7) === 'ldap://') {
+            $config['host'] = substr($host, 7);
+        }
+        $this->ldapClient = Ldap::create('ext_ldap', $config);
         $this->dnString   = $dnString;
     }
 
@@ -70,9 +76,7 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
                                                  UserProviderInterface $userProvider,
                                                  $providerKey)
     {
-        return new LdapBindAuthenticationProvider($userProvider,
-            $app['security.user_checker'], $providerKey, $this->ldapClient,
-            $this->dnString);
+        return new LdapBindAuthenticationProvider($userProvider, $app['security.user_checker'], $providerKey, $this->ldapClient, $this->dnString);
     }
 
     /**
