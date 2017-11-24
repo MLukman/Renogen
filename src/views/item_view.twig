@@ -63,7 +63,7 @@
 				<span>
 					<i class="ui add to cart icon"></i> Activities
 				</span>
-				{% if not item.approved_date and is_acl_entry %}
+				{% if is_acl_entry and (not item.approved_date or is_acl_approval) %}
 					<a class="ui right floated primary button no-print" href="{{app.path('activity_create',params)}}">
 						<i class="ui plus icon"></i>Add activity
 					</a>
@@ -99,7 +99,7 @@
 									{{ r.arrayTable(description) }}
 								</div>
 							</td>
-							{% if not item.approved_date and is_acl_entry %}
+                        				{% if is_acl_entry and (not item.approved_date or is_acl_approval) %}
 								<td class="ui top aligned collapsing no-print">
 									<a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
 										<i class="ui pencil icon"></i>

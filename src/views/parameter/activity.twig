@@ -1,4 +1,4 @@
-{% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,app) %} 
+{% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param) %} 
 {% if parameter.type in ['freetext', 'regextext'] %}
 	<input id="parameters-{{param}}" type="text" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" value="{{paramval}}" />
 	{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}

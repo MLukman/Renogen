@@ -22,7 +22,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
  */
 class AnyUserProvider implements UserProviderInterface
 {
-    protected $roles = array();
+    static public $supported = array('Symfony\Component\Security\Core\User\UserInterface');
+    protected $roles         = array();
 
     public function __construct($roles = null)
     {
@@ -46,6 +47,12 @@ class AnyUserProvider implements UserProviderInterface
 
     public function supportsClass($class)
     {
-        return $class === 'Symfony\Component\Security\Core\User\User';
+        $classRef = new ReflectionClass($class);
+        foreach (static::$supported as $supported) {
+            if ($classRef->implementsInterface($supported)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

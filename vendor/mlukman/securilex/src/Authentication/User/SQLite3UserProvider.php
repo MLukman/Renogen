@@ -121,7 +121,7 @@ class SQLite3UserProvider implements MutableUserProviderInterface
 
     public function refreshUser(UserInterface $user)
     {
-        if (!is_a($user, $this->userClass, true)) {
+        if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
         }
 
@@ -159,8 +159,7 @@ class SQLite3UserProvider implements MutableUserProviderInterface
 
     public function supportsClass($class)
     {
-        $classRef = new \ReflectionClass($class);
-        return $classRef->implementsInterface('Symfony\Component\Security\Core\User\UserInterface');
+        return is_a($class, $this->userClass, true);
     }
 
     public function getUserClass()
@@ -170,9 +169,6 @@ class SQLite3UserProvider implements MutableUserProviderInterface
 
     public function setUserClass($class)
     {
-        if (!$this->supportsClass($class)) {
-            throw new UnsupportedUserException();
-        }
         $this->userClass = $class;
     }
 

@@ -6,23 +6,22 @@ RUN apt-get update && apt-get install -y libldap2-dev wget \
     && apt-get autoremove -y libldap2-dev \
 	&& apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && a2enmod rewrite    
+    && echo 'date.timezone = Asia/Kuala_Lumpur' > /usr/local/etc/php/conf.d/timezone.ini \
+    && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
+    && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini \
+    && a2enmod rewrite \
+	&& wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
+	&& chmod +x /usr/local/bin/dumb-init
 
 COPY . /tmp/src/
 
-RUN echo 'date.timezone = Asia/Kuala_Lumpur' > /usr/local/etc/php/conf.d/timezone.ini \
-    && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
-    && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini \
-	&& mv /tmp/src/* /var/www/html/ \
+RUN mv /tmp/src/* /var/www/html/ \
     && mv /tmp/src/.htaccess /var/www/html/ \
     && mkdir /data \
     && rm -fr /var/www/html/data \
     && ln -s /data /var/www/html/data \
     && chown -R www-data:www-data /var/www
     
-RUN wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && \
-   chmod +x /usr/local/bin/dumb-init
-
 HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 
 VOLUME ["/data"]

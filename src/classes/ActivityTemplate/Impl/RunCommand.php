@@ -26,14 +26,6 @@ class RunCommand extends BaseClass
         return 'Execute ad-hoc command via RunDeck';
     }
 
-    public function describeActivityAsArray(Activity $activity)
-    {
-        return array(
-            "Command" => $activity->parameters['command'],
-            "Nodes" => $activity->parameters['nodes'],
-        );
-    }
-
     public function convertActivitiesToRunbookGroups(array $activities)
     {
         $templates              = array();

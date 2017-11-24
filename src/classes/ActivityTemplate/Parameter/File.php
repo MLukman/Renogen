@@ -10,11 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 class File extends Parameter
 {
 
-    static public function create($templateLabel, $templateDescription,
-                                  $templateRequired, $activityLabel,
-                                  $activityDescription, $activityRequired)
+    static public function create($activityLabel, $activityDescription,
+                                  $activityRequired)
     {
-        return static::generateParameter('file', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+        return static::generateParameterSimpler('file', $activityLabel, $activityDescription, $activityRequired);
     }
 
     public function validateTemplateInput(array &$input, $key, array &$errors,
@@ -47,10 +46,9 @@ class File extends Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key,
-                                           Application $app)
+                                           array $parameters, $key)
     {
-        if (isset($parameters[$key]) && ($activity_file = $app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
+        if (isset($parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
             'stored_filename' => $parameters[$key])))) {
             /* @var $activity_file ActivityFile */
             return array(
@@ -60,6 +58,17 @@ class File extends Parameter
                 'mime_type' => $activity_file->mime_type,
                 'filepath' => $activity_file->getFilesystemPath(),
             );
+        }
+        return null;
+    }
+
+    public function displayActivityParameter(\Renogen\Entity\Activity $activity,
+                                             $key)
+    {
+        if (isset($activity->parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
+            'stored_filename' => $activity->parameters[$key])))) {
+            /* @var $activity_file ActivityFile */
+            return $activity_file->getHtmlLink();
         }
         return null;
     }

@@ -33,6 +33,7 @@ abstract class Controller
         $this->app                   = $app;
         $this->app['controller']     = $this;
         $this->basectx['controller'] = $this;
+        $this->basectx['errors']     = array();
         $this->basectx['crumbs']     = array();
         if (empty($this->title)) {
             $reflect     = new ReflectionClass($this);

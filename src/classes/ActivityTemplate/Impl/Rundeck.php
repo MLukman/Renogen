@@ -53,7 +53,7 @@ class Rundeck extends BaseClass
     {
         $options  = array();
         $optParam = $this->getParameter('options');
-        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options', $this->app);
+        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options');
         foreach ($activity->template->parameters['options'] as $p) {
             if ($useLabel) {
                 $d = $p['title'];

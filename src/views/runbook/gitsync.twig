@@ -10,13 +10,13 @@
 		{% for row in data %}
 			<tr>
 				<td class="top aligned">
-					{{row.folder}}
+					{{ r.prettyDisplay(row.folder) }}
 				</td>
 				<td class="top aligned">
-					{{row.revision}}
+					{{ r.prettyDisplay(row.revision) }}
 				</td>
 				<td class="top aligned">
-					{{row.remark|default('-')|nl2br}}
+					{{ r.prettyDisplay(row.remark) }}
 				</td>
 			</tr>
 		{% endfor %}

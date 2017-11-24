@@ -72,8 +72,7 @@ class MultiField extends Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key,
-                                           Application $app)
+                                           array $parameters, $key)
     {
         $data = array();
         foreach ($template_parameters[$key] as $p) {
@@ -82,7 +81,7 @@ class MultiField extends Parameter
             }
             switch ($p['type']) {
                 case 'file':
-                    if (($activity_file = $app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
+                    if (($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
                         'stored_filename' => $parameters[$key][$p['id']])))) {
                         /* @var $activity_file ActivityFile */
                         $data[$p['id']] = array(

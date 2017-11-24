@@ -15,10 +15,10 @@
 					</div>
 				</td>
 				<td class="top aligned">
-					{{ r.arrayTable(row.nodes) }}
+					{{ r.prettyDisplay(row.nodes) }}
 				</td>
 				<td class="top aligned">
-					{{row.remark|default('-')|nl2br}}
+					{{ r.prettyDisplay(row.remark) }}
 				</td>
 			</tr>
 		{% endfor %}

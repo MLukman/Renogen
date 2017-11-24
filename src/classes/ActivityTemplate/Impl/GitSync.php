@@ -15,7 +15,7 @@ class GitSync extends BaseClass
     {
         parent::__construct($app);
         $this->addParameter('url', Parameter::Config('GitSync URL', 'The URL of the GitSync', true));
-        $this->addParameter('folder', Parameter::Dropdown('Folders', 'The choices of folders to sync', true, 'Folder', 'The folder to sync', true));
+        $this->addParameter('folder', Parameter::MultiSelect('Folders', 'The choices of folders to sync', true, 'Folder(s)', 'The folder(s) to sync', true));
         $this->addParameter('revision', Parameter::FreeText('Revision', 'The revision ref number to sync (put \'LATEST\' to sync latest)', true));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
@@ -25,19 +25,10 @@ class GitSync extends BaseClass
         return 'Sync code using GitSync';
     }
 
-    public function describeActivityAsArray(Activity $activity)
-    {
-        return array(
-            "Folder" => $activity->parameters['folder'],
-            "Revision" => $activity->parameters['revision'],
-        );
-    }
-
     public function convertActivitiesToRunbookGroups(array $activities)
     {
         $templates              = array();
         $activities_by_template = array();
-        $added                  = array();
 
         foreach ($activities as $activity) {
             /* @var $activity Activity */
@@ -53,16 +44,30 @@ class GitSync extends BaseClass
             $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Use GitSync to sync code @ ".$templates[$template_id]->parameters['url'].":");
             $group->setTemplate('runbook/gitsync.twig');
+            $added = array();
             foreach ($activities as $activity) {
-                $signature = json_encode($this->describeActivityAsArray($activity));
-                if (!isset($added[$signature])) {
-                    $added[$signature] = true;
-                    $group->addRow(array(
-                        'folder' => $activity->parameters['folder'],
-                        'revision' => $activity->parameters['revision'],
-                        'remark' => $activity->parameters['remark'],
-                    ));
+                if (!is_array($activity->parameters['folder'])) {
+                    $activity->parameters['folder'] = array($activity->parameters['folder']);
                 }
+                foreach ($activity->parameters['folder'] as $folder) {
+                    if (!isset($added[$folder])) {
+                        $added[$folder] = array(
+                            'folder' => $folder,
+                            'revision' => array($activity->parameters['revision']),
+                            'remark' => array(),
+                        );
+                    } else {
+                        if (strtoupper($activity->parameters['revision']) != 'LATEST') {
+                            $added[$folder]['revision'][] = $activity->parameters['revision'];
+                        }
+                    }
+                    if (!empty($activity->parameters['remark'])) {
+                        $added[$folder]['remark'][] = $activity->parameters['remark'];
+                    }
+                }
+            }
+            foreach ($added as $row) {
+                $group->addRow($row);
             }
             $groups[] = $group;
         }

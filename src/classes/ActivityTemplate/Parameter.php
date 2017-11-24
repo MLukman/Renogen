@@ -14,10 +14,16 @@ class Parameter
     public $activityLabel;
     public $activityDescription;
     public $activityRequired;
+    protected $app;
 
     protected function __construct($type)
     {
         $this->type = $type;
+    }
+
+    public function setApplication(\Renogen\Application $app)
+    {
+        $this->app = $app;
     }
 
     public function getType()
@@ -46,11 +52,7 @@ class Parameter
     static public function FreeText($activityLabel, $activityDescription,
                                     $activityRequired)
     {
-        $param                      = new static('freetext');
-        $param->activityLabel       = $activityLabel;
-        $param->activityDescription = $activityDescription;
-        $param->activityRequired    = (bool) $activityRequired;
-        return $param;
+        return static::generateParameterSimpler('freetext', $activityLabel, $activityDescription, $activityRequired);
     }
 
     static public function RegexText($templateLabel, $templateDescription,
@@ -63,11 +65,7 @@ class Parameter
     static public function MultiLineText($activityLabel, $activityDescription,
                                          $activityRequired)
     {
-        $param                      = new static('multilinetext');
-        $param->activityLabel       = $activityLabel;
-        $param->activityDescription = $activityDescription;
-        $param->activityRequired    = (bool) $activityRequired;
-        return $param;
+        return static::generateParameterSimpler('multilinetext', $activityLabel, $activityDescription, $activityRequired);
     }
 
     static public function MultiFreeText($templateLabel, $templateDescription,
@@ -102,6 +100,17 @@ class Parameter
         $param->templateLabel       = $templateLabel;
         $param->templateDescription = $templateDescription;
         $param->templateRequired    = (bool) $templateRequired;
+        $param->activityLabel       = $activityLabel;
+        $param->activityDescription = $activityDescription;
+        $param->activityRequired    = (bool) $activityRequired;
+        return $param;
+    }
+
+    static protected function generateParameterSimpler($type, $activityLabel,
+                                                       $activityDescription,
+                                                       $activityRequired)
+    {
+        $param                      = new static($type);
         $param->activityLabel       = $activityLabel;
         $param->activityDescription = $activityDescription;
         $param->activityRequired    = (bool) $activityRequired;
@@ -254,10 +263,16 @@ class Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key,
-                                           \Renogen\Application $app)
+                                           array $parameters, $key)
     {
         return (isset($parameters[$key]) ? $parameters[$key] : null);
+    }
+
+    public function displayActivityParameter(\Renogen\Entity\Activity $activity,
+                                             $key)
+    {
+        return (isset($activity->parameters[$key]) ? $activity->parameters[$key]
+                : null);
     }
 
     public function handleActivityFiles(Request $request,

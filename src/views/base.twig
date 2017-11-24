@@ -6,16 +6,16 @@
 		<meta charset="utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-		<link rel="icon" href="{{app.request.baseUrl}}/ui/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="{{app.getBaseUri('ui/favicon.ico')}}" type="image/x-icon">
 
 		<title>{{title|default(controller.title|default(app.title))}}</title>
 
-		<link rel="stylesheet" type="text/css" href="{{app.request.baseUrl}}/ui/semantic2/semantic.css" />
+		<link rel="stylesheet" type="text/css" href="{{app.getBaseUri('ui/semantic2/semantic.css')}}" />
 
-		<script src="{{app.request.baseUrl}}/ui/jquery/jquery-2.1.3.min.js"></script>
-		<script src="{{app.request.baseUrl}}/ui/jquery/jquery.address.js"></script>
-		<script src="{{app.request.baseUrl}}/ui/semantic2/semantic.js"></script>
-		<script src="{{app.request.baseUrl}}/ui/semantic2/library/jquery.tablesort.js"></script>
+		<script src="{{app.getBaseUri('ui/jquery/jquery-2.1.3.min.js')}}"></script>
+		<script src="{{app.getBaseUri('ui/jquery/jquery.address.js')}}"></script>
+		<script src="{{app.getBaseUri('ui/semantic2/semantic.js')}}"></script>
+		<script src="{{app.getBaseUri('ui/semantic2/library/jquery.tablesort.js')}}"></script>
 		<script>
 			function dateParser(text) {
 				if (!text) {
@@ -149,7 +149,7 @@
 			<div id="topmenu" class="ui stackable menu inverted blue">
 
 				<div class="ui title item">
-					<a style="padding-right: 30pt" href="{{app.request.baseUrl}}/">
+					<a style="padding-right: 30pt" href="{{app.path('home')}}">
 						{% block menutitle %}
 							{% set logo = app.logo %}
 							{% if logo %}
@@ -175,6 +175,7 @@
 					{% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
 						{{ m.topmenu_dropdown_begin('Settings', 'setting') }}
 						{{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+						{{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
 						{{ m.topmenu_dropdown_end() }}
 					{% endif %}
 
@@ -249,9 +250,15 @@
 {% endmacro %}
 
 {% macro fieldError(errors, fieldname, pointing) %}
-	{% if errors[fieldname] is defined %}{% for error in errors[fieldname] %}
-			<div class="ui negative red label {{pointing}} pointing">{{error}}</div>
-	{% endfor %}{% endif %}
+	{% if errors[fieldname] is defined %}
+		{% if errors[fieldname] is iterable %}
+			{% for error in errors[fieldname] %}
+				<div class="ui negative red label {{pointing}} pointing">{{error}}</div>
+			{% endfor %}
+		{% else %}
+			<div class="ui negative red label {{pointing}} pointing">{{errors[fieldname]}}</div>
+		{% endif %}
+	{% endif %}
 {% endmacro %}
 
 {% macro dateField(id, name, value, placeholder, datetime_mode) %}

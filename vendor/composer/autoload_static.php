@@ -8,6 +8,9 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
 {
     public static $files = array (
         '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'e40631d46120a9c38ea139981f8dab26' => __DIR__ . '/..' . '/ircmaxell/password-compat/lib/password.php',
+        'edc6464955a37aa4d5fbf39d40fb6ee7' => __DIR__ . '/..' . '/symfony/polyfill-php55/bootstrap.php',
+        '3e2471375464aac821502deb0ac64275' => __DIR__ . '/..' . '/symfony/polyfill-php54/bootstrap.php',
         'bd9634f2d41831496de0d3dfe4c94881' => __DIR__ . '/..' . '/symfony/polyfill-php56/bootstrap.php',
         '5255c38a0faeba867671b61dfda6d864' => __DIR__ . '/..' . '/paragonie/random_compat/lib/random.php',
         '023d27dca8066ef29e6739335ea73bad' => __DIR__ . '/..' . '/symfony/polyfill-php70/bootstrap.php',
@@ -23,6 +26,8 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
             'Symfony\\Polyfill\\Util\\' => 22,
             'Symfony\\Polyfill\\Php70\\' => 23,
             'Symfony\\Polyfill\\Php56\\' => 23,
+            'Symfony\\Polyfill\\Php55\\' => 23,
+            'Symfony\\Polyfill\\Php54\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Component\\Security\\' => 27,
             'Symfony\\Component\\Routing\\' => 26,
@@ -73,6 +78,14 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
         'Symfony\\Polyfill\\Php56\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php56',
+        ),
+        'Symfony\\Polyfill\\Php55\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php55',
+        ),
+        'Symfony\\Polyfill\\Php54\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php54',
         ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
@@ -207,9 +220,13 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
     public static $classMap = array (
         'ArithmeticError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/ArithmeticError.php',
         'AssertionError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/AssertionError.php',
+        'CallbackFilterIterator' => __DIR__ . '/..' . '/symfony/polyfill-php54/Resources/stubs/CallbackFilterIterator.php',
         'DivisionByZeroError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/DivisionByZeroError.php',
         'Error' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/Error.php',
         'ParseError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/ParseError.php',
+        'RecursiveCallbackFilterIterator' => __DIR__ . '/..' . '/symfony/polyfill-php54/Resources/stubs/RecursiveCallbackFilterIterator.php',
+        'SessionHandlerInterface' => __DIR__ . '/..' . '/symfony/polyfill-php54/Resources/stubs/SessionHandlerInterface.php',
+        'SessionUpdateTimestampHandlerInterface' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/SessionUpdateTimestampHandlerInterface.php',
         'TypeError' => __DIR__ . '/..' . '/symfony/polyfill-php70/Resources/stubs/TypeError.php',
     );
 

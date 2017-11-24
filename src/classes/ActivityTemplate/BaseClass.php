@@ -16,6 +16,7 @@ abstract class BaseClass
 
     final protected function addParameter($name, Parameter $parameter)
     {
+        $parameter->setApplication($this->app);
         $this->_parameters[(string) $name] = $parameter;
     }
 
@@ -44,7 +45,17 @@ abstract class BaseClass
     /**
      * @return array
      */
-    abstract public function describeActivityAsArray(Activity $activity);
+    public function describeActivityAsArray(Activity $activity)
+    {
+        $desc = array();
+        foreach ($this->_parameters as $key => $param) {
+            if (empty($param->activityLabel)) {
+                continue;
+            }
+            $desc[$param->activityLabel] = $param->displayActivityParameter($activity, $key);
+        }
+        return $desc;
+    }
 
     /**
      * @return \Renogen\Runbook\Group[]

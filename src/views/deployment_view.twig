@@ -38,7 +38,7 @@
 		</thead>
 		<tbody>
 			{% for item in deployment.items %}
-				<tr>
+				<tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
 					<td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
 					<td>
 						<h3 class="ui header" style="margin-bottom: 0"><a href="{{app.path('item_view',controller.entityParams(item))}}">{{item.title}}</a></h3>
@@ -75,7 +75,8 @@
 		</tbody>
 	</table>
 
-	<p>&nbsp;</p>
+	<p>Total {{deployment.items|length}}</p>
+
 	{{ r.timestamps(deployment) }}
 
 {% endblock %}

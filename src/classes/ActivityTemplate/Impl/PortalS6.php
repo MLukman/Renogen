@@ -15,7 +15,7 @@ class PortalS6 extends BaseClass
     {
         parent::__construct($app);
         $this->addParameter('url', Parameter::Config('Git URL', 'The URL of the Git repository', true));
-        $this->addParameter('branch', Parameter::Dropdown('Branches', 'The choices of Git branches', true, 'Branch', 'The branch to deploy', true));
+        $this->addParameter('branch', Parameter::MultiSelect('Branches', 'The choices of Git branches', true, 'Branch(s)', 'The branch(s) to deploy', true));
         $this->addParameter('modules', Parameter::MultiSelect('Modules', 'The choices of modules', true, 'Modules', 'The module(s) to deploy', true));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
@@ -25,19 +25,10 @@ class PortalS6 extends BaseClass
         return 'Package portal S6 module(s)';
     }
 
-    public function describeActivityAsArray(Activity $activity)
-    {
-        return array(
-            "Branch" => $activity->parameters['branch'],
-            "Modules" => $activity->parameters['modules'],
-        );
-    }
-
     public function convertActivitiesToRunbookGroups(array $activities)
     {
         $templates              = array();
         $activities_by_template = array();
-        $added                  = array();
 
         foreach ($activities as $activity) {
             /* @var $activity Activity */
@@ -53,16 +44,28 @@ class PortalS6 extends BaseClass
             $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Use S6ModulesPackager to merge the following modules to the specified branch @ ".$templates[$template_id]->parameters['url'].":");
             $group->setTemplate('runbook/portalS6.twig');
+            $added = array();
             foreach ($activities as $activity) {
-                $signature = json_encode($this->describeActivityAsArray($activity));
-                if (!isset($added[$signature])) {
-                    $added[$signature] = true;
-                    $group->addRow(array(
-                        'branch' => $activity->parameters['branch'],
-                        'modules' => $activity->parameters['modules'],
-                        'remark' => $activity->parameters['remark'],
-                    ));
+                if (!is_array($activity->parameters['branch'])) {
+                    $activity->parameters['branch'] = array($activity->parameters['branch']);
                 }
+                foreach ($activity->parameters['branch'] as $branch) {
+                    if (!isset($added[$branch])) {
+                        $added[$branch] = array(
+                            'branch' => $branch,
+                            'modules' => $activity->parameters['modules'],
+                            'remark' => array(),
+                        );
+                    } else {
+                        $added[$branch]['modules']  = array_unique(array_merge($added[$branch]['modules'], $activity->parameters['modules']));
+                    }
+                    if (!empty($activity->parameters['remark'])) {
+                        $added[$branch]['remark'][] = $activity->parameters['remark'];
+                    }
+                }
+            }
+            foreach ($added as $row) {
+                $group->addRow($row);
             }
             $groups[] = $group;
         }

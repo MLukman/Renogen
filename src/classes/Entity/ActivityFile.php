@@ -14,7 +14,7 @@ class ActivityFile extends FileEntity
     /**
      * @ManyToOne(targetEntity="Activity")
      * @JoinColumn(name="activity_id", referencedColumnName="id", onDelete="CASCADE")
-     * @var Item
+     * @var Activity
      */
     public $activity;
 
@@ -34,5 +34,11 @@ class ActivityFile extends FileEntity
     public function getFolder()
     {
         return $this->activity->item->deployment->project->getAttachmentFolder();
+    }
+
+    public function getHtmlLink()
+    {
+        return '<a href="'.htmlentities(\Renogen\Application::instance()->path('activity_file_download', \Renogen\Base\RenoController::entityParams($this->activity)
+                    + array('file' => $this->id))).'">'.htmlentities($this->filename).'</a>';
     }
 }

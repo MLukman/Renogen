@@ -112,7 +112,7 @@ class Application extends \Silex\Application
         /* Security */
         foreach (glob(__DIR__.'/Auth/Driver/*.php') as $fn) {
             $shortName = basename($fn, '.php');
-            $className = '\Renogen\Auth\Driver\\'.$shortName;
+            $className = 'Renogen\Auth\Driver\\'.$shortName;
             $classId   = strtolower($shortName);
 
             $this->_authClassNames[$classId] = $className;
@@ -310,9 +310,12 @@ class Application extends \Silex\Application
         $app->run();
     }
 
-    public function getRequestUri()
+    public function getBaseUri($append = '')
     {
-        return $this['request_stack']->getMasterRequest()->getRequestUri();
+        if (substr($append, 1, 1) != '/') {
+            $append = '/'.$append;
+        }
+        return $this['request_stack']->getMasterRequest()->getBaseUrl().$append;
     }
 
     public function addFlashMessage($message, $title = '', $type = 'notice')
@@ -403,23 +406,28 @@ class Application extends \Silex\Application
 
             $this->addFlashMessage("Auto-created administrator id '{$newUser->username}' with password '{$newUser->password}'");
 
-            $authClass = $this->getAuthClass('password');
+            $authClass = $this->getAuthDriver('password');
             $authClass->prepareNewUser($newUser);
             $em->persist($newUser);
             $em->flush($newUser);
         }
     }
 
-    protected function getAuthClass($classId)
+    protected function getAuthDriver($classId)
     {
         /* @var $em EntityManager */
         $em   = $this['em'];
         if (($auth = $em->getRepository('\Renogen\Entity\AuthDriver')->find($classId))) {
             /* @var $auth AuthDriver */
-            $authClass = new $auth->class($auth->parameters ?: array());
-            return $authClass;
+            $authDriver = new $auth->class($auth->parameters ?: array());
+            return $authDriver;
         }
         return null;
+    }
+
+    public function getAuthClassNames()
+    {
+        return $this->_authClassNames;
     }
 
     public function addActivityTemplateClass(BaseClass $templateClass)
@@ -444,5 +452,10 @@ class Application extends \Silex\Application
     public function getAdminRoute()
     {
         return $this->admin_route;
+    }
+
+    public function getBaseUrl()
+    {
+        return $this->path('home');
     }
 }

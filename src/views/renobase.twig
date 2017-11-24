@@ -84,32 +84,41 @@
 	</span>
 {% endmacro %}
 
-{% macro arrayTable(arr, child) %}
-	{% import _self as r %}	
-	<table class="ui compact {% if child %}small{% endif %} tablet stackable table">
-		{% for key,val in arr %}
-			<tr>
-				{% if not (key matches '/^[0-9]+$/') %}
-					<td class="top aligned right aligned collapsing">
-						{% if not child %}
-							<strong>{{key}}</strong>
-						{% else %}
-							{{key}}
-						{% endif %}
-					</td>
-				{% endif %}
-				<td class="ui top aligned" colspan="2">
-					{% if val is empty %}
-						{{'<blank>'|trim}}
-					{% elseif val is iterable %}
-						{{r.arrayTable(val, true)}}
-					{% elseif val|first == '<' %}
-						{{val|raw}}
-					{% else %}
-						{{val|nl2br}}
+{% macro arrayTable(arr,level) %}
+	{% if arr is iterable %}
+		{% import _self as r %}	
+		<table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
+			{% for key,val in arr %}
+				<tr>
+					{% if not (key matches '/^[0-9]+$/') %}
+						<td class="top aligned right aligned collapsing">
+							{% if level is not defined or level == 0 %}
+								<strong>{{key}}</strong>
+							{% else %}
+								{{key}}
+							{% endif %}
+						</td>
 					{% endif %}
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+					<td class="ui top aligned" colspan="2">
+                                                {{r.prettyDisplay(val,level|default(0)+1)}}
+					</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% else %}
+		{{arr}}
+	{% endif %}
+{% endmacro %}
+
+{% macro prettyDisplay(val,level) %}
+	{% import _self as r %}	
+        {% if val is empty %}
+                <em>-- Not Specified --</em>
+        {% elseif val is iterable %}
+                {{r.arrayTable(val,level|default(0)+1)}}
+        {% elseif val|first == '<' %}
+                {{val|raw}}
+        {% else %}
+                {{val|nl2br}}
+        {% endif %}
 {% endmacro %}

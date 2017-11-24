@@ -1,22 +1,22 @@
 <table class="ui striped very compact table">
 	<thead>
 		<tr>
-			<th>Modules</th>
 			<th class="four wide">Branch</th>
-			<th class="four wide">Remark</th>
+			<th class="four wide">Modules</th>
+			<th>Remark</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for row in data %}
 			<tr>
 				<td class="top aligned">
-					{{ r.arrayTable(row.modules) }}
+					{{ r.prettyDisplay(row.branch) }}
 				</td>
 				<td class="top aligned">
-					{{row.branch}}
+					{{ r.prettyDisplay(row.modules) }}
 				</td>
 				<td class="top aligned">
-					{{row.remark|default('-')|nl2br}}
+					{{ r.prettyDisplay(row.remark) }}
 				</td>
 			</tr>
 		{% endfor %}
