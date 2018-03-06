@@ -1,6 +1,6 @@
 {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param) %} 
 {% if parameter.type in ['freetext', 'regextext'] %}
-	<input id="parameters-{{param}}" type="text" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" value="{{paramval}}" />
+	<input id="parameters-{{param}}" type="text" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" value="{{paramval|default(template.parameters[param]|default(null))}}" />
 	{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
 {% elseif parameter.type == 'multilinetext' %}
 	<textarea id="parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}" rows="3">{{paramval}}</textarea>

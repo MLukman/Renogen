@@ -22,7 +22,7 @@
 				</td>
 				<td>
 					<select name="parameters[{{param}}][{{i}}][type]" class="ui fluid dropdown">
-						{% set types = ['freetext','dropdown','multiselect','file'] %}
+						{% set types = ['freetext','password','dropdown','multiselect','file'] %}
 						<option value="">- Select field type -</option>
 						{% for type in types %}
 							<option value="{{type}}" {% if type == paramval[i].type|default(null) %}selected="selected"{% endif %}>{{type}}</option>

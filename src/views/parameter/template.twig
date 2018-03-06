@@ -1,5 +1,5 @@
 {% set paramval = parameter.templateDatabaseToForm(template.parameters[param]|default(null)) %} 
-{% if parameter.type == 'config' %}
+{% if parameter.type in ['config','freetext'] %}
 	<input placeholder="{{parameter.templateDescription}}" type="text" name="parameters[{{param}}]" value="{{template.parameters[param]|default(null)}}" />
 {% elseif parameter.type in ['dropdown', 'multiselect'] %}
 	<p>{{parameter.templateDescription}}</p>

@@ -16,7 +16,7 @@ class GitSync extends BaseClass
         parent::__construct($app);
         $this->addParameter('url', Parameter::Config('GitSync URL', 'The URL of the GitSync', true));
         $this->addParameter('folder', Parameter::MultiSelect('Folders', 'The choices of folders to sync', true, 'Folder(s)', 'The folder(s) to sync', true));
-        $this->addParameter('revision', Parameter::FreeText('Revision', 'The revision ref number to sync (put \'LATEST\' to sync latest)', true));
+        $this->addParameter('revision', Parameter::FreeTextWithDefault('Default Revision','The default revision number', false, 'Revision', 'The revision ref number to sync (put \'LATEST\' to sync latest)', true));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 

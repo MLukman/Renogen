@@ -140,10 +140,9 @@ class Deployment extends Entity
 
         return $rungroups;
     }
-    /*
-      public function isUsernameAllowed($username, $attribute)
-      {
-      return $this->project->isUsernameAllowed($username, $attribute);
-      }
-     */
+
+    /*public function isUsernameAllowed($username, $attribute)
+    {
+        return $this->project->isUsernameAllowed($username, $attribute);
+    }//*/
 }

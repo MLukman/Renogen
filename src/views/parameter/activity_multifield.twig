@@ -1,53 +1,55 @@
 {% if template.parameters[param]|length > 0 %}
-	{% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,app) %} 
-	<div class="ui form">
-		{% for p in template.parameters[param] %}
-			{% set pid='parameters-' ~ param ~ '-' ~ p.id %}
-			<div class="{% if p.required %}required {% endif %}field">
-				<label for="{{pid}}">{{p.title}}</label>
-				{% if p.type == 'dropdown' %}
-					<select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
-						<option value="">-- Please select --</option>
-						{% for v in p.details|split('\n') %}
-							{% set val = v|trim %}
-							<option value="{{val}}" {% if val == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{val}}</option>
-						{% endfor %}
-					</select>
-				{% elseif p.type == 'multiselect' %}
-					<div class="grouped fields">
-						<input type="hidden" name="parameters[{{param}}][{{p.id}}]" value="" />
-						{% for i,v in p.details|split('\n') %}
-							{% set val = v|trim %}
-							<div class="field">
-								<div class="ui checkbox">
-									<input type="checkbox" value="{{val}}" name="parameters[{{param}}][{{p.id}}][]" {% if val in paramval[p.id]|default([]) %}checked="checked"{% endif %} />
-									<label>{{val}}</label>
-								</div>
-							</div>
-						{% endfor %}
-					</div>
-				{% elseif p.type == 'file' %}
-					<div class="ui basic secondary segment">
-						<input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
-						{% if paramval[p.id]|default(null) %}
-							<div>
-								Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes
-							</div>
-							{% if not p.required %}
-								<div class="ui checkbox">
-									<label>Tick to remove the file</label> 
-									<input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{p.id}}_delete]" value="1" />
-								</div>
-							{% endif %}
-						{% endif %}
-					</div>
-				{% else %}
-					<input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
-				{% endif %}
-				{{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ p.id) }}
-			</div>
-		{% endfor %}
-	</div>
+    {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,app) %} 
+    <div class="ui form">
+        {% for p in template.parameters[param] %}
+            {% set pid='parameters-' ~ param ~ '-' ~ p.id %}
+            <div class="{% if p.required %}required {% endif %}field">
+                <label for="{{pid}}">{{p.title}}</label>
+                {% if p.type == 'dropdown' %}
+                    <select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
+                        <option value="">-- Please select --</option>
+                        {% for v in p.details|split('\n') %}
+                            {% set val = v|trim %}
+                            <option value="{{val}}" {% if val == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{val}}</option>
+                        {% endfor %}
+                    </select>
+                {% elseif p.type == 'multiselect' %}
+                    <div class="grouped fields">
+                        <input type="hidden" name="parameters[{{param}}][{{p.id}}]" value="" />
+                        {% for i,v in p.details|split('\n') %}
+                            {% set val = v|trim %}
+                            <div class="field">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" value="{{val}}" name="parameters[{{param}}][{{p.id}}][]" {% if val in paramval[p.id]|default([]) %}checked="checked"{% endif %} />
+                                    <label>{{val}}</label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elseif p.type == 'file' %}
+                    <div class="ui basic secondary segment">
+                        <input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
+                        {% if paramval[p.id]|default(null) %}
+                            <div>
+                                Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes
+                            </div>
+                            {% if not p.required %}
+                                <div class="ui checkbox">
+                                    <label>Tick to remove the file</label> 
+                                    <input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{p.id}}_delete]" value="1" />
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% elseif p.type == 'password' %}
+                    <input id="{{pid}}" type="password" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+                {% else %}
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+                {% endif %}
+                {{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ p.id) }}
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
-	<p><em>-- Not required --</em></p>
+    <p><em>-- Not required --</em></p>
 {% endif %}

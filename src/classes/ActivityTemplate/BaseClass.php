@@ -58,6 +58,16 @@ abstract class BaseClass
     }
 
     /**
+     * Generate signature for a particular activity
+     * @param Activity $activity
+     * @return string
+     */
+    public function activitySignature(Activity $activity)
+    {
+        return md5(json_encode($this->describeActivityAsArray($activity)));
+    }
+
+    /**
      * @return \Renogen\Runbook\Group[]
      */
     abstract public function convertActivitiesToRunbookGroups(array $activities);

@@ -55,6 +55,16 @@ class Parameter
         return static::generateParameterSimpler('freetext', $activityLabel, $activityDescription, $activityRequired);
     }
 
+    static public function FreeTextWithDefault($templateLabel,
+                                               $templateDescription,
+                                               $templateRequired,
+                                               $activityLabel,
+                                               $activityDescription,
+                                               $activityRequired)
+    {
+        return static::generateParameter('freetext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+    }
+
     static public function RegexText($templateLabel, $templateDescription,
                                      $templateRequired, $activityLabel,
                                      $activityDescription, $activityRequired)

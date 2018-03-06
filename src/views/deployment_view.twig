@@ -1,82 +1,86 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	<h1 class="ui dividing header">
-		<span>
-			<i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
-		</span>
-		{% if app.securilex.isGranted('approval',deployment.project) %}
-			<a class="ui right floated button no-print" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
-		{% endif %}
-		<a class="ui right floated primary button no-print" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui checkmark box icon"></i>Run Book</a>
-		<a class="ui right floated primary button no-print" href="{{app.path('release_note',controller.entityParams(deployment))}}"><i class="ui ordered list icon"></i>Release Note</a>
-	</h1>
+    <h1 class="ui dividing header">
+        <span>
+            <i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
+        </span>
+        {% if app.securilex.isGranted('approval',deployment.project) %}
+            <a class="ui right floated button no-print" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
+        {% endif %}
+        {% if app.securilex.isGranted(['approval','execute'],deployment.project) %}
+            <a class="ui right floated primary button no-print" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui checkmark box icon"></i>Run Book</a>
+        {% endif %}
+        <a class="ui right floated primary button no-print" href="{{app.path('release_note',controller.entityParams(deployment))}}"><i class="ui ordered list icon"></i>Release Note</a>
+    </h1>
 
-	<p>{{deployment.description|nl2br}}</p>
+    <p>{{deployment.description|nl2br}}</p>
 
-	<h2 class="ui header">
-		Deployment Items
-		{% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
-			<a class="ui right floated primary button no-print" href="{{app.path('item_create',controller.entityParams(deployment))}}">
-				<i class="ui plus icon"></i>Add deployment item
-			</a>
-		{% endif %}
-	</h2>
+    <h2 class="ui header">
+        Deployment Items
+        {% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
+            <a class="ui right floated primary button no-print" href="{{app.path('item_create',controller.entityParams(deployment))}}">
+                <i class="ui plus icon"></i>Add deployment item
+            </a>
+        {% endif %}
+    </h2>
 
-	<table class="ui celled striped sortable table">
-		<thead>
-			<tr>
-				<th class="ui collapsing">Reference #</th>
-				<th>Title</th>
-				<th class="ui collapsing">Category</th>
-				<th class="ui collapsing">Modules</th>
-				<th class="ui collapsing center aligned"><i class="ui add to cart icon" title="Activity Count"></i></th>
-				<th class="ui collapsing center aligned"><i class="ui attach icon" title="Attachment Count"></i></th>
-				<th class="ui collapsing center aligned"><i class="ui comment icon" title="Comment Count"></i></th>
-				<th class="ui collapsing">Status</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for item in deployment.items %}
-				<tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
-					<td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
-					<td>
-						<h3 class="ui header" style="margin-bottom: 0"><a href="{{app.path('item_view',controller.entityParams(item))}}">{{item.title}}</a></h3>
-						{% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
-					</td>
-					<td class="ui collapsing">
-						{{ r.itemCategoryLabel(item) }}
-					</td>
-					<td class="ui collapsing">
-						{{ r.itemModulesLabel(item) }}
-					</td>
-					<td class="ui collapsing center aligned">
-						{% set activities = item.activities.count() %}						
-						<span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
-					</td>
-					<td class="ui collapsing center aligned">
-						{% set attachments = item.attachments.count() %}						
-						<span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
-					</td>
-					<td class="ui collapsing center aligned">
-						{% set comments = item.comments.count() %}	
-						{% set last = item.comments.last() %}
-						<span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
-					</td>
-					<td class="ui collapsing">
-						{{ r.itemStatusLabel(item) }}
-					</td>
-				</tr>
-			{% else %}
-				<tr>
-					<td colspan="1000" class="center aligned">No item found</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+    <table class="ui celled striped sortable table">
+        <thead>
+            <tr>
+                <th class="ui collapsing">Reference #</th>
+                <th>Title</th>
+                <th class="ui collapsing">Category</th>
+                <th class="ui collapsing">Modules</th>
+                <th class="ui collapsing center aligned"><i class="ui add to cart icon" title="Activity Count"></i></th>
+                <th class="ui collapsing center aligned"><i class="ui attach icon" title="Attachment Count"></i></th>
+                <th class="ui collapsing center aligned"><i class="ui comment icon" title="Comment Count"></i></th>
+                <th class="ui collapsing">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in deployment.items %}
+                <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
+                    <td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
+                    <td>
+                        <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.path('item_view',controller.entityParams(item))}}">{{item.title}}</a></h3>
+                        {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
+                    </td>
+                    <td class="ui collapsing">
+                        {{ r.itemCategoryLabel(item) }}
+                    </td>
+                    <td class="ui collapsing">
+                        {{ r.itemModulesLabel(item) }}
+                    </td>
+                    <td class="ui collapsing center aligned">
+                        {% set activities = item.activities.count() %}						
+                        <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
+                    </td>
+                    <td class="ui collapsing center aligned">
+                        {% set attachments = item.attachments.count() %}						
+                        <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
+                    </td>
+                    <td class="ui collapsing center aligned">
+                        {% set comments = item.comments.count() %}	
+                        {% set last = item.comments.last() %}
+                        <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
+                    </td>
+                    <td class="ui collapsing">
+                        {{ r.itemStatusLabel(item) }}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="1000" class="center aligned">No item found</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-	<p>Total {{deployment.items|length}}</p>
-
-	{{ r.timestamps(deployment) }}
+    <div class="ui label">
+        Total Items Count
+        <span class="detail"><i class="ui hashtag icon"></i>{{deployment.items|length}}</span>
+    </div>
+    {{ r.timestamps(deployment) }}
 
 {% endblock %}

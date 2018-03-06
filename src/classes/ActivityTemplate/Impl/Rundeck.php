@@ -65,6 +65,8 @@ class Rundeck extends BaseClass
                 if (is_array($data[$p['id']]) && isset($data[$p['id']]['fileid'])) {
                     $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', RenoController::entityParams($activity)
                                 + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
+                } elseif ($useLabel && $p['type'] == 'password') {
+                    $options[$d] = '******';
                 } else {
                     $options[$d] = $data[$p['id']];
                 }
