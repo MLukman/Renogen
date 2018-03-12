@@ -16,7 +16,7 @@ class Activity extends RenoController
         try {
             $project_obj            = $this->app['datastore']->fetchProject($project);
             $item_obj               = $this->app['datastore']->fetchItem($project_obj, $deployment, $item);
-            $this->checkAccess(array('entry', 'approval'), $item_obj);
+            $this->checkAccess(array('entry', 'review'), $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add activity', $this->app->path('activity_create', $this->entityParams($item_obj)));
             $activity_obj           = new \Renogen\Entity\Activity($item_obj);
@@ -32,7 +32,7 @@ class Activity extends RenoController
     {
         try {
             $activity_obj = $this->app['datastore']->fetchActivity($project, $deployment, $item, $activity);
-            $this->checkAccess(array('entry', 'approval'), $activity_obj);
+            $this->checkAccess(array('entry', 'review'), $activity_obj);
             $this->addEntityCrumb($activity_obj);
             return $this->edit_or_create($activity_obj, $request);
         } catch (NoResultException $ex) {

@@ -50,7 +50,8 @@ class Application extends \Silex\Application
 {
 
     use UrlGeneratorTrait;
-    const PROJECT_ROLES = array('none', 'view', 'entry', 'approval', 'execute');
+    const PROJECT_ROLES = array('none', 'view', 'entry', 'review', 'approval', 'release',
+        'execute');
 
     static protected $instance;
     protected $_templateClasses = array();
@@ -103,6 +104,34 @@ class Application extends \Silex\Application
 
         /* Data Store */
         $app->register(new DataStore());
+
+        /* State Model */
+        $app->register(new StateModel());
+        $app['statemodel']->registerTransition(
+            'item', 'Unsubmitted', 'Pending Review', array('entry', 'review'), array(
+            'icon' => 'help', 'class' => 'primary'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Review', 'Pending Approval', 'review', array('icon' => 'help',
+            'class' => 'primary'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Review', 'Rejected', 'review', array('icon' => 'x',
+            'class' => 'red'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Review', 'Unsubmitted', array('entry', 'review'), array(
+            'icon' => 'warning'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Approval', 'Approved', 'approval', array('icon' => 'check',
+            'class' => 'primary'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Approval', 'Rejected', 'approval', array('icon' => 'x',
+            'class' => 'red'));
+        $app['statemodel']->registerTransition(
+            'item', 'Pending Approval', 'Pending Review', 'review', array('icon' => 'help'));
+        $app['statemodel']->registerTransition(
+            'item', 'Approved', 'Pending Approval', 'approval', array('icon' => 'help'));
+        $app['statemodel']->registerTransition(
+            'item', 'Rejected', 'Pending Review', array('entry', 'review', 'approval'), array(
+            'icon' => 'help', 'class' => 'primary'));
 
         /* Twig Template Engine */
         $app->register(new TwigServiceProvider(), array(
@@ -223,6 +252,7 @@ class Application extends \Silex\Application
         $this->match('/+', 'project.controller:create')->bind('project_create');
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
         $this->match('/{project}/edit', 'project.controller:edit')->bind('project_edit');
+        $this->match('/{project}/past', 'project.controller:past')->bind('project_past');
 
         /* Routes: Template */
         $this['template.controller'] = $this->share(function() {
@@ -259,6 +289,7 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/{item}/approve', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
         $this->match('/{project}/{deployment}/{item}/unapprove', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
         $this->match('/{project}/{deployment}/{item}/reject', 'item.controller:action')->value('action', 'reject')->bind('item_reject');
+        $this->match('/{project}/{deployment}/{item}/changeStatus', 'item.controller:changeStatus')->bind('item_change_status');
 
         /* Routes: Attachment */
         $this['attachment.controller'] = $this->share(function() {

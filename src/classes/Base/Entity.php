@@ -98,8 +98,12 @@ class Entity implements SecuredAccessInterface
      */
     public function defaultCreatedDate()
     {
-        $this->created_date = new DateTime();
-        $this->created_by   = Application::instance()->userEntity();
+        if (!$this->created_date) {
+            $this->created_date = new DateTime();
+        }
+        if (!$this->created_by) {
+            $this->created_by = Application::instance()->userEntity();
+        }
     }
 
     /**
@@ -107,8 +111,10 @@ class Entity implements SecuredAccessInterface
      */
     public function defaultUpdatedDate()
     {
-        $this->updated_date = new DateTime();
-        $this->updated_by   = Application::instance()->userEntity();
+        if (($user = Application::instance()->userEntity())) {
+            $this->updated_date = new DateTime();
+            $this->updated_by   = $user;
+        }
     }
 
     protected function cached($cacheid, callable $create, $force = false)

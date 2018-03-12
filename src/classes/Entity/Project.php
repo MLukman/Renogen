@@ -136,6 +136,12 @@ class Project extends Entity
         }
     }
 
+    public function getUserAccess($username)
+    {
+        return ($this->userProjects->containsKey($username) ?
+            $this->userProjects->get($username)->role : null);
+    }
+
     public function isUsernameAllowed($username, $attr = 'view')
     {
         $this->allowedRoles = array();

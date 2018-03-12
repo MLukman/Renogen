@@ -15,6 +15,7 @@ class Attachment extends RenoController
     {
         try {
             $item_obj       = $this->app['datastore']->fetchItem($project, $deployment, $item);
+            $this->checkAccess(array('entry', 'review'), $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add attachment', $this->app->path('attachment_create', $this->entityParams($item_obj)));
             $attachment_obj = new \Renogen\Entity\Attachment($item_obj);
@@ -43,6 +44,7 @@ class Attachment extends RenoController
     {
         try {
             $attachment_obj = $this->app['datastore']->fetchAttachment($project, $deployment, $item, $attachment);
+            $this->checkAccess(array('entry', 'review'), $attachment_obj->item);
             $this->addEntityCrumb($attachment_obj);
             return $this->edit_or_create($attachment_obj, $request);
         } catch (NoResultException $ex) {

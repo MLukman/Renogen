@@ -10,7 +10,7 @@
 	<p>&nbsp;</p>
 	<div class="ui three stackable cards secondary segment">
 		{% for project in projects %}
-			{% set has_access = app.securilex.isGranted(['view','execute','entry','approval'],project) %}
+			{% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval','release'],project) %}
 			<a class="ui card" {% if has_access %}href="{{app.path('project_view', { project: project.name })}}"{% endif %}>
 				<div class="content">
 					<div class="ui {% if has_access %}blue{% else %}disabled{% endif %} header">

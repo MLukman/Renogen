@@ -2,123 +2,124 @@
 {% import _self as r %}
 
 {% block menubar %}
-	{% if crumbs|length > 0 %}
-		{% for crumb in crumbs %}
-			{{ m.topmenu_item(crumb.text, crumb.url, crumb.icon, (loop.last ? 'active':null)) }}
-		{% endfor %}
-	{% endif %}
+    {% if crumbs|length > 0 %}
+        {% for crumb in crumbs %}
+            {{ m.topmenu_item(crumb.text, crumb.url, crumb.icon, (loop.last ? 'active':null)) }}
+        {% endfor %}
+    {% endif %}
 {% endblock %}
 
 {% macro timestamps(entity) %}
-	{% if entity.created_date %}
-		<div class="ui label">
-			Created
-			<span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
-			<span class="detail"><i class="ui user icon"></i>{{entity.created_by.getName()|default('Anonymous')}}</span>
-		</div>
-	{% endif %}
-	{% if entity.updated_date %}
-		<div class="ui label">
-			Updated 
-			<span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
-			<span class="detail"><i class="ui user icon"></i>{{entity.updated_by.getName()|default('Anonymous')}}</span>
-		</div>
-	{% endif %}
+    {% if entity.created_date %}
+        <div class="ui label">
+            Created
+            <span class="detail"><i class="ui clock icon"></i>{{entity.created_date|date('d/m/Y h:ia')}}</span>
+            <span class="detail"><i class="ui user icon"></i>{{entity.created_by.getName()|default('Anonymous')}}</span>
+        </div>
+    {% endif %}
+    {% if entity.updated_date %}
+        <div class="ui label">
+            Updated 
+            <span class="detail"><i class="ui clock icon"></i>{{entity.updated_date|date('d/m/Y h:ia')}}</span>
+            <span class="detail"><i class="ui user icon"></i>{{entity.updated_by.getName()|default('Anonymous')}}</span>
+        </div>
+    {% endif %}
 {% endmacro %}
 
-{% macro itemStatusLabel(item, detailed) %}
-	{% if item.approved_date %}
-		<div class="ui green tag label">
-			<i class="ui {{item.statusIcon}} icon"></i>
-			{{item.status}}
-			{% if detailed %}
-				<span class="detail">
-					<i class="ui clock icon"></i>{{item.approved_date|date('d/m/Y h:ia')}}
-				</span>
-				<span class="detail">
-					<i class="ui user icon"></i>{{item.approved_by.getName()|default('Anonymous')}}
-				</span>
-			{% endif %}
-		</div>
-	{% elseif item.rejected_date %}
-		<div class="ui red tag label">
-			<i class="ui {{item.statusIcon}} icon"></i>
-			{{item.status}}
-			{% if detailed %}
-				<span class="detail">
-					<i class="ui clock icon"></i>{{item.rejected_date|date('d/m/Y h:ia')}}
-				</span>
-				<span class="detail">
-					<i class="ui user icon"></i>{{item.rejected_by.getName()|default('Anonymous')}}
-				</span>
-			{% endif %}
-		</div>
-	{% else %}
-		<div class="ui red tag label">
-			<i class="ui {{item.statusIcon}} icon"></i>
-			{{item.status}}
-		</div>
-	{% endif %}
+{% macro itemStatusLabel(item, detailed, label_type) %}
+    {% set log = item.getStatusLog(item.status) %}
+    {% if item.status == 'Approved' %}
+        <div class="ui green {{label_type|default('tag')}} label">
+            <i class="ui {{item.statusIcon}} icon"></i>
+            {{item.status}}
+            {% if detailed %}
+                <span class="detail">
+                    <i class="ui clock icon"></i>{{log.created_date|date('d/m/Y h:ia')}}
+                </span>
+                <span class="detail">
+                    <i class="ui user icon"></i>{{log.created_by.getName()|default('Anonymous')}}
+                </span>
+            {% endif %}
+        </div>
+    {% elseif item.status == 'Rejected' %}
+        <div class="ui red {{label_type|default('tag')}} label">
+            <i class="ui {{item.statusIcon}} icon"></i>
+            {{item.status}}
+            {% if detailed %}
+                <span class="detail">
+                    <i class="ui clock icon"></i>{{log.created_date|date('d/m/Y h:ia')}}
+                </span>
+                <span class="detail">
+                    <i class="ui user icon"></i>{{log.created_by.getName()|default('Anonymous')}}
+                </span>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="ui red {{label_type|default('tag')}} label">
+            <i class="ui {{item.statusIcon}} icon"></i>
+            {{item.status}}
+        </div>
+    {% endif %}
 {% endmacro %}
 
 {% macro itemDetailsLabel(item) %}
-	<span class="ui label">
-		<i class="ui tag icon"></i>{{item.category}}
-		<span class="detail">
-			<i class="ui plug icon"></i>
-			{{ item.modules|join(' + ') }}
-		</span>
-	</span>
+    <span class="ui label">
+        <i class="ui tag icon"></i>{{item.category}}
+        <span class="detail">
+            <i class="ui plug icon"></i>
+            {{ item.modules|join(' + ') }}
+        </span>
+    </span>
 {% endmacro %}
 
 {% macro itemCategoryLabel(item) %}
-	<span class="ui tag label">
-		<i class="ui tag icon"></i>{{item.category}}
-	</span>
+    <span class="ui tag label">
+        <i class="ui tag icon"></i>{{item.category}}
+    </span>
 {% endmacro %}
 
 {% macro itemModulesLabel(item) %}
-	<span class="ui grey tag label">
-		<i class="ui plug icon"></i>
-		{{ item.modules|join(' + ') }}
-	</span>
+    <span class="ui grey tag label">
+        <i class="ui plug icon"></i>
+        {{ item.modules|join(' + ') }}
+    </span>
 {% endmacro %}
 
 {% macro arrayTable(arr,level) %}
-	{% if arr is iterable %}
-		{% import _self as r %}	
-		<table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
-			{% for key,val in arr %}
-				<tr>
-					{% if not (key matches '/^[0-9]+$/') %}
-						<td class="top aligned right aligned collapsing">
-							{% if level is not defined or level == 0 %}
-								<strong>{{key}}</strong>
-							{% else %}
-								{{key}}
-							{% endif %}
-						</td>
-					{% endif %}
-					<td class="ui top aligned" colspan="2">
-                                                {{r.prettyDisplay(val,level|default(0)+1)}}
-					</td>
-				</tr>
-			{% endfor %}
-		</table>
-	{% else %}
-		{{arr}}
-	{% endif %}
+    {% if arr is iterable %}
+        {% import _self as r %}	
+        <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
+            {% for key,val in arr %}
+                <tr>
+                    {% if not (key matches '/^[0-9]+$/') %}
+                        <td class="top aligned right aligned collapsing">
+                            {% if level is not defined or level == 0 %}
+                                <strong>{{key}}</strong>
+                            {% else %}
+                                {{key}}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    <td class="ui top aligned" colspan="2">
+                        {{r.prettyDisplay(val,level|default(0)+1)}}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        {{arr}}
+    {% endif %}
 {% endmacro %}
 
 {% macro prettyDisplay(val,level) %}
-	{% import _self as r %}	
-        {% if val is empty %}
-                <em>-- Not Specified --</em>
-        {% elseif val is iterable %}
-                {{r.arrayTable(val,level|default(0)+1)}}
-        {% elseif val|first == '<' %}
-                {{val|raw}}
-        {% else %}
-                {{val|nl2br}}
-        {% endif %}
+    {% import _self as r %}	
+    {% if val is empty %}
+        <em>-- Not Specified --</em>
+    {% elseif val is iterable %}
+        {{r.arrayTable(val,level|default(0)+1)}}
+    {% elseif val|first == '<' %}
+        {{val|raw}}
+    {% else %}
+        {{val|nl2br}}
+    {% endif %}
 {% endmacro %}

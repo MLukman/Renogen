@@ -2,112 +2,128 @@
 {% import _self as mm %}
 
 {% block content %}
-	<h1 class="ui dividing header">
-		<span>
-			<i class="ui cube icon"></i>{{project.title}}
-		</span>
-		{% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
-			<a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
-			<a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
-		{% endif %}
-	</h1>
+    <h1 class="ui dividing header">
+        <span>
+            <i class="ui cube icon"></i>{{project.title}}
+        </span>
+        {% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
+            <a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
+            <a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
+        {% endif %}
+    </h1>
 
-	<p>{{project.description}}</p>
+    <p>{{project.description}}</p>
 
-	<h2>
-		Deployments
-		{% if app.securilex.isGranted('approval',project) %}
-			<a class="ui right floated primary button no-print" href="{{app.path('deployment_create',controller.entityParams(project))}}">
-				<i class="ui plus icon"></i>Create deployment
-			</a>
-		{% endif %}
-	</h2>
+    <h2>
+        Deployments
+        {% if app.securilex.isGranted('approval',project) %}
+            <a class="ui right floated primary button no-print" href="{{app.path('deployment_create',controller.entityParams(project))}}">
+                <i class="ui plus icon"></i>Create deployment
+            </a>
+        {% endif %}
+    </h2>
 
-	<h3>Upcoming</h3>
-	{% if project.upcoming().count() > 0 %}
-		{{ mm.deploymentList(project.upcoming()) }}
-	{% else %}
-		<div class="ui warning message">This project has no upcoming deployments yet. A user with 'approval' role needs to create a new deployment.</div>
-	{% endif %}
+    <h3>Upcoming</h3>
+    {% if project.upcoming().count() > 0 %}
+        {{ mm.deploymentList(project.upcoming()) }}
+    {% else %}
+        <div class="ui warning message">This project has no upcoming deployments yet. A user with 'approval' role needs to create a new deployment.</div>
+    {% endif %}
 
-	{% if project.past().count() > 0 %}
-		<h3>Past</h3>
-		{{ mm.deploymentList(project.past()) }}
-	{% endif %}
+    {% if project.past().count() > 0 %}
+        <h3>Past (Showing last 10)
+        <a class="ui button right floated" href="{{app.path('project_past',controller.entityParams(project))}}"><i class="ui clock icon"></i>Show all past deployments</a>
+        </h3>
+        {{ mm.deploymentList(project.past()|slice(0, 10)) }}
+    {% endif %}
 
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-	<div class="ui two stackable cards">
-		{% for deployment in deployments %}
-			<div class="ui blue card">
-				<div class="content">
-					<a  class="ui header" href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}">
-						<small class="ui right floated">
-							{{deployment.datetimeString(true)}}
-						</small>
-						<i class="calendar check o icon"></i>
-						<div class="content">
-							{{deployment.title}}
-						</div>
-					</a>
-					{% if deployment.description %}
-						<div class="ui description">
-							{{deployment.description|nl2br}}
-						</div>
-					{% endif %}
-					{% set item_count = deployment.items.count() %}
-					{% if item_count > 0 %}
-						<div class="ui list">
-							{% for item in deployment.items %}
-								<a href="{{app.path('item_view',app.controller.entityParams(item))}}" class="ui item">
-									<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-									{{item.displayTitle}}
-								</a>
-							{% endfor %}
-						</div>
-					{% else %}
-						<div class="meta">
-							<i class="ui warning sign icon"></i>
-							No deployment item has been added to this deployment yet
-						</div>
-					{% endif %}
-				</div>
-			</div>
-		{% endfor %}
-	</div>
+    <div class="ui one stackable cards">
+        {% for deployment in deployments %}
+            <div class="ui blue card">
+                <div class="content">
+                    <a  class="ui header" href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}">
+                        <span class="ui right floated">
+                            {{deployment.datetimeString(true)}}
+                        </span>
+                        <i class="calendar check o icon"></i>
+                        <div class="content">
+                            {{deployment.title}}
+                        </div>
+                    </a>
+                    {% if deployment.description %}
+                        <div class="ui description">
+                            {{deployment.description|nl2br}}
+                        </div>
+                    {% endif %}
+                    {% set item_count = deployment.items.count() %}
+                    {% if item_count > 0 %}
+                        <table class="ui very compact small sortable purple table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>					
+                            <tbody>
+                                {% for item in deployment.items %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{app.path('item_view',app.controller.entityParams(item))}}" class="ui item">
+                                                {{item.displayTitle}}
+                                            </a>
+                                        </td>
+                                        <td class="collapsing">									
+                                            <i class="ui {{item.statusIcon}} icon"></i>{{item.status}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="meta">
+                            <i class="ui warning sign icon"></i>
+                            No deployment item has been added to this deployment yet
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 {% endmacro %}
 
 {% macro deploymentList2(deployments) %}
-	<table class="ui padded table">
-		{% for deployment in deployments %}
-			<tr>
-				<td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
-				<td class="ui eight wide top aligned">
-					<a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
-						<h3>{{deployment.displayTitle}}</h3>
-					</a>
-					<div>{{deployment.description|nl2br}}</div>
-				</td>
-				<td class="ui eight wide top aligned">
-					{% if deployment.items.count() > 0 %}
-						<div class="ui dropdown action-nothing">
-							<div class="text">{{deployment.items.count()}} items</div>
-							<i class="dropdown icon"></i>
-							<div class="menu">
-								{% for item in deployment.items %}
-									<div class="item">
-										<a href="{{app.path('item_view',app.controller.entityParams(item))}}">
-											<i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-											{{item.displayTitle}}
-										</a>
-									</div>
-								{% endfor %}
-							</div>
-						</div>
-					{% endif %}
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+    <table class="ui padded table">
+        {% for deployment in deployments %}
+            <tr>
+                <td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
+                <td class="ui eight wide top aligned">
+                    <a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
+                        <h3>{{deployment.displayTitle}}</h3>
+                    </a>
+                    <div>{{deployment.description|nl2br}}</div>
+                </td>
+                <td class="ui eight wide top aligned">
+                    {% if deployment.items.count() > 0 %}
+                        <div class="ui dropdown action-nothing">
+                            <div class="text">{{deployment.items.count()}} items</div>
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                {% for item in deployment.items %}
+                                    <div class="item">
+                                        <a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+                                            <i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
+                                            {{item.displayTitle}}
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
 {% endmacro %}

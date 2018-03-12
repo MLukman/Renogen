@@ -26,8 +26,27 @@ class Project extends RenoController
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
-        $this->checkAccess(array('view', 'execute', 'entry', 'approval'), $project);
+        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval',
+            'release'), $project);
         $this->addEntityCrumb($project);
+        return $this->render('project_view', array(
+                'project' => $project
+        ));
+    }
+
+    public function past(Request $request, $project)
+    {
+        if (!($project instanceof \Renogen\Entity\Project)) {
+            $name    = $project;
+            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
+                'name' => $name)))) {
+                return $this->errorPage('Project not found', "There is not such project with name '$name'");
+            }
+        }
+        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval',
+            'release'), $project);
+        $this->addEntityCrumb($project);
+        $this->addCrumb('Past deployments', $this->app->path('project_past', $this->entityParams($project)), 'clock');
         return $this->render('project_view', array(
                 'project' => $project
         ));

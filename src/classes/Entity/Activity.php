@@ -56,6 +56,16 @@ class Activity extends ApproveableEntity
     public $files = null;
 
     /**
+     * @Column(type="string", length=100, nullable=true)
+     */
+    public $status;
+
+    /**
+     * @Column(type="string", length=100, nullable=true)
+     */
+    public $signature;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -78,5 +88,14 @@ class Activity extends ApproveableEntity
     {
         return parent::isUsernameAllowed($username, $attribute) ||
             $this->item->isUsernameAllowed($username, $attribute);
+    }
+
+    /**
+     * @PrePersist
+     * @PreUpdate
+     */
+    public function calculateSignature()
+    {
+        $this->signature = sha1($this->template->id.'|'.$this->stage.'|'.json_encode($this->parameters));
     }
 }

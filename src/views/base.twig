@@ -2,278 +2,279 @@
 
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-		<link rel="icon" href="{{app.getBaseUri('ui/favicon.ico')}}" type="image/x-icon">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+        <link rel="icon" href="{{app.getBaseUri('ui/favicon.ico')}}" type="image/x-icon">
 
-		<title>{{title|default(controller.title|default(app.title))}}</title>
+        <title>{{title|default(controller.title|default(app.title))}}</title>
 
-		<link rel="stylesheet" type="text/css" href="{{app.getBaseUri('ui/semantic2/semantic.css')}}" />
+        <link rel="stylesheet" type="text/css" href="{{app.getBaseUri('ui/semantic2/semantic.css')}}" />
 
-		<script src="{{app.getBaseUri('ui/jquery/jquery-2.1.3.min.js')}}"></script>
-		<script src="{{app.getBaseUri('ui/jquery/jquery.address.js')}}"></script>
-		<script src="{{app.getBaseUri('ui/semantic2/semantic.js')}}"></script>
-		<script src="{{app.getBaseUri('ui/semantic2/library/jquery.tablesort.js')}}"></script>
-		<script>
-			function dateParser(text) {
-				if (!text) {
-					return null;
-				}
-				var dateArray = null;
-				switch (text.length) {
-					case 19:
-						var reggie = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}) (\w{2})/;
-						dateArray = reggie.exec(text);
-						if (dateArray[6] == 'PM') {
-							dateArray[4] = parseInt(dateArray[4]) + 12 + "";
-						} else if (dateArray[4] == 12) {
-							dateArray[4] = "00";
-						}
-						break;
+        <script src="{{app.getBaseUri('ui/jquery/jquery-2.1.3.min.js')}}"></script>
+        <script src="{{app.getBaseUri('ui/jquery/jquery.address.js')}}"></script>
+        <script src="{{app.getBaseUri('ui/semantic2/semantic.js')}}"></script>
+        <script src="{{app.getBaseUri('ui/semantic2/library/jquery.tablesort.js')}}"></script>
+        <script>
+            function dateParser(text) {
+                if (!text) {
+                    return null;
+                }
+                var dateArray = null;
+                switch (text.length) {
+                    case 19:
+                        var reggie = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}) (\w{2})/;
+                        dateArray = reggie.exec(text);
+                        if (dateArray[6] == 'PM') {
+                            dateArray[4] = parseInt(dateArray[4]) + 12 + "";
+                        } else if (dateArray[4] == 12) {
+                            dateArray[4] = "00";
+                        }
+                        break;
 
-					case 10:
-						var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
-						dateArray = reggie.exec(text);
-						dateArray[4] = "00";
-						dateArray[5] = "00";
-						break;
+                    case 10:
+                        var reggie = /^(\d{2})\/(\d{2})\/(\d{4})/;
+                        dateArray = reggie.exec(text);
+                        dateArray[4] = "00";
+                        dateArray[5] = "00";
+                        break;
 
-				}
-				var dateObject = new Date(
-						(+dateArray[3]),
-						(+dateArray[2]) - 1, // Careful, month starts at 0!
-						(+dateArray[1]),
-						(+dateArray[4]),
-						(+dateArray[5])
-						);
-				return dateObject;
-			}
-			function dateFieldConfig(minDate, datetime_mode) {
-				var cfg = {
-					type: datetime_mode ? 'datetime' : 'date',
-					//today: true,
-					className: {
-						todayCell: 'ui header today'
-					},
-					formatter: {
-						date: function (date, settings) {
-							if (!date)
-								return '';
-							var day = date.getDate();
-							var month = date.getMonth() + 1;
-							var year = date.getFullYear();
-							return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
-						},
-						time: function (date, settings) {
-							if (!date)
-								return '';
-							var hour = date.getHours();
-							var ampm = '';
-							if (hour > 12) {
-								hour -= 12;
-								ampm = 'PM';
-							} else {
-								ampm = 'AM';
-								if (hour == 0) {
-									hour = 12;
-								}
-							}
-							var minute = date.getMinutes();
-							return ("00" + hour).slice(-2) + ':' + ("00" + minute).slice(-2) + ' ' + ampm;
-						}
-					}
-					,
-					parser: {
-						date: function (text, settings) {
-							return dateParser(text);
-						}
-					}
-				};
-				if (minDate !== null) {
-					cfg.minDate = new Date(Math.min(minDate, new Date()));
-				}
-				return cfg;
-			}
+                }
+                var dateObject = new Date(
+                        (+dateArray[3]),
+                        (+dateArray[2]) - 1, // Careful, month starts at 0!
+                        (+dateArray[1]),
+                        (+dateArray[4]),
+                        (+dateArray[5])
+                        );
+                return dateObject;
+            }
+            function dateFieldConfig(minDate, datetime_mode) {
+                var cfg = {
+                    type: datetime_mode ? 'datetime' : 'date',
+                    //today: true,
+                    className: {
+                        todayCell: 'ui header today'
+                    },
+                    formatter: {
+                        date: function (date, settings) {
+                            if (!date)
+                                return '';
+                            var day = date.getDate();
+                            var month = date.getMonth() + 1;
+                            var year = date.getFullYear();
+                            return ("00" + day).slice(-2) + '/' + ("00" + month).slice(-2) + '/' + year;
+                        },
+                        time: function (date, settings) {
+                            if (!date)
+                                return '';
+                            var hour = date.getHours();
+                            var ampm = '';
+                            if (hour > 12) {
+                                hour -= 12;
+                                ampm = 'PM';
+                            } else {
+                                ampm = 'AM';
+                                if (hour == 0) {
+                                    hour = 12;
+                                }
+                            }
+                            var minute = date.getMinutes();
+                            return ("00" + hour).slice(-2) + ':' + ("00" + minute).slice(-2) + ' ' + ampm;
+                        }
+                    }
+                    ,
+                    parser: {
+                        date: function (text, settings) {
+                            return dateParser(text);
+                        }
+                    }
+                };
+                if (minDate !== null) {
+                    cfg.minDate = new Date(Math.min(minDate, new Date()));
+                }
+                return cfg;
+            }
 
-			$(function () {
-				$('#topfiller').css('height', $('#topbar').outerHeight(true));
-				$(window).resize(function () {
-					$('#topfiller').css('height', $('#topbar').outerHeight(true));
-				});
-				$('table.sortable').tablesort();
-				$('.ui.checkbox').checkbox();
-				$('.ui.dropdown.action-nothing').dropdown({
-					action: 'nothing'
-				});
-				$('.ui.dropdown:not(.action-nothing)').dropdown({
-					fullTextSearch: true
-				});
-				setTimeout(function () {
-					$('.flash.message:not(.error)').fadeOut(1000);
-				}, 3000);
-			});
-		</script>
-		{% for js in extra_js|default([]) %}<script src="{{js}}"></script>{% endfor %}
-		{% for css in extra_css|default([]) %}<link rel="stylesheet" type="text/css" href="{{css}}" />{% endfor %}
-		<style>
-			#topbar {
-				position: fixed;
-				z-index: 101;
-				margin: 0;
-				width: 100%; 
-				top: 0px; left: 0px; right: auto; bottom: auto; 
-				color: black
-			}
+            $(function () {
+                $('#topfiller').css('height', $('#topbar').outerHeight(true));
+                $(window).resize(function () {
+                    $('#topfiller').css('height', $('#topbar').outerHeight(true));
+                });
+                $('table.sortable').tablesort();
+                $('.ui.checkbox').checkbox();
+                $('.ui.dropdown.action-nothing').dropdown({
+                    action: 'nothing'
+                });
+                $('.ui.dropdown:not(.action-nothing)').dropdown({
+                    fullTextSearch: true
+                });
+                setTimeout(function () {
+                    $('.flash.message:not(.error)').fadeOut(1000);
+                }, 3000);
+            });
+        </script>
+        {% for js in extra_js|default([]) %}<script src="{{js}}"></script>{% endfor %}
+        {% for css in extra_css|default([]) %}<link rel="stylesheet" type="text/css" href="{{css}}" />{% endfor %}
+        <style>
+            #topbar {
+                position: fixed;
+                z-index: 101;
+                margin: 0;
+                width: 100%; 
+                top: 0px; left: 0px; right: auto; bottom: auto; 
+                color: black
+            }
 
-			#topmenu {
-				margin: 0em; 
-				letter-spacing: 0.75pt; 
-				border-radius: 0px;
-				box-shadow: inset 0px -3px 0px rgba(191,191,191,0.5);
-			}
+            #topmenu {
+                margin: 0em; 
+                letter-spacing: 0.75pt; 
+                border-radius: 0px;
+                box-shadow: inset 0px -3px 0px rgba(191,191,191,0.5);
+            }
 
-			@media print
-			{    
-				.no-print, .no-print *
-				{
-					display: none !important;
-				}
-			}
-		</style>
-	</head>
-	<body>
+            @media print
+            {    
+                .no-print, .no-print *
+                {
+                    display: none !important;
+                }
+            }
+        </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
 
-		<div id="topbar" class="no-print">
-			<div id="topmenu" class="ui stackable menu inverted blue">
+    <div id="topbar" class="no-print">
+        <div id="topmenu" class="ui stackable menu inverted blue">
 
-				<div class="ui title item">
-					<a style="padding-right: 30pt" href="{{app.path('home')}}">
-						{% block menutitle %}
-							{% set logo = app.logo %}
-							{% if logo %}
-								<img src="{{logo}}" />
-							{% else %}
-								<h3>
-									{% set icon = app.icon %}
-									{% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}
-									{{app.title}}
-								</h3>
-							{% endif %}
-						{% endblock %}
-					</a>
-				</div>
+            <div class="ui title item">
+                <a style="padding-right: 30pt" href="{{app.path('home')}}">
+                    {% block menutitle %}
+                        {% set logo = app.logo %}
+                        {% if logo %}
+                            <img src="{{logo}}" />
+                        {% else %}
+                            <h3>
+                                {% set icon = app.icon %}
+                                {% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}
+                                {{app.title}}
+                            </h3>
+                        {% endif %}
+                    {% endblock %}
+                </a>
+            </div>
 
-				{% block menubar %}
-				{% endblock %}
+            {% block menubar %}
+            {% endblock %}
 
-				<div class="right menu">
-					{% block menuright %}
-					{% endblock %}
+            <div class="right menu">
+                {% block menuright %}
+                {% endblock %}
 
-					{% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
-						{{ m.topmenu_dropdown_begin('Settings', 'setting') }}
-						{{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
-						{{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
-						{{ m.topmenu_dropdown_end() }}
-					{% endif %}
+                {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
+                    {{ m.topmenu_dropdown_begin('Settings', 'setting') }}
+                    {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+                    {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
+                    {{ m.topmenu_dropdown_end() }}
+                {% endif %}
 
-					{% if app.securilex is defined %}
-						{% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
-							<div class="ui dropdown item">
-								<i class="ui user icon"></i> {{app['user'].getName()}}
-								<i class="dropdown icon"></i>
-								<div class="menu">
-									<a class="item" href="{{app.securilex.getLogoutPath()}}">
-										<i class="ui sign out icon"></i>Logout
-									</a>
-								</div>
-							</div>
-						{% else %}
-							<a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
-						{% endif %}
-					{% endif %}
-				</div>
-			</div>
+                {% if app.securilex is defined %}
+                    {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
+                        <div class="ui dropdown item">
+                            <i class="ui user icon"></i> {{app['user'].getName()}}
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <a class="item" href="{{app.securilex.getLogoutPath()}}">
+                                    <i class="ui sign out icon"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
 
-			{% block belowtopmenu %}
-			{% endblock %}
-		</div>
+        {% block belowtopmenu %}
+        {% endblock %}
+    </div>
 
-		<div id="topfiller" class="no-print"></div>
+    <div id="topfiller" class="no-print"></div>
 
-		{% for message in app.session.flashbag.get('message') %}
-			<div class="ui floating {{message.type}} flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">
-				{% if message.title %}
-					<div class="header">
-						{{message.title}}
-					</div>
-				{% endif %}
-				<p>{{message.text|nl2br}}</p>
-			</div>
-		{% endfor %}
+    {% for message in app.session.flashbag.get('message') %}
+        <div class="ui floating {{message.type}} flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">
+            {% if message.title %}
+                <div class="header">
+                    {{message.title}}
+                </div>
+            {% endif %}
+            <p>{{message.text|nl2br}}</p>
+        </div>
+    {% endfor %}
 
-		<div class="ui basic segment">
-			{% block content %}
-				{{content|default(null)|raw}}
-			{% endblock %}
-		</div>
+    <div class="ui basic segment">
+        {% block content %}
+            {{content|default(null)|raw}}
+        {% endblock %}
+    </div>
 
-		{% if block('footer')|trim is not empty %}
-			<div style="margin: 2em 0em; border-top: 1px solid silver">
-				{% block footer %}
-				{% endblock %}
-			</div>
-		{% endif %}
+    {% if block('footer')|trim is not empty %}
+        <div style="margin: 2em 0em; border-top: 1px solid silver">
+            {% block footer %}
+            {% endblock %}
+        </div>
+    {% endif %}
 
-	</body>
+</body>
 </html>
 
 {% macro topmenu_item(text, url, icon, extra_classes) %}
-	<a class="ui link item {{extra_classes|default(null)}}" href="{{url}}">
-		{% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}{{text}}
-	</a>
+    <a class="ui link item {{extra_classes|default(null)}}" href="{{url}}">
+        {% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}{{text}}
+    </a>
 {% endmacro %}
 
 {% macro topmenu_dropdown_begin(text, icon) %}
-	<div class="ui dropdown item">
-		{% if icon is defined %}<i class="ui {{icon}} icon"></i>{% endif %}
-		{{text}}
-		<i class="dropdown icon"></i>
-		<div class="ui menu inverted">
-		{% endmacro %}
+    <div class="ui dropdown item">
+        {% if icon is defined %}<i class="ui {{icon}} icon"></i>{% endif %}
+        {{text}}
+        <i class="dropdown icon"></i>
+        <div class="ui menu inverted">
+        {% endmacro %}
 
-		{% macro topmenu_dropdown_end() %}
-		</div>
-	</div>
+        {% macro topmenu_dropdown_end() %}
+        </div>
+    </div>
 {% endmacro %}
 
 {% macro fieldError(errors, fieldname, pointing) %}
-	{% if errors[fieldname] is defined %}
-		{% if errors[fieldname] is iterable %}
-			{% for error in errors[fieldname] %}
-				<div class="ui negative red label {{pointing}} pointing">{{error}}</div>
-			{% endfor %}
-		{% else %}
-			<div class="ui negative red label {{pointing}} pointing">{{errors[fieldname]}}</div>
-		{% endif %}
-	{% endif %}
+    {% if errors[fieldname] is defined %}
+        {% if errors[fieldname] is iterable %}
+            {% for error in errors[fieldname] %}
+                <div class="ui negative red label {{pointing}} pointing">{{error}}</div>
+            {% endfor %}
+        {% else %}
+            <div class="ui negative red label {{pointing}} pointing">{{errors[fieldname]}}</div>
+        {% endif %}
+    {% endif %}
 {% endmacro %}
 
 {% macro dateField(id, name, value, placeholder, datetime_mode) %}
-	<div class="ui calendar" id="{{id}}">
-		{% if value %}Current value = {{value}}{% endif %}
-		<div class="ui input left icon action">
-			<i class="calendar icon"></i>
-			<input type="text" name="{{name}}" placeholder="{{placeholder}}" value="{{value}}">
-			<button class="ui button" type="button" onclick="$('#{{id}}').calendar('clear');
-					return false;">Clear</button>
-		</div>
-	</div>
-	<script>
-		$(function () {
-			$('#{{id}}').calendar(dateFieldConfig(null, {{datetime_mode ? 1:0}}));
-		});
-	</script>
+    <div class="ui calendar" id="{{id}}">
+        {% if value %}Current value = {{value}}{% endif %}
+        <div class="ui input left icon action">
+            <i class="calendar icon"></i>
+            <input type="text" name="{{name}}" placeholder="{{placeholder}}" value="{{value}}">
+            <button class="ui button" type="button" onclick="$('#{{id}}').calendar('clear');
+                    return false;">Clear</button>
+        </div>
+    </div>
+    <script>
+        $(function () {
+            $('#{{id}}').calendar(dateFieldConfig(null, {{datetime_mode ? 1:0}}));
+        });
+    </script>
 {% endmacro %}

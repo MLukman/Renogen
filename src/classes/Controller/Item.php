@@ -55,6 +55,30 @@ class Item extends RenoController
         }
     }
 
+    public function changeStatus(Request $request, $project, $deployment, $item)
+    {
+        $new_status = $request->request->get('new_status');
+        $item_obj   = $this->app['datastore']->fetchItem($project, $deployment, $item);
+        $user       = $this->app->user();
+        if (!$user && !$this->app['statemodel']->validateTransition('item', $item_obj->deployment->project->getUserAccess($user->getUsername()), $item_obj->status, $new_status)) {
+            return new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
+        }
+
+        $remark = trim($request->request->get('remark'));
+        if (empty($remark)) {
+            $this->app->addFlashMessage("Remark is required", "Unable to change status", "error");
+        } else {
+            $item_obj->changeStatus($new_status);
+            $comment        = new \Renogen\Entity\ItemComment($item_obj);
+            $comment->event = $new_status;
+            $comment->text  = $remark;
+            $item_obj->comments->add($comment);
+            $this->app['datastore']->commit($item_obj);
+            $this->app->addFlashMessage("Item '$item_obj->title' has been changed status to $new_status");
+        }
+        return $this->redirect('item_view', $this->entityParams($item_obj));
+    }
+
     public function action(Request $request, $project, $deployment, $item,
                            $action)
     {
@@ -115,17 +139,18 @@ class Item extends RenoController
                                       ParameterBag $post)
     {
         $context = array();
+        $ds      = $this->app['datastore'];
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Move':
                     try {
-                        $ndeployment = $this->app['datastore']->fetchDeployment($item->deployment->project, $post->get('deployment'));
+                        $ndeployment = $ds->fetchDeployment($item->deployment->project, $post->get('deployment'));
                         if ($ndeployment != $item->deployment) {
                             $data = new ParameterBag(array(
                                 'deployment' => $ndeployment,
                             ));
-                            if ($this->app['datastore']->prepareValidateEntity($item, $data->keys(), $data)) {
-                                $this->app['datastore']->commit($item);
+                            if ($ds->prepareValidateEntity($item, $data->keys(), $data)) {
+                                $ds->commit($item);
                                 $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
                                 return $this->redirect('item_view', $this->entityParams($item));
                             }
@@ -141,14 +166,14 @@ class Item extends RenoController
                     break;
 
                 case 'Delete':
-                    $this->app['datastore']->deleteEntity($item);
-                    $this->app['datastore']->commit();
+                    $ds->deleteEntity($item);
+                    $ds->commit();
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
                     return $this->redirect('deployment_view', $this->entityParams($item->deployment));
 
                 default:
-                    if ($this->app['datastore']->prepareValidateEntity($item, static::entityFields, $post)) {
-                        $this->app['datastore']->commit($item);
+                    if ($ds->prepareValidateEntity($item, static::entityFields, $post)) {
+                        $ds->commit($item);
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($item));
                     } else {
