@@ -100,7 +100,8 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
         'category' => array('required' => 1),
         'modules' => array('required' => 1),
     );
-    static protected $statuses  = array(
+
+    const STATUSES = array(
         'Unsubmitted',
         'Rejected',
         'Pending Review',
@@ -153,11 +154,11 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
      */
     public function compareCurrentStatusTo($status_to_compare)
     {
-        $compare_status = array_search($status_to_compare, static::$statuses);
+        $compare_status = array_search($status_to_compare, static::STATUSES);
         if ($compare_status === FALSE) {
             return FALSE;
         }
-        $against_status = array_search($this->status, static::$statuses);
+        $against_status = array_search($this->status, static::STATUSES);
         return $against_status - $compare_status;
     }
 
@@ -199,6 +200,18 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
             $crit = new \Doctrine\Common\Collections\Criteria($eb->eq('status', $status));
         }
         return $this->status_logs->matching($crit)->last();
+    }
+
+    public function getStatusLogBefore(ItemStatusLog $status)
+    {
+        $found = false;
+        foreach (array_reverse($this->status_logs->toArray()) as $log) {
+            if ($found && $log->created_date < $status->created_date) {
+                return $log;
+            } else if ($log === $status) {
+                $found = true;
+            }
+        }
     }
 
     public function isUsernameAllowed($username, $attribute)

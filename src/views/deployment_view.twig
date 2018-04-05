@@ -25,6 +25,38 @@
         {% endif %}
     </h2>
 
+    <div class="ui basic segment">
+        <div class="ui equal width stackable grid">
+            <div class="ui statistic column">
+                <div class="label">
+                    TOTAL
+                </div>
+                <div class="value">
+                    {{deployment.items|length}}
+                </div>
+            </div>
+            {% set statuses = constant('Renogen\\Entity\\Item::STATUSES') %}
+            {% for s in statuses %}
+                <div class="ui statistic column">
+                    <div class="label">
+                        {{s}}
+                    </div>
+                    <div class="value">
+                        {{deployment.getItemsWithStatus(s)|length}}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% set approved = deployment.getItemsWithStatus('Approved') %}
+    {% if approved|length > 0 %}
+    <div class="ui secondary segment">
+        There are approved items
+    </div>
+    {% endif %}
+
+
     <table class="ui celled striped sortable table">
         <thead>
             <tr>

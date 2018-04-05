@@ -9,6 +9,13 @@
     {% endif %}
 {% endblock %}
 
+{% block usermenu %}
+    {% if project is defined %}
+        <span class="item">Project role: <strong>{{project.getUserAccess(app.user.username)}}</strong>
+        </span>
+    {% endif %}
+{% endblock %}
+
 {% macro timestamps(entity) %}
     {% if entity.created_date %}
         <div class="ui label">

@@ -130,7 +130,7 @@ class Application extends \Silex\Application
         $app['statemodel']->registerTransition(
             'item', 'Approved', 'Pending Approval', 'approval', array('icon' => 'help'));
         $app['statemodel']->registerTransition(
-            'item', 'Rejected', 'Pending Review', array('entry', 'review', 'approval'), array(
+            'item', 'Rejected', 'Pending Review', array('entry', 'review'), array(
             'icon' => 'help', 'class' => 'primary'));
 
         /* Twig Template Engine */

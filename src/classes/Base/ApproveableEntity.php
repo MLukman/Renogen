@@ -92,8 +92,8 @@ class ApproveableEntity extends Entity
     }
 
     /**
-     * Approve this entity
-     * @param User $user Approved by
+     * Reject this entity
+     * @param User $user Rejected by
      */
     public function reject(User $user = null)
     {
@@ -101,5 +101,10 @@ class ApproveableEntity extends Entity
         $this->rejected_by    = $user ?: Application::instance()->userEntity();
         $this->submitted_date = null;
         $this->submitted_by   = null;
+    }
+
+    public function isApproved()
+    {
+        return !empty($this->approved_date);
     }
 }

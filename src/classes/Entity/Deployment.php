@@ -11,12 +11,12 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Renogen\Application;
-use Renogen\Base\Entity;
+use Renogen\Base\ApproveableEntity;
 
 /**
  * @Entity @Table(name="deployments")
  */
-class Deployment extends Entity
+class Deployment extends ApproveableEntity
 {
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
@@ -106,6 +106,16 @@ class Deployment extends Entity
                     new Comparison('approved_date', '=', null)));
     }
 
+    /**
+     *
+     * @return ArrayCollection
+     */
+    public function getItemsWithStatus($status)
+    {
+        return $this->items->matching(Criteria::create()->where(
+                    new Comparison('status', '=', $status)));
+    }
+
     public function generateRunbooks()
     {
         $activities = array(
@@ -140,9 +150,8 @@ class Deployment extends Entity
 
         return $rungroups;
     }
-
-    /*public function isUsernameAllowed($username, $attribute)
-    {
-        return $this->project->isUsernameAllowed($username, $attribute);
-    }//*/
+    /* public function isUsernameAllowed($username, $attribute)
+      {
+      return $this->project->isUsernameAllowed($username, $attribute);
+      }// */
 }

@@ -32,6 +32,7 @@ class Item extends RenoController
             $this->addEntityCrumb($item_obj);
             return $this->render('item_view', array(
                     'item' => $item_obj,
+                    'project' => $item_obj->deployment->project,
             ));
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -181,7 +182,8 @@ class Item extends RenoController
                     }
             }
         }
-        $context['item'] = $item;
+        $context['item']    = $item;
+        $context['project'] = $item->deployment->project;
         return $this->render('item_form', $context);
     }
 

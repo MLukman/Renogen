@@ -186,6 +186,8 @@
                             <i class="ui user icon"></i> {{app['user'].getName()}}
                             <i class="dropdown icon"></i>
                             <div class="menu">
+                                {% block usermenu %}
+                                {% endblock %}
                                 <a class="item" href="{{app.securilex.getLogoutPath()}}">
                                     <i class="ui sign out icon"></i>Logout
                                 </a>

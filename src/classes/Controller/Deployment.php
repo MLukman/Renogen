@@ -36,6 +36,7 @@ class Deployment extends RenoController
             $this->addEntityCrumb($deployment_obj);
             return $this->render('deployment_view', array(
                     'deployment' => $deployment_obj,
+                    'project' => $deployment_obj->project,
             ));
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -83,6 +84,7 @@ class Deployment extends RenoController
             }
         }
         $context['deployment'] = $deployment;
+        $context['project']    = $deployment->project;
         $this->addCSS("ui/semantic2/library/calendar.css");
         $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);
@@ -98,6 +100,7 @@ class Deployment extends RenoController
         $this->addCrumb('Release Note', $this->app->path('release_note', $this->entityParams($deployment_obj)), 'ordered list');
         $context = array(
             'deployment' => $deployment_obj,
+            'project' => $deployment_obj->project,
             'items' => array(),
         );
 

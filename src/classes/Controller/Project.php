@@ -47,7 +47,7 @@ class Project extends RenoController
             'release'), $project);
         $this->addEntityCrumb($project);
         $this->addCrumb('Past deployments', $this->app->path('project_past', $this->entityParams($project)), 'clock');
-        return $this->render('project_view', array(
+        return $this->render('project_past', array(
                 'project' => $project
         ));
     }
