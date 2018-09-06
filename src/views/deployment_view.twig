@@ -85,15 +85,15 @@
                         {{ r.itemModulesLabel(item) }}
                     </td>
                     <td class="ui collapsing center aligned">
-                        {% set activities = item.activities.count() %}						
+                        {% set activities = item.activities.count() %}
                         <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
                     </td>
                     <td class="ui collapsing center aligned">
-                        {% set attachments = item.attachments.count() %}						
+                        {% set attachments = item.attachments.count() %}
                         <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
                     </td>
                     <td class="ui collapsing center aligned">
-                        {% set comments = item.comments.count() %}	
+                        {% set comments = item.comments.count() %}
                         {% set last = item.comments.last() %}
                         <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
                     </td>

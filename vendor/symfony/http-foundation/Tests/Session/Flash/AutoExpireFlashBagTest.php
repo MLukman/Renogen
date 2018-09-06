@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\HttpFoundation\Tests\Session\Flash;
 
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Session\Flash\AutoExpireFlashBag as FlashBag;
 
 /**
@@ -19,13 +18,16 @@ use Symfony\Component\HttpFoundation\Session\Flash\AutoExpireFlashBag as FlashBa
  *
  * @author Drak <drak@zikula.org>
  */
-class AutoExpireFlashBagTest extends TestCase
+class AutoExpireFlashBagTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Symfony\Component\HttpFoundation\Session\Flash\AutoExpireFlashBag
      */
     private $bag;
 
+    /**
+     * @var array
+     */
     protected $array = array();
 
     protected function setUp()

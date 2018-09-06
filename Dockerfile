@@ -6,12 +6,20 @@ RUN apt-get update && apt-get install -y libldap2-dev wget \
     && apt-get autoremove -y libldap2-dev \
 	&& apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && a2enmod rewrite \
+    && wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64 \
+    && chmod +x /usr/local/bin/dumb-init
+
+RUN echo 'TLS_REQCERT never' >> /etc/ldap/ldap.conf \
     && echo 'date.timezone = Asia/Kuala_Lumpur' > /usr/local/etc/php/conf.d/timezone.ini \
     && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
-    && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini \
-    && a2enmod rewrite \
-	&& wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 \
-	&& chmod +x /usr/local/bin/dumb-init
+    && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini
+
+ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
+
+CMD ["bash", "-c", "chown -R www-data:www-data /data && exec apache2-foreground"]
+
+HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 
 COPY . /tmp/src/
 
@@ -22,10 +30,5 @@ RUN mv /tmp/src/* /var/www/html/ \
     && ln -s /data /var/www/html/data \
     && chown -R www-data:www-data /var/www
     
-HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
-
 VOLUME ["/data"]
 
-ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
-
-CMD ["bash", "-c", "chown -R www-data:www-data /data && exec apache2-foreground"]
