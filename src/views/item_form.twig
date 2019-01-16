@@ -1,93 +1,106 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	{% set is_existing = (item.id|default(null) is not empty) %}
-	{% set critical_permission = (is_existing and (item.created_by == app.userEntity() or app.securilex.isGranted('approval',item.deployment.project))) %}
-	<h1 class="ui header">
-		{% if is_existing %}Edit{% else %}Add{% endif %} deployment item
-	</h1>
+    {% set is_existing = (item.id|default(null) is not empty) %}
+    {% set critical_permission = (is_existing and (item.created_by == app.userEntity() or app.securilex.isGranted('approval',item.deployment.project))) %}
+    <h1 class="ui header">
+        <div>
+            <small>
+                {{r.crumb_project(item.deployment.project, true)}} &raquo;
+                {{r.crumb_deployment(item.deployment, true)}} &raquo;
+            </small>
+        </div>
+        {% if is_existing %}Edit{% else %}Add{% endif %} deployment item
+    </h1>
 
-	{% if errors|default(false) %}
-		<div class="ui error message">
-			Your input contains errors. Please fix below.
-		</div>
-	{% endif %}
+    {% if errors|default(false) %}
+        <div class="ui error message">
+            Your input contains errors. Please fix below.
+        </div>
+    {% endif %}
 
-	<form method="POST">
-		<div class="ui form">
-			<div class="ui field basic segment">
-				<label class="ui top attached large label">Reference Number</label>
-				<input placeholder="Reference number (e.g. CR#, SR# etc)" type="text" name="refnum" value="{{item.refnum|default(null)}}" />
-				{{ m.fieldError(errors|default([]), 'refnum') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Title</label>
-				<input placeholder="User friendly item title (max 100 characters)" type="text" name="title" value="{{item.title|default(null)}}" />
-				{{ m.fieldError(errors|default([]), 'title') }}
-			</div>
-			<div class="ui field basic segment">
-				<label class="ui top attached large label">Description</label>
-				<textarea name="description" rows="3">{{item.description|default(null)}}</textarea>
-				{{ m.fieldError(errors|default([]), 'description') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Category</label>
-				<select name="category" class="ui dropdown">
-					<option value="">-- Please select --</option>
-					{% for category in item.deployment.project.categories %}
-						<option value="{{category}}" {% if category == item.category %}selected="selected"{% endif %}>{{category}}</option>
-					{% endfor %}
-				</select>
-				{{ m.fieldError(errors|default([]), 'category') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Modules</label>
-				<div class="grouped fields">
-					<input type="hidden" name="modules" value="" />
-					{% for v in item.deployment.project.modules %}
-						<div class="field">
-							<div class="ui checkbox">
-								<input type="checkbox" value="{{v}}" name="modules[]" {% if v in item.modules|default([]) %}checked="checked"{% endif %} />
-								<label>{{v}}</label>
-							</div>
-						</div>
-					{% endfor %}
-				</div>
-				{{ m.fieldError(errors|default([]), 'modules') }}
-			</div>
-			<div class="ui field">
-				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} deployment item" />
-				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-				{% if is_existing and app.securilex.isGranted('delete',item) %}
-					<input type="submit" class="ui red right floated button" name="_action" value="Delete"
-						   onclick="return confirm('All activities and attachments will be deleted as well.\nAre you sure you want to delete?')" />
-				{% endif %}
-			</div>
-		</div>
-	</form>
+    <form method="POST">
+        <div class="ui form">
+            <div class="ui field basic segment">
+                <label class="ui top attached large label">Reference Number</label>
+                <input placeholder="Reference number (e.g. CR#, SR# etc)" type="text" name="refnum" value="{{item.refnum|default(null)}}" />
+                {{ m.fieldError(errors|default([]), 'refnum') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Title</label>
+                <input placeholder="User friendly item title (max 100 characters)" type="text" name="title" value="{{item.title|default(null)}}" />
+                {{ m.fieldError(errors|default([]), 'title') }}
+            </div>
+            <div class="ui field basic segment">
+                <label class="ui top attached large label">Description</label>
+                <textarea name="description" rows="3">{{item.description|default(null)}}</textarea>
+                {{ m.fieldError(errors|default([]), 'description') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Category</label>
+                <select name="category" class="ui dropdown">
+                    <option value="">-- Please select --</option>
+                    {% for category in item.deployment.project.categories %}
+                        <option value="{{category}}" {% if category == item.category %}selected="selected"{% endif %}>{{category}}</option>
+                    {% endfor %}
+                </select>
+                {{ m.fieldError(errors|default([]), 'category') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Modules</label>
+                <div class="grouped fields">
+                    <input type="hidden" name="modules" value="" />
+                    {% for v in item.deployment.project.modules %}
+                        <div class="field">
+                            <div class="ui checkbox">
+                                <input type="checkbox" value="{{v}}" name="modules[]" {% if v in item.modules|default([]) %}checked="checked"{% endif %} />
+                                <label>{{v}}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ m.fieldError(errors|default([]), 'modules') }}
+            </div>
+            <div class="ui field">
+                <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} deployment item" />
+                <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+                {% if is_existing and app.securilex.isGranted('delete',item) %}
+                    <input type="submit" class="ui red right floated button" name="_action" value="Delete"
+                           onclick="return confirm('All activities and attachments will be deleted as well.\nAre you sure you want to delete?')" />
+                {% endif %}
+            </div>
+        </div>
+    </form>
 
-	{% if is_existing and app.securilex.isGranted('move',item) %}
-		<h2 class="ui header">Move to another deployment</h2>
-		<p>It is possible for a deployment item to be moved to another upcoming deployment.</p>
+    {% if is_existing and app.securilex.isGranted('move',item) %}
+        <h2 class="ui header">Move to another deployment</h2>
+        <p>It is possible for a deployment item to be moved to another upcoming deployment.</p>
 
-		<form method="POST">
-			<div class="ui form">
-				<div class="ui required field basic segment">
-					<label class="ui top attached large label">Deployment</label>
-					<select name="deployment" class="ui dropdown">
-						{% for deployment in item.deployment.project.upcoming() %}
-							{% if deployment != item.deployment %}
-								<option value="{{deployment.name()}}">{{deployment.displayTitle()}}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-					{{ m.fieldError(errors|default([]), 'deployment') }}
-				</div>
-				<div class="ui field">
-					<input type="submit" class="ui submit red button" name="_action" value="Move"
-						   onclick="return confirm('Are you sure you want to move this item to another deployment?')" />
-				</div>
-			</div>
-		</form>
-	{% endif %}
+        <form method="POST">
+            <div class="ui form">
+                <div class="ui required field basic segment">
+                    <label class="ui top attached large label">Deployment</label>
+                    <select name="deployment" class="ui dropdown">
+                        {% for deployment in item.deployment.project.upcoming() %}
+                            {% if deployment != item.deployment %}
+                                <option value="{{deployment.id}}">{{deployment.displayTitle()}}</option>
+                            {% endif %}
+                        {% endfor %}
+                        {% for p in app['datastore'].queryMany('\\Renogen\\Entity\\Project') %}
+                            {% if p != item.deployment.project and p.isUserNameAllowed(app.user().username, 'approval') %}
+                                {% for deployment in p.upcoming() %}
+                                    <option value="{{deployment.id}}">[{{p.title}}] {{deployment.displayTitle()}}</option>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {{ m.fieldError(errors|default([]), 'deployment') }}
+                </div>
+                <div class="ui field">
+                    <input type="submit" class="ui submit red button" name="_action" value="Move"
+                           onclick="return confirm('Are you sure you want to move this item to another deployment?')" />
+                </div>
+            </div>
+        </form>
+    {% endif %}
 {% endblock %}

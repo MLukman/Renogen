@@ -5,10 +5,10 @@ namespace Renogen\ActivityTemplate\Impl;
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
 use Renogen\Application;
-use Renogen\Entity\Activity;
+use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
-class RunCommand extends BaseClass
+class RundeckCommand extends BaseClass
 {
 
     public function __construct(Application $app)
@@ -23,7 +23,7 @@ class RunCommand extends BaseClass
 
     public function classTitle()
     {
-        return 'Execute ad-hoc command via RunDeck';
+        return '[RunDeck] Execute a single command';
     }
 
     public function convertActivitiesToRunbookGroups(array $activities)
@@ -33,7 +33,7 @@ class RunCommand extends BaseClass
         $added                  = array();
 
         foreach ($activities as $activity) {
-            /* @var $activity Activity */
+            /* @var $activity Actionable */
             if (!isset($activities_by_template[$activity->template->id])) {
                 $templates[$activity->template->id]              = $activity->template;
                 $activities_by_template[$activity->template->id] = array();
@@ -45,17 +45,13 @@ class RunCommand extends BaseClass
         foreach ($activities_by_template as $template_id => $activities) {
             $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Login to Rundeck @ ".$templates[$template_id]->parameters['url'].", go to 'Commands' screen and execute the following command sets:");
-            $group->setTemplate('runbook/runCommand.twig');
+            $group->setTemplate('runbook/RundeckCommand.twig');
             foreach ($activities as $activity) {
-                $signature = json_encode($this->describeActivityAsArray($activity));
-                if (!isset($added[$signature])) {
-                    $added[$signature] = true;
-                    $group->addRow(array(
-                        'command' => $activity->parameters['command'],
-                        'nodes' => $activity->parameters['nodes'],
-                        'remark' => $activity->parameters['remark'],
-                    ));
-                }
+                $group->addRow($activity, array(
+                    'command' => $activity->parameters['command'],
+                    'nodes' => $activity->parameters['nodes'],
+                    'remark' => $activity->parameters['remark'],
+                ));
             }
             $groups[] = $group;
         }

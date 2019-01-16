@@ -50,7 +50,7 @@ class Application extends \Silex\Application
 {
 
     use UrlGeneratorTrait;
-    const PROJECT_ROLES = array('none', 'view', 'entry', 'review', 'approval', 'release',
+    const PROJECT_ROLES = array('none', 'view', 'entry', 'review', 'approval',
         'execute');
 
     static protected $instance;
@@ -69,11 +69,14 @@ class Application extends \Silex\Application
         $app->register(new SessionServiceProvider());
 
         /* Doctrine */
-        $sqlitefile = __DIR__.'/../../data/database.sqlite';
-        $app['db']  = $app->share(function () use ($sqlitefile) {
+        $app['db'] = $app->share(function () {
             return DriverManager::getConnection(array(
-                    'path' => $sqlitefile,
-                    'driver' => 'pdo_sqlite',
+                    'dbname' => getenv('DB_NAME') ?: 'renogen',
+                    'user' => getenv('DB_USER') ?: 'renogen',
+                    'password' => getenv('DB_PASSWORD') ?: 'reno123gen',
+                    'host' => getenv('DB_HOST') ?: 'localhost',
+                    'port' => getenv('DB_PORT') ?: '3306',
+                    'driver' => 'pdo_mysql',
             ));
         });
 
@@ -98,40 +101,12 @@ class Application extends \Silex\Application
             return EntityManager::create($app['db'], $config);
         });
 
-        if (!file_exists($sqlitefile)) {
+        if (!$app['db']->getSchemaManager()->tablesExist('projects')) {
             $this->initializeOrRefreshDatabaseSchemas();
         }
 
         /* Data Store */
         $app->register(new DataStore());
-
-        /* State Model */
-        $app->register(new StateModel());
-        $app['statemodel']->registerTransition(
-            'item', 'Unsubmitted', 'Pending Review', array('entry', 'review'), array(
-            'icon' => 'help', 'class' => 'primary'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Review', 'Pending Approval', 'review', array('icon' => 'help',
-            'class' => 'primary'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Review', 'Rejected', 'review', array('icon' => 'x',
-            'class' => 'red'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Review', 'Unsubmitted', array('entry', 'review'), array(
-            'icon' => 'warning'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Approval', 'Approved', 'approval', array('icon' => 'check',
-            'class' => 'primary'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Approval', 'Rejected', 'approval', array('icon' => 'x',
-            'class' => 'red'));
-        $app['statemodel']->registerTransition(
-            'item', 'Pending Approval', 'Pending Review', 'review', array('icon' => 'help'));
-        $app['statemodel']->registerTransition(
-            'item', 'Approved', 'Pending Approval', 'approval', array('icon' => 'help'));
-        $app['statemodel']->registerTransition(
-            'item', 'Rejected', 'Pending Review', array('entry', 'review'), array(
-            'icon' => 'help', 'class' => 'primary'));
 
         /* Twig Template Engine */
         $app->register(new TwigServiceProvider(), array(
@@ -155,6 +130,9 @@ class Application extends \Silex\Application
             $templateClassName = 'Renogen\ActivityTemplate\Impl\\'.basename($templateClass, '.php');
             $this->addActivityTemplateClass(new $templateClassName($this));
         }
+        uasort($this->_templateClasses, function($a, $b) {
+            return strcmp($a->classTitle(), $b->classTitle());
+        });
 
         static::$instance = $this;
     }
@@ -277,6 +255,9 @@ class Application extends \Silex\Application
             return new Runbook($this);
         });
         $this->match('/{project}/{deployment}/runbook', 'runbook.controller:view')->bind('runbook_view');
+        $this->match('/{project}/{deployment}/runbook/{runitem}/completed', 'runbook.controller:runitem_completed')->bind('runitem_completed');
+        $this->match('/{project}/{deployment}/runbook/{runitem}/failed', 'runbook.controller:runitem_failed')->bind('runitem_failed');
+        $this->match('/{project}/{deployment}/runbook/{runitem}/{file}', 'runbook.controller:download_file')->bind('runitem_file_download');
 
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {
@@ -349,12 +330,14 @@ class Application extends \Silex\Application
         return $this['request_stack']->getMasterRequest()->getBaseUrl().$append;
     }
 
-    public function addFlashMessage($message, $title = '', $type = 'notice')
+    public function addFlashMessage($message, $title = '', $type = 'notice',
+                                    $persistent = false)
     {
         $this['session']->getFlashBag()->add('message', array(
             'title' => $title,
             'text' => $message,
             'type' => $type,
+            'persistent' => $persistent,
         ));
     }
 
@@ -405,15 +388,17 @@ class Application extends \Silex\Application
             $auth_password->parameters   = array();
             $em->persist($auth_password);
 
-            $auth_ldap               = new AuthDriver('gems');
-            $auth_ldap->class        = LDAP::class;
-            $auth_ldap->created_date = new DateTime();
-            $auth_ldap->parameters   = array(
-                "host" => getenv("LDAP_HOST") ?: "10.14.73.107",
-                "port" => getenv("LDAP_PORT") ?: 389,
-                "dn" => getenv("LDAP_DN") ?: "uid={username},ou=People,o=Telekom",
-            );
-            $em->persist($auth_ldap);
+            if (getenv("LDAP_HOST")) {
+                $auth_ldap               = new AuthDriver('gems');
+                $auth_ldap->class        = LDAP::class;
+                $auth_ldap->created_date = new DateTime();
+                $auth_ldap->parameters   = array(
+                    "host" => getenv("LDAP_HOST"),
+                    "port" => getenv("LDAP_PORT") ?: 389,
+                    "dn" => getenv("LDAP_DN"),
+                );
+                $em->persist($auth_ldap);
+            }
 
             $em->flush();
         }
@@ -435,7 +420,7 @@ class Application extends \Silex\Application
             $newUser->roles     = array('ROLE_ADMIN');
             $newUser->auth      = 'password';
 
-            $this->addFlashMessage("Auto-created administrator id '{$newUser->username}' with password '{$newUser->password}'");
+            $this->addFlashMessage("Auto-created administrator id '{$newUser->username}' with password '{$newUser->password}'", "Administrator id", 'notice', true);
 
             $authClass = $this->getAuthDriver('password');
             $authClass->prepareNewUser($newUser);
@@ -444,7 +429,7 @@ class Application extends \Silex\Application
         }
     }
 
-    protected function getAuthDriver($classId)
+    public function getAuthDriver($classId)
     {
         /* @var $em EntityManager */
         $em   = $this['em'];
@@ -488,5 +473,53 @@ class Application extends \Silex\Application
     public function getBaseUrl()
     {
         return $this->path('home');
+    }
+
+    public function entityParams(Base\Entity $entity)
+    {
+        if ($entity instanceof Entity\Project) {
+            return array(
+                'project' => $entity->name,
+            );
+        } elseif ($entity instanceof Entity\Deployment) {
+            return $this->entityParams($entity->project) + array(
+                'deployment' => $entity->execute_date->format('YmdHi'),
+            );
+        } elseif ($entity instanceof Entity\Item) {
+            return $this->entityParams($entity->deployment) + array(
+                'item' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\Activity) {
+            return $this->entityParams($entity->item) + array(
+                'activity' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\ActivityFile) {
+            return $this->entityParams($entity->activity) + array(
+                'file' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\Attachment) {
+            return $this->entityParams($entity->item) + array(
+                'attachment' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\Template) {
+            return $this->entityParams($entity->project) + array(
+                'template' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\RunItem) {
+            return $this->entityParams($entity->deployment) + array(
+                'runitem' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\RunItemFile) {
+            return $this->entityParams($entity->runitem) + array(
+                'file' => $entity->id,
+            );
+        } else {
+            return array();
+        }
+    }
+
+    public function entity_path($path, Base\Entity $entity)
+    {
+        return $this->path($path, $this->entityParams($entity));
     }
 }

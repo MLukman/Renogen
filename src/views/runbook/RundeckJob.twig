@@ -1,0 +1,36 @@
+<table class="ui striped very compact table">
+    <thead>
+        <tr>
+            <th class="three wide">Project</th>
+            <th class="four wide">Job</th>
+            <th>Options</th>
+            <th class="four wide">Remark</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+            <tr>
+                <td class="top aligned"><a name="{{row.runitem.id}}"></a>{{row.params.project}}</td>
+                <td class="top aligned">
+                    {% if row.params.group %}<small>{{row.params.group}} &raquo;</small><br />{% endif %}
+                    <strong>{{row.params.job}}</strong>
+                </td>
+                <td class="top aligned">
+                    {% if row.params.options %}
+                        {{ r.prettyDisplay(row.params.options) }}
+                    {% else %}
+                        Not required
+                    {% endif %}
+                </td>
+                <td class="top aligned">
+                    {{ r.prettyDisplay(row.params.remark) }}
+                </td>
+                <td class="top aligned">
+                    {{ r.showStatus(row.runitem) }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

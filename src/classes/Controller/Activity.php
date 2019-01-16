@@ -2,21 +2,21 @@
 
 namespace Renogen\Controller;
 
-use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
+use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class Activity extends RenoController
 {
     const entityFields = array('stage', 'parameters');
+    const editAccess   = array('entry', 'review', 'approval');
 
     public function create(Request $request, $project, $deployment, $item)
     {
         try {
             $project_obj            = $this->app['datastore']->fetchProject($project);
             $item_obj               = $this->app['datastore']->fetchItem($project_obj, $deployment, $item);
-            $this->checkAccess(array('entry', 'review'), $item_obj);
+            $this->checkAccess(static::editAccess, $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add activity', $this->app->path('activity_create', $this->entityParams($item_obj)));
             $activity_obj           = new \Renogen\Entity\Activity($item_obj);
@@ -32,7 +32,7 @@ class Activity extends RenoController
     {
         try {
             $activity_obj = $this->app['datastore']->fetchActivity($project, $deployment, $item, $activity);
-            $this->checkAccess(array('entry', 'review'), $activity_obj);
+            $this->checkAccess(static::editAccess, $activity_obj);
             $this->addEntityCrumb($activity_obj);
             return $this->edit_or_create($activity_obj, $request);
         } catch (NoResultException $ex) {
@@ -72,9 +72,12 @@ class Activity extends RenoController
                         }
                     }
 
+                    $this->app['datastore']->manage($activity);
                     if ($this->app['datastore']->prepareValidateEntity($activity, static::entityFields, $post)
                         && empty($errors)) {
-                        $this->app['datastore']->commit($activity);
+                        $activity->calculateSignature();
+                        $activity->runitem = null;
+                        $this->app['datastore']->commit();
                         $this->app->addFlashMessage("Activity has been successfully saved");
                         return $this->redirect('item_view', $this->entityParams($activity->item));
                     } else {
@@ -91,12 +94,9 @@ class Activity extends RenoController
     {
         try {
             if (!($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', $file))) {
-                throw new NoResultException();
+                throw new NoResultException("No such activity file with id '$file'");
             }
-            return $this->app
-                    ->sendFile($activity_file->getFilesystemPath(), 200, array(
-                        'Content-type' => $activity_file->mime_type))
-                    ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $activity_file->filename);
+            return $activity_file->returnDownload();
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }

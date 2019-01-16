@@ -130,3 +130,46 @@
         {{val|nl2br}}
     {% endif %}
 {% endmacro %}
+
+{% macro showStatus(runitem) %}
+    <span class="ui tag label {% if runitem.status == 'Failed' %}red{% else %}green{% endif %}">{{runitem.status}}</span>
+    {% if runitem.status == 'New' and app.securilex.isGranted(['execute','approval'],runitem.deployment.project) %}
+        <div style="margin:2pt">
+            <a class="ui button no-print" href="{{app.entity_path('runitem_completed',runitem)}}" onclick="return confirm('Completed?')">
+                <i class="ui checkmark icon"></i>Completed
+            </a>
+        </div>
+        <div style="margin:2pt">
+            <a class="ui button no-print" href="{{app.entity_path('runitem_failed',runitem)}}" onclick="return confirm('Failed?')">
+                <i class="ui x icon"></i>Failed
+            </a>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro crumb_project(project, link) %}
+    <i class="ui cube icon"></i>
+    {% if link %}
+        <a href="{{app.entity_path('project_view',project)}}">{{project.title}}</a>
+    {% else %}
+        {{project.title}}
+    {% endif %}
+{% endmacro %}
+
+{% macro crumb_deployment(deployment, link) %}
+    <i class="ui calendar check o icon"></i>
+    {% if link %}
+        <a href="{{app.entity_path('deployment_view',deployment)}}">{{deployment.displayTitle}}</a>
+    {% else %}
+        {{deployment.displayTitle}}
+    {% endif %}
+{% endmacro %}
+
+{% macro crumb_item(item, link) %}
+    <i class="ui idea icon"></i>
+    {% if link %}
+        <a href="{{app.entity_path('item_view',item)}}">{{item.displayTitle}}</a>
+    {% else %}
+        {{item.displayTitle}}
+    {% endif %}
+{% endmacro %}

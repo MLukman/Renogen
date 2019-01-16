@@ -3,10 +3,13 @@
 namespace Renogen\Base;
 
 use Renogen\Entity\Activity;
+use Renogen\Entity\ActivityFile;
 use Renogen\Entity\Attachment;
 use Renogen\Entity\Deployment;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
+use Renogen\Entity\RunItem;
+use Renogen\Entity\RunItemFile;
 use Renogen\Entity\Template;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -22,12 +25,12 @@ abstract class RenoController extends Controller
             $this->addCrumb($this->title, $this->app->path('project_view', $this->entityParams($project)), 'cube');
         } elseif ($entity instanceof Deployment) {
             $deployment  = $entity;
-            $this->addEntityCrumb($deployment->project);
+            //$this->addEntityCrumb($deployment->project);
             $this->title = $deployment->displayTitle();
             $this->addCrumb($deployment->datetimeString(true), $this->app->path('deployment_view', $this->entityParams($deployment)), 'calendar check o');
         } elseif ($entity instanceof Item) {
             $item        = $entity;
-            $this->addEntityCrumb($item->deployment);
+            //$this->addEntityCrumb($item->deployment);
             $this->title = $item->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
                     substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->path('item_view', $this->entityParams($item)), 'idea');
@@ -69,6 +72,10 @@ abstract class RenoController extends Controller
             return static::entityParams($entity->item) + array(
                 'activity' => $entity->id,
             );
+        } elseif ($entity instanceof ActivityFile) {
+            return static::entityParams($entity->activity) + array(
+                'file' => $entity->id,
+            );
         } elseif ($entity instanceof Attachment) {
             return static::entityParams($entity->item) + array(
                 'attachment' => $entity->id,
@@ -76,6 +83,14 @@ abstract class RenoController extends Controller
         } elseif ($entity instanceof Template) {
             return static::entityParams($entity->project) + array(
                 'template' => $entity->id,
+            );
+        } elseif ($entity instanceof RunItem) {
+            return static::entityParams($entity->deployment) + array(
+                'runitem' => $entity->id,
+            );
+        } elseif ($entity instanceof RunItemFile) {
+            return static::entityParams($entity->runitem) + array(
+                'file' => $entity->id,
             );
         } else {
             return array();

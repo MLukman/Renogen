@@ -2,10 +2,10 @@
 
 namespace Renogen\Controller;
 
-use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
 use Renogen\Entity\Deployment as DeploymentEntity;
 use Renogen\Entity\Item;
+use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 

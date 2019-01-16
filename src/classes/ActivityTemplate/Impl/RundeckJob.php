@@ -5,11 +5,10 @@ namespace Renogen\ActivityTemplate\Impl;
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
 use Renogen\Application;
-use Renogen\Base\RenoController;
-use Renogen\Entity\Activity;
+use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
-class Rundeck extends BaseClass
+class RundeckJob extends BaseClass
 {
 
     public function __construct(Application $app)
@@ -20,11 +19,11 @@ class Rundeck extends BaseClass
         $this->addParameter('group', Parameter::Config('Job Group', 'The name of Rundeck group', false));
         $this->addParameter('job', Parameter::Dropdown('List of Jobs', 'List of Rundeck jobs', true, '{jobDropdownLabel}', 'The name of Rundeck job', true));
         $this->addParameter('jobDropdownLabel', Parameter::Config('Job Dropdown Label', 'The label that will be displayed in activity create/edit form (it should describe the texts in the list of jobs above)', true));
-        $this->addParameter('options', Parameter\MultiField::create('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false));
+        $this->addParameter('options', Parameter\MultiField::create('Job Options', 'Define job options to be entered when creating activities', false, 'Parameters', '', false, null, 'freetext'));
         $this->addParameter('remark', Parameter::MultiLineText('Remark', 'Remark to be displayed in deployment runbook', false));
     }
 
-    public function describeActivityAsArray(Activity $activity)
+    public function describeActivityAsArray(Actionable $activity)
     {
         $jobLabel = $activity->template->parameters['jobDropdownLabel'];
         $jobValue = $activity->parameters['job'];
@@ -49,11 +48,11 @@ class Rundeck extends BaseClass
         return $describe;
     }
 
-    protected function getOptions(Activity $activity, $useLabel = false)
+    protected function getOptions(Actionable $activity, $useLabel = false)
     {
         $options  = array();
         $optParam = $this->getParameter('options');
-        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options');
+        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options', $activity);
         foreach ($activity->template->parameters['options'] as $p) {
             if ($useLabel) {
                 $d = $p['title'];
@@ -61,17 +60,21 @@ class Rundeck extends BaseClass
                 $d = $p['id'];
             }
 
+            $options[$d] = null;
             if (isset($data[$p['id']])) {
-                if (is_array($data[$p['id']]) && isset($data[$p['id']]['fileid'])) {
-                    $options[$d] = '<a href="'.htmlentities($this->app->path('activity_file_download', RenoController::entityParams($activity)
-                                + array('file' => $data[$p['id']]['fileid']))).'">'.htmlentities($data[$p['id']]['filename']).'</a>';
+                if ($p['type'] == 'file') {
+                    $file = $this->app['datastore']->queryOne($activity->fileClass, array(
+                        "{$activity->actionableType}" => $activity,
+                        'classifier' => 'options.'.$p['id'],
+                    ));
+                    if ($file) {
+                        $options[$d] = '<a href="'.htmlentities($this->getDownloadLink($file)).'">'.htmlentities($file->filename).'</a>';
+                    }
                 } elseif ($useLabel && $p['type'] == 'password') {
                     $options[$d] = '******';
                 } else {
                     $options[$d] = $data[$p['id']];
                 }
-            } else {
-                $options[$d] = null;
             }
         }
         return $options;
@@ -79,7 +82,7 @@ class Rundeck extends BaseClass
 
     public function classTitle()
     {
-        return 'Execute RunDeck Job';
+        return '[RunDeck] Execute job';
     }
 
     public function convertActivitiesToRunbookGroups(array $activities)
@@ -89,7 +92,7 @@ class Rundeck extends BaseClass
         $added                  = array();
 
         foreach ($activities as $activity) {
-            /* @var $activity Activity */
+            /* @var $activity Actionable */
             if (!isset($activities_by_template[$activity->template->id])) {
                 $templates[$activity->template->id]              = $activity->template;
                 $activities_by_template[$activity->template->id] = array();
@@ -101,12 +104,12 @@ class Rundeck extends BaseClass
         foreach ($activities_by_template as $template_id => $activities) {
             $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Login to Rundeck @ ".$templates[$template_id]->parameters['url']." and run the following jobs:");
-            $group->setTemplate('runbook/rundeck.twig');
+            $group->setTemplate('runbook/RundeckJob.twig');
             foreach ($activities as $activity) {
                 $signature = json_encode($this->describeActivityAsArray($activity));
                 if (!isset($added[$signature])) {
                     $added[$signature] = true;
-                    $group->addRow(array(
+                    $group->addRow($activity, array(
                         'project' => $templates[$template_id]->parameters['project'],
                         'group' => $templates[$template_id]->parameters['group'],
                         'job' => $activity->parameters['job'],

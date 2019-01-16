@@ -40,4 +40,15 @@ class Password extends Driver
     {
         return $this->factory;
     }
+
+    public function canResetPassword()
+    {
+        return true;
+    }
+
+    public function resetPassword(MutableUserInterface $user)
+    {
+        $user->setPassword('');
+        return 'User password has been reset. The first password used to login as this user will be the new password.';
+    }
 }

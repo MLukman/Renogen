@@ -74,9 +74,10 @@ abstract class Controller
         return $file;
     }
 
-    public function redirect($path, Array $params = array())
+    public function redirect($path, Array $params = array(), $anchor = null)
     {
-        return new RedirectResponse($this->app->path($path, $params));
+        return new RedirectResponse($this->app->path($path, $params).
+            ($anchor ? "#$anchor" : ""));
     }
 
     public function errorPage($title, $message)

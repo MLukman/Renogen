@@ -14,7 +14,7 @@ class Project extends RenoController
     public function create(Request $request)
     {
         $this->addCreateCrumb('Create project', $this->app->path('project_create'));
-        return $this->edit_or_create(new \Renogen\Entity\Project(), $request->request);
+        return $this->edit_or_create($request->request);
     }
 
     public function view(Request $request, $project)
@@ -26,8 +26,7 @@ class Project extends RenoController
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
-        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval',
-            'release'), $project);
+        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
         $this->addEntityCrumb($project);
         return $this->render('project_view', array(
                 'project' => $project
@@ -43,8 +42,7 @@ class Project extends RenoController
                 return $this->errorPage('Project not found', "There is not such project with name '$name'");
             }
         }
-        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval',
-            'release'), $project);
+        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
         $this->addEntityCrumb($project);
         $this->addCrumb('Past deployments', $this->app->path('project_past', $this->entityParams($project)), 'clock');
         return $this->render('project_past', array(
@@ -66,19 +64,25 @@ class Project extends RenoController
         }
         $this->addEntityCrumb($project);
         $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));
-        return $this->edit_or_create($project, $request->request);
+        return $this->edit_or_create($request->request, $project);
     }
 
-    protected function edit_or_create(\Renogen\Entity\Project $project,
-                                      ParameterBag $post)
+    protected function edit_or_create(ParameterBag $post,
+                                      \Renogen\Entity\Project $project = null)
     {
         $context = array();
         if ($post->count() > 0) {
-            if ($post->get('_action') == 'Delete') {
+            if ($project && $post->get('_action') == 'Delete') {
                 $this->app['datastore']->deleteEntity($project);
                 $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->redirect('home');
+            }
+            if (!$project) {
+                $project     = new \Renogen\Entity\Project();
+                $nuser       = new \Renogen\Entity\UserProject($project, $this->app->userEntity());
+                $nuser->role = 'approval';
+                $project->userProjects->add($nuser);
             }
             $project->categories = (($categories          = trim($post->get('categories')))
                     ? explode("\n", str_replace("\r\n", "\n", $categories)) : null);
@@ -91,7 +95,10 @@ class Project extends RenoController
             } else {
                 $context['errors'] = $project->errors;
             }
+        } else if (!$project) {
+            $project = new \Renogen\Entity\Project();
         }
+
         $context['project'] = $project;
         return $this->render('project_form', $context);
     }

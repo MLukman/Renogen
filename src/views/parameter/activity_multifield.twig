@@ -1,5 +1,5 @@
 {% if template.parameters[param]|length > 0 %}
-    {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,app) %} 
+    {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,activity) %} 
     <div class="ui form">
         {% for p in template.parameters[param] %}
             {% set pid='parameters-' ~ param ~ '-' ~ p.id %}

@@ -1,33 +1,38 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	<h1 class="ui dividing header">
-		<small><i class="ui calendar check o  icon"></i>{{deployment.displayTitle}} &raquo;</small><br />
-		<span>
-			<i class="ui checkmark box o icon"></i>Run Book
-		</span>
-	</h1>
+    <h1 class="ui dividing header">
+        <div>
+            <small>
+                {{r.crumb_project(deployment.project, true)}} &raquo;
+                {{r.crumb_deployment(deployment, true)}} &raquo;
+            </small>
+        </div>
+        <span>
+            <i class="ui checkmark box o icon"></i>Run Book
+        </span>
+    </h1>
 
-	<em>Listing approved deployment items only</em>
+    <em>Listing approved deployment items only</em>
 
-	{% set runbooks = deployment.generateRunbooks() %}
-	<div class="ui basic segment">
-		{% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
-		{% set colors = { '-1':'red', '0': 'blue', '1': 'orange' } %}
-		{% for stage,groups in runbooks %}
-			<h2 class="ui {{colors[stage]}} header">{{stages[stage]}}</h2>
-			{% for group in groups %}
-				<div class="ui segment">
-					<div class="ui left ribbon {{colors[stage]}} label">
-						<h3>{{loop.index}} &raquo; {{group.getTitle()}}</h3>
-					</div>
-					<p>{{group.getInstruction()}}</p>
-					{% set data = group.getData() %}
-					{% include group.getTemplate() %}
-				</div>
-			{% else %}
-				<div class="ui message">No activity for this stage</div>
-			{% endfor %}
-		{% endfor %}
-	</div>
+    {% set runbooks = deployment.generateRunbooks() %}
+    <div class="ui basic segment">
+        {% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
+        {% set colors = { '-1':'red', '0': 'blue', '1': 'orange' } %}
+        {% for stage,groups in runbooks %}
+            <h2 class="ui {{colors[stage]}} header">{{stages[stage]}}</h2>
+            {% for group in groups %}
+                <div class="ui segment">
+                    <div class="ui left ribbon {{colors[stage]}} label">
+                        <h3>{{loop.index}} &raquo; {{group.getTitle()}}</h3>
+                    </div>
+                    <p>{{group.getInstruction()}}</p>
+                    {% set data = group.getData() %}
+                    {% include group.getTemplate() %}
+                </div>
+            {% else %}
+                <div class="ui message">No activity for this stage</div>
+            {% endfor %}
+        {% endfor %}
+    </div>
 {% endblock %}

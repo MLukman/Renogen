@@ -3,14 +3,17 @@
 namespace Renogen;
 
 use DateTime;
-use Doctrine\ORM\NoResultException;
 use Renogen\Base\Entity;
 use Renogen\Entity\Activity;
 use Renogen\Entity\Attachment;
 use Renogen\Entity\Deployment;
+use Renogen\Entity\FileLink;
+use Renogen\Entity\FileStore;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
+use Renogen\Exception\NoResultException;
 use Silex\ServiceProviderInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Twig\Template;
 
@@ -182,6 +185,16 @@ class DataStore implements ServiceProviderInterface
         }
     }
 
+    public function manage(Entity $entity)
+    {
+        $this->app['em']->persist($entity);
+    }
+
+    public function unmanage(Entity $entity)
+    {
+        $this->app['em']->detach($entity);
+    }
+
     public function prepareValidateEntity(Entity &$entity, Array $fields,
                                           ParameterBag $data)
     {
@@ -207,5 +220,35 @@ class DataStore implements ServiceProviderInterface
     public function deleteEntity(Entity &$entity)
     {
         $entity->delete($this->app['em']);
+    }
+
+    public function processFileUpload(UploadedFile $file,
+                                      FileLink $filelink = null,
+                                      array &$errors = array())
+    {
+        if ($file->isValid()) {
+            $sha1      = sha1_file($file->getRealPath());
+            $filestore = $this->queryOne('\\Renogen\\Entity\\FileStore', array('id' => $sha1));
+            if (!$filestore) {
+                $filestore            = new FileStore();
+                $filestore->id        = $sha1;
+                $filestore->data      = file_get_contents($file->getRealPath());
+                $filestore->filesize  = $file->getClientSize();
+                $filestore->mime_type = $file->getMimeType();
+            }
+            if (!$filelink) {
+                $filelink = new FileLink();
+            }
+            $filelink->filestore = $filestore;
+            $filelink->filename  = $file->getClientOriginalName();
+            if (!$filelink->classifier) {
+                $filelink->classifier = $filelink->filename;
+            }
+        } else {
+            $errors = array(
+                'Unable to process uploaded file',
+            );
+        }
+        return $filelink;
     }
 }

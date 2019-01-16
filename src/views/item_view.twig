@@ -3,19 +3,26 @@
 
 {% block head %}
     <script>
-        function changeStatus(status) {
-            $('#change_status_field').val(status);
-            $('#change_status_next').text(status);
-            $('#change_status_confirmation').modal('show');
+        function changeStatus(status, required) {
+        $('#change_status_field').val(status);
+        $('#change_status_next').text(status);
+        if (required) {
+        $('#changeStatusRemarkField').addClass('required');
+        $('#changeStatusRemarkRequired').val(1);
+        } else {
+        $('#changeStatusRemarkField').removeClass('required');
+        $('#changeStatusRemarkRequired').val(0);
+        }
+        $('#change_status_confirmation').modal('show');
         }
         $(function () {
-            $('#change_status_dropdown')
-                    .dropdown({
-                        action: function (text, value, element) {
-                            changeStatus(value);
-                            $('#change_status_dropdown').dropdown('hide');
-                        }
-                    });
+        $('#change_status_dropdown')
+                .dropdown({
+                action: function (text, value, element) {
+                changeStatus(value);
+                $('#change_status_dropdown').dropdown('hide');
+                }
+                });
         });
     </script>
 {% endblock %}
@@ -26,13 +33,14 @@
     {% set is_acl_review = app.securilex.isGranted('review',item.deployment.project) %}
     {% set is_acl_entry = app.securilex.isGranted(['entry','review'],item.deployment.project) %}
     {% set is_acl_execute = app.securilex.isGranted(['execute','entry','review','approval'],item.deployment.project) %}
-    {% set editable = app.securilex.isGranted(['entry','review'],item.deployment.project) and item.compareCurrentStatusTo('Pending Approval') < 0 %}
+    {% set editable = app.securilex.isGranted(['entry', 'approval'],item.deployment.project) and item.compareCurrentStatusTo('Go No Go') > 0 %}
     {% set next_status = app.statemodel.getAvailableTransitions('item', item.deployment.project.userProjects.get(app.user().username).role, item.status) %}
 
     <h1 class="ui dividing header">
         <div>
             <small>
-                <i class="ui calendar check o  icon"></i>{{item.deployment.displayTitle}} &raquo;
+                {{r.crumb_project(item.deployment.project, true)}} &raquo;
+                {{r.crumb_deployment(item.deployment, true)}} &raquo;
             </small>
         </div>
         <span>
@@ -42,41 +50,9 @@
             {% if editable %}
                 <a class="ui right floated button no-print" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
             {% endif %}
-
-            {#
-            {% if not item.submitted_date %}
-                {% if is_acl_approval or is_acl_entry %}
-                    <a class="ui right floated primary button" href="{{app.path('item_submit',params)}}"
-                       onclick="javascript:return confirm('Submit this item for approval?');"><i class="ui send icon"></i>Submit for approval</a>
-                {% endif %}
-            {% elseif not item.approved_date %}
-                {% if is_acl_approval %}
-                    <button id="reject_button" class="ui right floated red button no-print"><i class="ui x icon"></i>Reject</button>
-                    <div class="ui popup">
-                        <form class="ui form center aligned basic segment" style="width: 400px" method="POST" action="{{app.path('item_reject',params)}}">
-                            <div class="ui required field">
-                                <label class="ui top attached large label">Rejection remark</label>
-                                <textarea placeholder="Explain briefly why this item is to be rejected" name="remark"></textarea>
-                            </div>
-                            <div class="ui field">
-                                <input class="ui red button" type="submit" value="Confirm reject" />
-                            </div>
-                        </form>
-                    </div>
-                    <a class="ui right floated primary button no-print" href="{{app.path('item_approve',params)}}"
-                       onclick="javascript:return confirm('Approve this item for deployment?');"><i class="ui check icon"></i>Approve</a>
-                {% endif %}
-            {% else %}
-                {% if is_acl_approval %}
-                    <a class="ui right floated red button no-print" href="{{app.path('item_unapprove',params)}}"
-                       onclick="javascript:return confirm('Unapprove this item?');"><i class="ui x icon"></i>Unapprove</a>
-                {% endif %}
-            {% endif %}
-            #}
             <div class="ui labels">
                 {{ r.itemCategoryLabel(item) }}
                 {{ r.itemModulesLabel(item) }}
-                {#{ r.itemStatusLabel(item, true) }#}
             </div>
         </div>
     </h1>
@@ -99,82 +75,35 @@
 
                 <div class="ui bottom attached tab segment active" data-tab="status-progress">
                     <div class="ui stackable ordered small vertical fluid steps">
-                        {% set submitted = item.compareCurrentStatusTo('Pending Review') >= 0 %}
-                        {% set reviewed = item.compareCurrentStatusTo('Pending Review') > 0 %}
-                        {% set approved = item.compareCurrentStatusTo('Pending Approval') > 0 %}
-                        {% set ready = item.compareCurrentStatusTo('Ready') >= 0 %}
-                        {% set completed = item.compareCurrentStatusTo('Completed') >= 0 %}
-                        {% set log_pending_review = item.getStatusLog('Pending Review') %}
-                        {% set log_pending_approval = item.getStatusLog('Pending Approval') %}
-                        {% set log_approved = item.getStatusLog('Approved') %}
-                        <div class="{% if submitted %}completed{% else %}active{% endif %} step">
-                            <div class="content">
-                                {% if submitted %}
-                                    <div class="title" style="text-decoration: line-through">
-                                        {% if log_pending_review %}
-                                            {{item.getStatusLogBefore(log_pending_review).status}}
-                                        {% else %}
-                                            Unsubmitted
+                        {% for s in item.deployment.project.item_statuses|keys %}
+                            {% set prog = item.compareCurrentStatusTo(s) %}
+                            <div class="{% if prog < 0 or item.status == 'Completed' %}completed{% endif %} {% if prog == 0 %}active{% endif %} step">
+                                <div class="content">
+                                    {% if prog < 0 %}
+                                        <div class="title" style="text-decoration: line-through">{{s}}</div>
+                                        {% if item.deployment.project.isUserNameAllowed(app.user().username, item.deployment.project.item_statuses[s].role) %}
+                                            <div class="ui button" onclick="changeStatus({{s|json_encode|e('html_attr')}}, true)">
+                                                Revert
+                                            </div>
                                         {% endif %}
-                                    </div>
-                                {% else %}
-                                    <div class="title">{{item.status}}</div>
-                                    <div class="description">User to change status to 'Pending Review'</div>
-                                {% endif %}
+                                    {% else %}
+                                        <div class="title">{{s}}</div>
+                                        {% if prog == 0 and item.deployment.project.isUserNameAllowed(app.user().username, item.deployment.project.item_statuses[s].role) %}
+                                            <div class="description">
+                                                <div class="ui primary button" onclick="changeStatus({{item.nextStatus()|json_encode|e('html_attr')}})">
+                                                    Proceed</div>
+                                                    {% if item.deployment.project.item_statuses[s].rejectaction %}
+                                                    <div class="ui button" onclick="changeStatus({{item.deployment.project.item_statuses[s].rejectaction|json_encode|e('html_attr')}}, true)">
+                                                        {{item.deployment.project.item_statuses[s].rejectaction}}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% if not submitted %}
-                                {{ mm.changeStatusBox(next_status) }}
-                            {% endif %}
-                        </div>
-                        <div class="{% if reviewed %}completed{% elseif submitted %}active{% endif %} step">
-                            <div class="content">
-                                {% if reviewed %}
-                                    <div class="title" style="text-decoration: line-through">Pending Review</div>
-                                {% else %}
-                                    <div class="title">Pending Review</div>
-                                    <div class="description">Reviewer to change status to 'Pending Approval'</div>
-                                {% endif %}
-                            </div>
-                            {% if submitted and not reviewed %}
-                                {{ mm.changeStatusBox(next_status) }}
-                            {% endif %}
-                        </div>
-                        <div class="{% if approved %}completed{% elseif reviewed %}active{% endif %} step">
-                            <div class="content">
-                                {% if approved %}
-                                    <div class="title" style="text-decoration: line-through">Pending Approval</div>
-                                {% else %}
-                                    <div class="title">Pending Approval</div>
-                                    <div class="description">Approver to change status to 'Approved'</div>
-                                {% endif %}
-                            </div>
-                            {% if reviewed and not approved %}
-                                {{ mm.changeStatusBox(next_status) }}
-                            {% endif %}
-                        </div>
-                        <div class="{% if ready %}completed{% elseif approved %}active{% endif %} step">
-                            <div class="content">
-                                {% if ready %}
-                                    <div class="title" style="text-decoration: line-through">Approved</div>
-                                {% else %}
-                                    <div class="title">Approved</div>
-                                    <div class="description">Release manager to approve at deployment level</div>
-                                {% endif %}
-                            </div>
-                            {% if approved and not ready %}
-                                {{ mm.changeStatusBox(next_status) }}
-                            {% endif %}
-                        </div>
-                        <div class="{% if completed %}completed{% elseif ready %}active{% endif %} step">
-                            <div class="content">
-                                {% if completed %}
-                                    <div class="title">Completed</div>
-                                {% else %}
-                                    <div class="title">Ready</div>
-                                    <div class="description">System admin to execute deployment</div>
-                                {% endif %}
-                            </div>
-                        </div>
+                        {% endfor %}
+
                     </div>
                 </div>
                 <div class="ui bottom attached segment tab" data-tab="status-log">
@@ -220,10 +149,7 @@
                     <tr>
                         <th class="ui collapsing">#</th>
                         <th>Template</th>
-                        <th>Description</th>
-                            {% if editable %}
-                            <th class="ui collapsing no-print">Action</th>
-                            {% endif %}
+                        <th colspan="2">Description</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -244,13 +170,14 @@
                                     {{ r.arrayTable(description) }}
                                 </div>
                             </td>
-                            {% if editable %}
-                                <td class="ui top aligned collapsing no-print">
+                            <td class="ui top aligned collapsing no-print">
+                                <div>{{activity.runitem.status|default('New')}}</div>
+                                {% if editable and (not activity.runitem or activity.runitem.status != 'Completed') %}
                                     <a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
                                         <i class="ui pencil icon"></i>
                                     </a>
-                                </td>
-                            {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% else %}
                         <tr>
@@ -292,11 +219,11 @@
                                     <strong>{{attachment.filename}}</strong>
                                 </a>
                                 <div>
-                                    <small>{{attachment.mime_type}}</small>
+                                    <small>{{attachment.filestore.mime_type}}</small>
                                 </div>
                             </td>
                             <td>{{attachment.description}}</td>
-                            <td class="ui collapsing">{{attachment.filesize}}</td>
+                            <td class="ui collapsing">{{attachment.filestore.filesize}}</td>
                             {% if editable %}
                                 <td class="ui collapsing no-print">
                                     <a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
@@ -376,8 +303,8 @@
 
     <script>
         $(function () {
-            $('.menu .item')
-                    .tab();
+        $('.menu .item')
+                .tab();
         });
     </script>
 
@@ -387,13 +314,14 @@
             Change Status to <span id="change_status_next">next</span>
         </div>
         <form class="ui form basic segment" method="POST" action="{{app.path('item_change_status',params)}}">
-            <div class="ui required field content">
+            <div id="changeStatusRemarkField" class="ui field content">
                 <label>Remark</label>
                 <textarea placeholder="Please enter a remark" name="remark"></textarea>
             </div>
             <div class="actions">
                 <input class="ui ok primary button" type="submit" value="Change Status" />
                 <div class="ui cancel button">Cancel</div>
+                <input id="changeStatusRemarkRequired" type="hidden" name="remark_required" value="" />
                 <input id="change_status_field" type="hidden" name="new_status" value="" />
             </div>
         </form>

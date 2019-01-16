@@ -2,22 +2,22 @@
 {% import "activity_form.twig" as actform %}
 
 {% block content %}
-	<h1 class="ui dividing header">
-		<small>
-			<i class="ui cube icon"></i>{{template.project.title}} &raquo; 
-			<i class="ui clipboard icon"></i>Activity Templates &raquo;
-		</small><br />
-		<span><i class="ui copy icon"></i>{{template.title}}</span>
-		<a class="ui right floated button" href="{{app.path('template_edit',controller.entityParams(template))}}"><i class="ui pencil icon"></i>Edit</a>
-	</h1>
+    <h1 class="ui dividing header">
+        <small>
+            <i class="ui cube icon"></i>{{template.project.title}} &raquo; 
+            <i class="ui clipboard icon"></i>Activity Templates &raquo;
+        </small><br />
+        <span><i class="ui copy icon"></i>{{template.title}}</span>
+        <a class="ui right floated button" href="{{app.path('template_edit',controller.entityParams(template))}}"><i class="ui pencil icon"></i>Edit</a>
+    </h1>
 
 
-	<h2>Sample Activity Create/Edit Form</h2>
+    <h2>Sample Activity Create/Edit Form</h2>
 
-	<div class="ui form segment">
-		{{ actform.activityConfigForm(template) }}
-	</div>
+    <div class="ui form segment">
+        {{ actform.activityConfigForm(template) }}
+    </div>
 
-	<p>&nbsp;</p>
-	{{ r.timestamps(template) }}
+    <p>&nbsp;</p>
+    {{ r.timestamps(template) }}
 {% endblock %}

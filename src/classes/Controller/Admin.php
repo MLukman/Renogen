@@ -42,11 +42,19 @@ class Admin extends RenoController
     {
         $errors = array();
         if ($post->count() > 0) {
-            if ($post->get('_action') == 'Delete') {
-                $this->app['datastore']->deleteEntity($user);
-                $this->app['datastore']->commit();
-                $this->app->addFlashMessage("User '$user->username' has been deleted");
-                return $this->redirect('admin_users');
+            switch ($post->get('_action')) {
+                case 'Delete':
+                    $this->app['datastore']->deleteEntity($user);
+                    $this->app['datastore']->commit();
+                    $this->app->addFlashMessage("User '$user->username' has been deleted");
+                    return $this->redirect('admin_users');
+                case 'Reset Password':
+                    $res = $this->app->getAuthDriver($user->auth)->resetPassword($user);
+                    if ($res) {
+                        $this->app['datastore']->commit($user);
+                        $this->app->addFlashMessage($res);
+                    }
+                    return $this->redirect('admin_users');
             }
             if (!$post->has('roles')) {
                 $post->set('roles', array());

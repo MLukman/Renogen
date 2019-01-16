@@ -1,103 +1,107 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	{% set is_existing = (user.created_date|default(null) is not empty) %}
-	<h1 class="ui header">
-		<small>
-			<i class="ui setting icon"></i>Admin &raquo;
-			<i class="ui users icon"></i>Users &raquo;
-		</small><br />
-		<span>
-			<i class="ui user icon"></i>
-			{% if is_existing %}
-				Edit user {{user.username}}
-			{% else %}
-				Add new user
-			{% endif %}
-		</span>
-	</h1>
+    {% set is_existing = (user.created_date|default(null) is not empty) %}
+    <h1 class="ui header">
+        <small>
+            <i class="ui setting icon"></i>Admin &raquo;
+            <i class="ui users icon"></i>Users &raquo;
+        </small><br />
+        <span>
+            <i class="ui user icon"></i>
+            {% if is_existing %}
+                Edit user {{user.username}}
+            {% else %}
+                Add new user
+            {% endif %}
+        </span>
+    </h1>
 
-	{% if errors|default(false) %}
-		<div class="ui error message">
-			Your input contains errors. Please fix below.
-		</div>
-	{% endif %}
+    {% if errors|default(false) %}
+        <div class="ui error message">
+            Your input contains errors. Please fix below.
+        </div>
+    {% endif %}
 
-	<form method="POST">
-		<div class="ui form">
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Authentication Method</label>
-				<div class="inline fields">
-					{% for auth in auths %}
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input id="auth-{{auth.name}}" type="radio" name="auth" value="{{auth.name}}" {% if auth.name == user.auth|default(null) %}checked="checked"{% endif %} {% if is_existing %}disabled="disabled"{% endif %}>
-								<label for="auth-{{auth.name}}">{{auth.name}}</label>
-							</div>
-						</div>
-					{% endfor %}
-				</div>
-				{{ m.fieldError(errors|default([]), 'auth') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">User Name</label>
-				<input placeholder="User name (max 16 alphanumeric and underscore characters only)" type="text" name="username" value="{{user.username|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
-				{{ m.fieldError(errors|default([]), 'username') }}
-			</div>
-			<div class="ui field basic segment">
-				<label class="ui top attached large label">Short Name</label>
-				<input placeholder="Short name(max 100 characters)" type="text" name="shortname" value="{{user.shortname|default(null)}}" />
-				{{ m.fieldError(errors|default([]), 'shortname') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Roles</label>
-				<select name="roles[]" class="ui multiple dropdown" multiple="multiple">
-					{% for role in ['ROLE_USER', 'ROLE_ADMIN'] %}
-						<option value="{{role}}" {% if role in user.roles|default(null) %}selected="selected"{% endif %}>{{role}}</option>
-					{% endfor %}
-				</select>
-				{{ m.fieldError(errors|default([]), 'roles') }}
-			</div>
-			<div class="ui field basic segment">
-				<label class="ui top attached large label">Project Access</label>
-				<table class="ui celled striped table">
-					<thead>
-						<tr>
-							<th>Project Title</th>
-							<th>Access</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for project in projects %}
-							{% set user_role = project.userProjects[user.username].role|default('none') %}
-							<tr>
-								<td>{{project.title}}</td>
-								<td>
-									<select name="project_role[{{project.name}}]" class="ui dropdown fluid">
-										{% for role in constant('PROJECT_ROLES', app) %}
-											<option value="{{role}}" {% if role == user_role %}selected="selected"{% endif %}>{{role}}</option>
-										{% endfor %}
-									</select>
-								</td>
-							</tr>
-						{% else %}
-							<tr>
-								<td colspan="2">
-									There is no project
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-			<div class="ui field">
-				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} user" />
-				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-				{% if is_existing and user != app.userEntity() %}
-					<input type="submit" class="ui red right floated button" name="_action" value="Delete"
-						   onclick="return prompt('Are you sure you want to delete? Enter username to delete') == '{{user.username}}'" />
-				{% endif %}
-			</div>
-		</div>
-	</form>
+    <form method="POST">
+        <div class="ui form">
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Authentication Method</label>
+                <div class="inline fields">
+                    {% for auth in auths %}
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input id="auth-{{auth.name}}" type="radio" name="auth" value="{{auth.name}}" {% if auth.name == user.auth|default(null) %}checked="checked"{% endif %} {% if is_existing %}disabled="disabled"{% endif %}>
+                                <label for="auth-{{auth.name}}">{{auth.name}}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ m.fieldError(errors|default([]), 'auth') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">User Name</label>
+                <input placeholder="User name (max 16 alphanumeric and underscore characters only)" type="text" name="username" value="{{user.username|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
+                {{ m.fieldError(errors|default([]), 'username') }}
+            </div>
+            <div class="ui field basic segment">
+                <label class="ui top attached large label">Short Name</label>
+                <input placeholder="Short name(max 100 characters)" type="text" name="shortname" value="{{user.shortname|default(null)}}" />
+                {{ m.fieldError(errors|default([]), 'shortname') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Roles</label>
+                <select name="roles[]" class="ui multiple dropdown" multiple="multiple">
+                    {% for role in ['ROLE_USER', 'ROLE_ADMIN'] %}
+                        <option value="{{role}}" {% if role in user.roles|default(null) %}selected="selected"{% endif %}>{{role}}</option>
+                    {% endfor %}
+                </select>
+                {{ m.fieldError(errors|default([]), 'roles') }}
+            </div>
+            <div class="ui field basic segment">
+                <label class="ui top attached large label">Project Access</label>
+                <table class="ui celled striped table">
+                    <thead>
+                        <tr>
+                            <th>Project Title</th>
+                            <th>Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                            {% set user_role = project.userProjects[user.username].role|default('none') %}
+                            <tr>
+                                <td>{{project.title}}</td>
+                                <td>
+                                    <select name="project_role[{{project.name}}]" class="ui dropdown fluid">
+                                        {% for role in constant('PROJECT_ROLES', app) %}
+                                            <option value="{{role}}" {% if role == user_role %}selected="selected"{% endif %}>{{role}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="2">
+                                    There is no project
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="ui field">
+                <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} user" />
+                <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+                {% if user.auth and app.getAuthDriver(user.auth).canResetPassword() %}
+                <input type="submit" class="ui orange right floated button" name="_action" value="Reset Password"
+                       onclick="return confirm('Are you sure you want to reset the user password?')" />
+                {% endif %}
+                {% if is_existing and user != app.userEntity() %}
+                    <input type="submit" class="ui red right floated button" name="_action" value="Delete"
+                           onclick="return prompt('Are you sure you want to delete? Enter username to delete') == '{{user.username}}'" />
+                {% endif %}
+            </div>
+        </div>
+    </form>
 {% endblock %}

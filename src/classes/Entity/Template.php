@@ -85,7 +85,7 @@ class Template extends Entity
         return Application::instance()->getActivityTemplateClass($this->class);
     }
 
-    public function delete(EntityManager $em)
+    public function delete($em)
     {
         foreach ($this->activities as $c) {
             $c->delete($em);

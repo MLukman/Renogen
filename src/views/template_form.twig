@@ -1,93 +1,98 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	{% set is_existing = (template.id|default(null) is not empty) %}
-	<h1 class="ui header">
-		{% if is_existing %}Edit{% else %}Create{% endif %} activity template
-	</h1>
+    {% set is_existing = (template.id|default(null) is not empty) %}
+    <h1 class="ui header">
+        <small><i class="ui cube icon"></i>{{project.title}} &raquo;</small><br />
+        <span><i class="ui clipboard icon"></i>{% if is_existing %}Edit{% else %}Create{% endif %} activity template</span>
+    </h1>
 
-	{% if errors|default(false) %}
-		<div class="ui error message">
-			Your input contains errors. Please fix below.
-		</div>
-	{% endif %}
+    {% if errors|default(false) %}
+        <div class="ui error message">
+            Your input contains errors. Please fix below.
+        </div>
+    {% endif %}
 
-	<form method="POST">
-		<div class="ui form">
-			{% if class_instance is not defined %}
-				<div class="ui required field basic segment">
-					<label class="ui top attached large label">Category</label>
-					<div class="ui basic segment grouped fields">
-						{% for id,class in app.getActivityTemplateClass() %}
-							<div class="field">
-								<div class="ui radio checkbox">
-									<input type="radio" name="class" value="{{id}}"  {% if id == class|default(null) %}checked="checked"{% endif %}/>
-									<label>{{class.classTitle()}}</label>
-								</div>
-							</div>
-						{% endfor %}
-					</div>
-					{{ m.fieldError(errors|default([]), 'class') }}
-				</div>
-				<div class="ui field">
-					<input type="submit" class="ui submit primary button" name="_action" value="Next" />
-					<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-				</div>
-			{% else %}
-				<h2 class="ui header">Category: {{class_instance.classTitle()}}</h2>
-				<input type="hidden" name="class" value="{{class}}" />
-				<div class="ui field basic segment required">
-					<label class="ui top attached large label">Default Stage</label>
-					{% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
-					<p>The pre-defaulted selected stage when creating activities (can be changed for each activity)</p>
-					<div class="inline fields">
-						{% for stage,label in stages %}
-							<div class="field">
-								<div class="ui radio checkbox">
-									<input id="stage-{{stage}}" type="radio" name="stage" value="{{stage}}" {% if stage == template.stage|default(0) %}checked="checked"{% endif %}>
-									<label for="stage-{{stage}}">{{label}}</label>
-								</div>
-							</div>
-						{% endfor %}
-					</div>
-				</div>
-				<div class="ui required field basic segment">
-					<label class="ui top attached large label">Title</label>
-					<input placeholder="User friendly activity template title (max 100 characters)" type="text" name="title" value="{{template.title|default(class_instance.classTitle())}}" />
-					{{ m.fieldError(errors|default([]), 'title') }}
-				</div>
-				<div class="ui field basic segment">
-					<label class="ui top attached large label">Description</label>
-					<textarea name="description" rows="3">{{template.description|default(null)}}</textarea>
-					{{ m.fieldError(errors|default([]), 'description') }}
-				</div>
-				<div class="ui field basic segment">
-					<label class="ui top attached large label">Priority</label>
-					<select name="priority" class="ui dropdown">
-						{% set maxprio = project.templates.count() + (template.id ? 0:1) %}
-						{% for priority in range(1,maxprio) %}
-							<option value="{{priority}}" {% if priority == template.priority|default(maxprio) %}selected="selected"{% endif %}>{{priority}}</option>
-						{% endfor %}
-					</select>
-				</div>
-				{% for param,parameter in class_instance.getParameters() %}
-					{% if parameter.templateLabel %}
-						<div class="ui field basic segment {% if parameter.templateRequired %}required{% endif %}">
-							<label class="ui top attached large label">{{parameter.templateLabel}}</label>
-							{% include parameter.getTwigForTemplateForm() %}
-							{{ m.fieldError(errors|default([]), 'parameters.'~param) }}
-						</div>
-					{% endif %}
-				{% endfor %}
-				<div class="ui field">
-					<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} activity template" />
-					<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-					{% if is_existing %}
-						<input type="submit" class="ui red right floated button" name="_action" value="Delete"
-							   onclick="return confirm('Are you sure you want to delete?')" />
-					{% endif %}
-				</div>
-			{% endif %}
-		</div>
-	</form>
+    <form method="POST">
+        <div class="ui form">
+            {% if class_instance is not defined %}
+                <div class="ui required field basic segment">
+                    <label class="ui top attached large label">Category</label>
+                    <div class="ui basic segment grouped fields">
+                        {% for id,class in app.getActivityTemplateClass() %}
+                            <div class="field">
+                                <div class="ui radio checkbox">
+                                    <input type="radio" name="class" value="{{id}}"  {% if id == class|default(null) %}checked="checked"{% endif %}/>
+                                    <label>{{class.classTitle()}}</label>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {{ m.fieldError(errors|default([]), 'class') }}
+                </div>
+                <div class="ui field">
+                    <input type="submit" class="ui submit primary button" name="_action" value="Next" />
+                    <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+                </div>
+            {% else %}
+                <h2 class="ui header">Category: {{class_instance.classTitle()}}</h2>
+                <input type="hidden" name="class" value="{{class}}" />
+                <div class="ui grey basic segment">
+                    <div class="ui grid">
+                        <div class="ui twelve wide column field required">
+                            <label class="ui top attached large label">Default Stage</label>
+                            {% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
+                            <p>The pre-defaulted selected stage when creating activities (can be changed for each activity)</p>
+                            <div class="inline fields">
+                                {% for stage,label in stages %}
+                                    <div class="field">
+                                        <div class="ui radio checkbox">
+                                            <input id="stage-{{stage}}" type="radio" name="stage" value="{{stage}}" {% if stage == template.stage|default(0) %}checked="checked"{% endif %}>
+                                            <label for="stage-{{stage}}">{{label}}</label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="ui four wide column field">
+                            <label class="ui top attached large label">Priority</label>
+                            <select name="priority" class="ui dropdown">
+                                {% set maxprio = project.templates.count() + (template.id ? 0:1) %}
+                                {% for priority in range(1,maxprio) %}
+                                    <option value="{{priority}}" {% if priority == template.priority|default(maxprio) %}selected="selected"{% endif %}>{{priority}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="ui required field grey basic segment">
+                    <label class="ui top attached large label">Title</label>
+                    <input placeholder="User friendly activity template title (max 100 characters)" type="text" name="title" value="{{template.title}}" />
+                    {{ m.fieldError(errors|default([]), 'title') }}
+                </div>
+                <div class="ui field basic grey segment">
+                    <label class="ui top attached large label">Description</label>
+                    <textarea name="description" rows="3">{{template.description|default(null)}}</textarea>
+                    {{ m.fieldError(errors|default([]), 'description') }}
+                </div>
+                {% for param,parameter in class_instance.getParameters() %}
+                    {% if parameter.templateLabel %}
+                        <div class="ui field basic segment blue {% if parameter.templateRequired %}required{% endif %}">
+                            <label class="ui top attached large label">{{parameter.templateLabel}}</label>
+                            {% include parameter.getTwigForTemplateForm() %}
+                            {{ m.fieldError(errors|default([]), 'parameters.'~param) }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <div class="ui field">
+                    <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} activity template" />
+                    <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+                    {% if is_existing %}
+                        <input type="submit" class="ui red right floated button" name="_action" value="Delete"
+                               onclick="return confirm('Are you sure you want to delete?')" />
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </form>
 {% endblock %}

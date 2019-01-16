@@ -1,67 +1,67 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	{% set is_existing = (auth.created_date|default(null) is not empty) %}
-	<h1 class="ui header">
-		<small>
-			<i class="ui setting icon"></i>Admin &raquo;
-			<i class="ui lock icon"></i>Authentication&raquo;
-		</small><br />
-		<span>
-			<i class="ui user icon"></i>
-			{% if is_existing %}
-				Edit {{auth.name}}
-			{% else %}
-				Add new
-			{% endif %}
-		</span>
-	</h1>
+    {% set is_existing = (auth.created_date|default(null) is not empty) %}
+    <h1 class="ui header">
+        <small>
+            <i class="ui setting icon"></i>Admin &raquo;
+            <i class="ui lock icon"></i>Authentication&raquo;
+        </small><br />
+        <span>
+            <i class="ui user icon"></i>
+            {% if is_existing %}
+                Edit {{auth.name}}
+            {% else %}
+                Add new
+            {% endif %}
+        </span>
+    </h1>
 
-	{% if errors|default(false) %}
-		<div class="ui error message">
-			Your input contains errors. Please fix below.
-		</div>
-	{% endif %}
+    {% if errors|default(false) %}
+        <div class="ui error message">
+            Your input contains errors. Please fix below.
+        </div>
+    {% endif %}
 
-	<form method="POST">
-		<div class="ui form">
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Name</label>
-				<input placeholder="Name" type="text" name="name" value="{{auth.name|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
-				{{ m.fieldError(errors|default([]), 'name') }}
-			</div>
-			<div class="ui required field basic segment">
-				<label class="ui top attached large label">Driver Class</label>
-				<div class="inline fields">
-					{% for class in classes %}
-						<div class="field">
-							<div class="ui radio checkbox">
-								<input id="auth-{{loop.index}}" type="radio" name="class" value="{{class}}" {% if class == auth.class|default(null) %}checked="checked"{% endif %} {% if is_existing %}disabled="disabled"{% endif %}>
-								<label for="auth-{{loop.index}}">{{class}}</label>
-							</div>
-						</div>
-					{% endfor %}
-				</div>
-				{{ m.fieldError(errors|default([]), 'class') }}
-			</div>
-			{% if paramConfigs %}
-				<div class="ui required field basic segment">
-					<label class="ui top attached large label">Parameters</label>
-					<div class="ui form">
-						{% for p in paramConfigs %}
-							<div class="ui field">
-								<label for="param-{{p[0]}}">{{p[1]}}</label>
-								<input id="param-{{p[0]}}" placeholder="{{p[2]}}" type="text" name="parameters[{{p[0]}}]" value="{{auth.parameters[p[0]]|default(null)}}" />
-								{{ m.fieldError(errors.parameters|default([]), p[0]) }}
-							</div>
-						{% endfor %}
-					</div>
-				</div>
-			{% endif %}
-			<div class="ui field">
-				<input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %}" />
-				<a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
-			</div>
-		</div>
-	</form>
+    <form method="POST">
+        <div class="ui form">
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Name</label>
+                <input placeholder="Name" type="text" name="name" value="{{auth.name|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
+                {{ m.fieldError(errors|default([]), 'name') }}
+            </div>
+            <div class="ui required field basic segment">
+                <label class="ui top attached large label">Driver Class</label>
+                <div class="inline fields">
+                    {% for class in classes %}
+                        <div class="field">
+                            <div class="ui radio checkbox">
+                                <input id="auth-{{loop.index}}" type="radio" name="class" value="{{class}}" {% if class == auth.class|default(null) %}checked="checked"{% endif %} {% if is_existing %}disabled="disabled"{% endif %}>
+                                <label for="auth-{{loop.index}}">{{class}}</label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ m.fieldError(errors|default([]), 'class') }}
+            </div>
+            {% if paramConfigs %}
+                <div class="ui required field basic segment">
+                    <label class="ui top attached large label">Parameters</label>
+                    <div class="ui form">
+                        {% for p in paramConfigs %}
+                            <div class="ui field">
+                                <label for="param-{{p[0]}}">{{p[1]}}</label>
+                                <input id="param-{{p[0]}}" placeholder="{{p[2]}}" type="text" name="parameters[{{p[0]}}]" value="{{auth.parameters[p[0]]|default(null)}}" />
+                                {{ m.fieldError(errors.parameters|default([]), p[0]) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+            <div class="ui field">
+                <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %}" />
+                <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+            </div>
+        </div>
+    </form>
 {% endblock %}

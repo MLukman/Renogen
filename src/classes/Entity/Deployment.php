@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
 use Renogen\Application;
 use Renogen\Base\ApproveableEntity;
 
@@ -52,6 +53,13 @@ class Deployment extends ApproveableEntity
     public $items = null;
 
     /**
+     * @OneToMany(targetEntity="RunItem", mappedBy="deployment", indexBy="id", orphanRemoval=true)
+     * @OrderBy({"created_date" = "ASC"})
+     * @var ArrayCollection
+     */
+    public $runitems = null;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -62,8 +70,9 @@ class Deployment extends ApproveableEntity
 
     public function __construct(Project $project)
     {
-        $this->project = $project;
-        $this->items   = new ArrayCollection();
+        $this->project  = $project;
+        $this->items    = new ArrayCollection();
+        $this->runitems = new ArrayCollection();
     }
 
     public function name()
@@ -123,15 +132,13 @@ class Deployment extends ApproveableEntity
             0 => array(),
             1 => array(),
         );
-        foreach ($this->getApprovedItems() as $item) {
-            foreach ($item->activities as $activity) {
-                $tid   = sprintf("%03d:%s", $activity->template->priority, $activity->template->id);
-                $array = &$activities[$activity->stage ?: 0];
-                if (!isset($array[$tid])) {
-                    $array[$tid] = array();
-                }
-                $array[$tid][] = $activity;
+        foreach ($this->runitems as $runitem) {
+            $tid   = sprintf("%03d:%s", $runitem->template->priority, $runitem->template->id);
+            $array = &$activities[$runitem->stage ?: 0];
+            if (!isset($array[$tid])) {
+                $array[$tid] = array();
             }
+            $array[$tid][] = $runitem;
         }
 
         $rungroups = array(
@@ -150,8 +157,9 @@ class Deployment extends ApproveableEntity
 
         return $rungroups;
     }
-    /* public function isUsernameAllowed($username, $attribute)
-      {
-      return $this->project->isUsernameAllowed($username, $attribute);
-      }// */
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        return $this->project->isUsernameAllowed($username, $attribute);
+    }
 }

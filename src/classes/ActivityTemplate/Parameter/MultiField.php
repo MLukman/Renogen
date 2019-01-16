@@ -3,18 +3,26 @@
 namespace Renogen\ActivityTemplate\Parameter;
 
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\Base\Actionable;
 use Renogen\Entity\ActivityFile;
 use Symfony\Component\HttpFoundation\Request;
 
 class MultiField extends Parameter
 {
+    public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'file'];
+    public $default_type  = null;
 
     static public function create($templateLabel, $templateDescription,
                                   $templateRequired, $activityLabel,
-                                  $activityDescription, $activityRequired)
+                                  $activityDescription, $activityRequired,
+                                  $allowed_types = null, $default_type = null)
     {
-        return static::generateParameter('multifield', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+        $param = static::generateParameter('multifield', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+        if ($allowed_types) {
+            $param->allowed_types = $allowed_types;
+        }
+        $param->default_type = $default_type;
+        return $param;
     }
 
     public function validateTemplateInput(array &$input, $key, array &$errors,
@@ -72,7 +80,8 @@ class MultiField extends Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key)
+                                           array $parameters, $key,
+                                           Actionable $activity = null)
     {
         $data = array();
         foreach ($template_parameters[$key] as $p) {
@@ -81,15 +90,15 @@ class MultiField extends Parameter
             }
             switch ($p['type']) {
                 case 'file':
-                    if (($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
-                        'stored_filename' => $parameters[$key][$p['id']])))) {
+                    if (($activity_file = $this->app['datastore']->queryOne($activity->fileClass, array(
+                        "{$activity->actionableType}" => $activity,
+                        'classifier' => $parameters[$key][$p['id']])))) {
                         /* @var $activity_file ActivityFile */
                         $data[$p['id']] = array(
                             'fileid' => $activity_file->id,
                             'filename' => $activity_file->filename,
-                            'filesize' => $activity_file->filesize,
-                            'mime_type' => $activity_file->mime_type,
-                            'filepath' => $activity_file->getFilesystemPath(),
+                            'filesize' => $activity_file->filestore->filesize,
+                            'mime_type' => $activity_file->filestore->mime_type,
                         );
                     }
                     break;
@@ -100,8 +109,7 @@ class MultiField extends Parameter
         return $data;
     }
 
-    public function handleActivityFiles(Request $request,
-                                        \Renogen\Entity\Activity $activity,
+    public function handleActivityFiles(Request $request, Actionable $activity,
                                         array &$input, $key)
     {
         foreach ($activity->template->parameters[$key] as $p) {
@@ -118,18 +126,18 @@ class MultiField extends Parameter
                 if (isset($files[$key]) &&
                     isset($files[$key][$pid]) &&
                     ($file  = $files[$key][$pid])) {
-                    $activity_file->processUploadedFile($file);
-                    if (!$activity_file->id) {
-                        $activity->files->add($activity_file);
-                    }
+                    $activity_file             = $this->app['datastore']->processFileUpload($file, $activity_file);
+                    $activity_file->classifier = "$key.$pid";
+                    $this->app['datastore']->manage($activity_file);
                 } elseif (isset($post[$key]) &&
                     isset($post[$key][$pid.'_delete']) &&
                     $post[$key][$pid.'_delete']) {
                     $input[$key][$pid] = null;
                     $activity->files->removeElement($activity_file);
+                    unset($input[$key][$pid.'_delete']);
                     continue;
                 }
-                $input[$key][$pid] = $activity_file->stored_filename;
+                $input[$key][$pid] = $activity_file->classifier;
             }
         }
     }

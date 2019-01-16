@@ -1,43 +1,43 @@
 {% set paramval = parameter.templateDatabaseToForm(template.parameters[param]|default(null)) %} 
+<p>{{parameter.templateDescription}}</p>
 <table class="ui celled striped compact table">
-	<thead>
-		<tr>
-			<th>Id</th>
-			<th>Label</th>
-			<th>Type</th>
-			<th>Details</th>
-			<th>Required</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for i in range(0, paramval|length + 2) %}
-			<tr class="ui top aligned">
-				<td>
-					<input type="text" name="parameters[{{param}}][{{i}}][id]" value="{{paramval[i].id|default(null)}}" />
-					{{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.id') }}
-				</td>
-				<td>
-					<input type="text" name="parameters[{{param}}][{{i}}][title]" value="{{paramval[i].title|default(null)}}" />
-					{{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.title') }}
-				</td>
-				<td>
-					<select name="parameters[{{param}}][{{i}}][type]" class="ui fluid dropdown">
-						{% set types = ['freetext','password','dropdown','multiselect','file'] %}
-						<option value="">- Select field type -</option>
-						{% for type in types %}
-							<option value="{{type}}" {% if type == paramval[i].type|default(null) %}selected="selected"{% endif %}>{{type}}</option>
-						{% endfor %}
-					</select>
-					{{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.type') }}
-				</td>
-				<td>
-					<textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type=dropdown/multiselect">{{paramval[i].details|default(null)}}</textarea>
-				</td>
-				<td class="ui center aligned collapsing">
-					<input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{i}}][required]" value="1" {% if paramval[i].required|default(null) %}checked="checked"{% endif %} />
-				</td>
-			</tr>
-		{% endfor %}
-	</tbody>
+    <thead>
+        <tr>
+            <th data-tooltip="Displayed in Runbook view">Id</th>
+            <th data-tooltip="Displayed in Activity view">Label</th>
+            <th>Type</th>
+            <th>Details</th>
+            <th>Required</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in range(0, paramval|length + 2) %}
+            <tr class="ui top aligned">
+                <td>
+                    <input type="text" name="parameters[{{param}}][{{i}}][id]" value="{{paramval[i].id|default(null)}}" />
+                    {{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.id') }}
+                </td>
+                <td>
+                    <input type="text" name="parameters[{{param}}][{{i}}][title]" value="{{paramval[i].title|default(null)}}" />
+                    {{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.title') }}
+                </td>
+                <td>
+                    <select name="parameters[{{param}}][{{i}}][type]" class="ui fluid dropdown">
+                        <option value="">- Select field type -</option>
+                        {% for type in parameter.allowed_types %}
+                            <option value="{{type}}" {% if type == paramval[i].type|default(parameter.default_type) %}selected="selected"{% endif %}>{{type}}</option>
+                        {% endfor %}
+                    </select>
+                    {{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.type') }}
+                </td>
+                <td>
+                    <textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type &quot;dropdown&quot; or &quot;multiselect&quot; (One value per line)">{{paramval[i].details|default(null)}}</textarea>
+                </td>
+                <td class="ui center aligned collapsing">
+                    <input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{i}}][required]" value="1" {% if paramval[i].required|default(null) %}checked="checked"{% endif %} />
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
 </table>
 <em>Note: to add more entries, save first and edit later</em>

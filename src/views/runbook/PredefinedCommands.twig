@@ -1,0 +1,31 @@
+<table class="ui striped very compact table">
+    <thead>
+        <tr>
+            <th>Nodes</th>
+            <th class="ui collapsing">Run As</th>
+            <th>Commands</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+            <tr>
+                <td class="ui collapsing top aligned"><a name="{{row.runitem.id}}"></a>
+                    {{ r.prettyDisplay(row.params.Nodes) }}
+                </td>
+                <td class="ui collapsing top aligned">
+                    {{row.params['Run as']}}
+                </td>
+                <td class="top aligned">
+                    <div class="ui form">
+                        <textarea readonly="readonly" style="font-family: monospace">{{row.params.Commands}}</textarea>
+                    </div>
+                </td>
+                <td class="ui collapsing top aligned">
+                    {{ r.showStatus(row.runitem) }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

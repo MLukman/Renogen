@@ -1,42 +1,42 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	<h1 class="ui dividing header">
-		<small><i class="ui setting icon"></i>Admin &raquo;</small><br />
-		<span><i class="ui lock icon"></i>Authentication</span>
-		<a class="ui right floated primary button" href="{{app.path('admin_user_add')}}">
-			<i class="ui plus icon"></i>Add new authentication
-		</a>
-	</h1>
+    <h1 class="ui dividing header">
+        <small><i class="ui setting icon"></i>Admin &raquo;</small><br />
+        <span><i class="ui lock icon"></i>Authentication</span>
+        <a class="ui right floated primary button" href="{{app.path('admin_user_add')}}">
+            <i class="ui plus icon"></i>Add new authentication
+        </a>
+    </h1>
 
-	<table class="ui celled striped sortable table">
-		<thead>
-			<tr>
-				<th class="ui collapsing">Name</th>
-				<th class="ui collapsing">Class</th>
-				<th>Parameters</th>
-				<th class="ui collapsing">Action</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for auth in drivers %}
-				<tr>
-					<td class="ui collapsing top aligned">{{auth.name}}</td>
-					<td class="ui collapsing top aligned">{{auth.class}}</td>
-					<td class="ui top aligned">
-						{% if auth.parameters %}
-							{{r.arrayTable(auth.parameters, false)}}
-						{% else %}
-							-
-						{% endif %}
-					</td>
-					<td class="ui collapsing top aligned">
-						<a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
-							<i class="ui pencil icon"></i> Edit
-						</a>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+    <table class="ui celled striped sortable table">
+        <thead>
+            <tr>
+                <th class="ui collapsing">Name</th>
+                <th class="ui collapsing">Class</th>
+                <th>Parameters</th>
+                <th class="ui collapsing">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for auth in drivers %}
+                <tr>
+                    <td class="ui collapsing top aligned">{{auth.name}}</td>
+                    <td class="ui collapsing top aligned">{{auth.class}}</td>
+                    <td class="ui top aligned">
+                        {% if auth.parameters %}
+                            {{r.arrayTable(auth.parameters, false)}}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="ui collapsing top aligned">
+                        <a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
+                            <i class="ui pencil icon"></i> Edit
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

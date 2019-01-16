@@ -1,39 +1,39 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-	<h1 class="ui header">Welcome to Release Note Generator (Renogen)
-		{% if app.securilex.isGranted('prefix', 'project_create') %}
-			<a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
-		{% endif %}
-	</h1>
-	<h3>Please select a project below <i class="ui level down icon"></i></h3>
-	<p>&nbsp;</p>
-	<div class="ui three stackable cards secondary segment">
-		{% for project in projects %}
-			{% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval','release'],project) %}
-			<a class="ui card" {% if has_access %}href="{{app.path('project_view', { project: project.name })}}"{% endif %}>
-				<div class="content">
-					<div class="ui {% if has_access %}blue{% else %}disabled{% endif %} header">
-						<h2><i class="ui cube icon"></i> {{project.title}}</h2>
-					</div>
-					{% if project.description %}
-						<div class="ui description">
-							{{project.description}}
-						</div>
-					{% endif %}
-				</div>
-				<div class="extra content">
-					<div class="ui meta">
-						{% if has_access %}
-							{{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
-						{% else %}
-							You have no access to this project
-						{% endif %}
-					</div>
-				</div>
-			</a>
-		{% else %}
-			<h2 class="ui text centered header">No project has been created by the administrator</h2>
-		{% endfor %}
-	</div>
+    <h1 class="ui header">Welcome to Release Note Generator (Renogen)
+        {% if app.securilex.isGranted('prefix', 'project_create') %}
+            <a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
+        {% endif %}
+    </h1>
+    <h3>Please select a project below <i class="ui level down icon"></i></h3>
+    <p>&nbsp;</p>
+    <div class="ui three stackable cards secondary segment">
+        {% for project in projects %}
+            {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
+            <a class="ui card" {% if has_access %}href="{{app.path('project_view', { project: project.name })}}"{% endif %}>
+                <div class="content">
+                    <div class="ui {% if has_access %}blue{% else %}disabled{% endif %} header">
+                        <h2><i class="ui cube icon"></i> {{project.title}}</h2>
+                    </div>
+                    {% if project.description %}
+                        <div class="ui description">
+                            {{project.description}}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="extra content">
+                    <div class="ui meta">
+                        {% if has_access %}
+                            {{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
+                        {% else %}
+                            You have no access to this project
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        {% else %}
+            <h2 class="ui text centered header">No project has been created by the administrator</h2>
+        {% endfor %}
+    </div>
 {% endblock %}

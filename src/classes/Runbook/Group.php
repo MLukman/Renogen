@@ -40,9 +40,12 @@ class Group
         return $this->template;
     }
 
-    public function addRow(array $row)
+    public function addRow(\Renogen\Entity\RunItem $runitem, array $row)
     {
-        $this->data[] = $row;
+        $this->data[] = array(
+            'runitem' => $runitem,
+            'params' => $row,
+        );
     }
 
     public function getData()

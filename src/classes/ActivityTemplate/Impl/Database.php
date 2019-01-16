@@ -5,7 +5,7 @@ namespace Renogen\ActivityTemplate\Impl;
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
 use Renogen\Application;
-use Renogen\Entity\Activity;
+use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
 class Database extends BaseClass
@@ -24,7 +24,7 @@ class Database extends BaseClass
         return 'Execute database SQL script';
     }
 
-    public function describeActivityAsArray(Activity $activity)
+    public function describeActivityAsArray(Actionable $activity)
     {
         return array(
             "Login" => $activity->parameters['login'],
@@ -39,7 +39,7 @@ class Database extends BaseClass
         $added                  = array();
 
         foreach ($activities as $activity) {
-            /* @var $activity Activity */
+            /* @var $activity Actionable */
             if (!isset($activities_by_template[$activity->template->id])) {
                 $templates[$activity->template->id]              = $activity->template;
                 $activities_by_template[$activity->template->id] = array();
@@ -51,16 +51,12 @@ class Database extends BaseClass
         foreach ($activities_by_template as $template_id => $activities) {
             $group = new Group($templates[$template_id]->title);
             $group->setInstruction("Log into database '".$templates[$template_id]->parameters['dbname']."' using login(s) specified below and execute the respective SQL script(s):");
-            $group->setTemplate('runbook/database.twig');
+            $group->setTemplate('runbook/Database.twig');
             foreach ($activities as $activity) {
-                $signature = json_encode($this->describeActivityAsArray($activity));
-                if (!isset($added[$signature])) {
-                    $added[$signature] = true;
-                    $group->addRow(array(
-                        'login' => $activity->parameters['login'],
-                        'sql' => $activity->parameters['sql'],
-                    ));
-                }
+                $group->addRow($activity, array(
+                    'login' => $activity->parameters['login'],
+                    'sql' => $activity->parameters['sql'],
+                ));
             }
             $groups[] = $group;
         }

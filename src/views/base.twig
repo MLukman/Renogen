@@ -111,7 +111,7 @@
                     fullTextSearch: true
                 });
                 setTimeout(function () {
-                    $('.flash.message:not(.error)').fadeOut(1000);
+                    $('.flash.message:not(.error,.persist)').fadeOut(1000);
                 }, 3000);
             });
         </script>
@@ -147,7 +147,7 @@
 <body>
 
     <div id="topbar" class="no-print">
-        <div id="topmenu" class="ui stackable menu inverted blue">
+        <div id="topmenu" class="ui stackable menu inverted purple">
 
             <div class="ui title item">
                 <a style="padding-right: 30pt" href="{{app.path('home')}}">
@@ -173,13 +173,6 @@
                 {% block menuright %}
                 {% endblock %}
 
-                {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
-                    {{ m.topmenu_dropdown_begin('Settings', 'setting') }}
-                    {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
-                    {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
-                    {{ m.topmenu_dropdown_end() }}
-                {% endif %}
-
                 {% if app.securilex is defined %}
                     {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
                         <div class="ui dropdown item">
@@ -191,6 +184,13 @@
                                 <a class="item" href="{{app.securilex.getLogoutPath()}}">
                                     <i class="ui sign out icon"></i>Logout
                                 </a>
+                                {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
+                                    <div class="ui divider"></div>
+                                    {{ m.topmenu_dropdown_begin('Settings', 'setting') }}
+                                    {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+                                    {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
+                                    {{ m.topmenu_dropdown_end() }}
+                                {% endif %}
                             </div>
                         </div>
                     {% else %}
@@ -207,7 +207,7 @@
     <div id="topfiller" class="no-print"></div>
 
     {% for message in app.session.flashbag.get('message') %}
-        <div class="ui floating {{message.type}} flash message" style="margin:1em" onclick="javascript:$(this).fadeOut()">
+        <div class="ui floating {{message.type}} flash message {% if message.persistent %}persist{% endif %}" style="margin:1em" onclick="javascript:$(this).fadeOut()">
             {% if message.title %}
                 <div class="header">
                     {{message.title}}

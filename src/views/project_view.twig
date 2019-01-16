@@ -1,12 +1,13 @@
 {% extends "renobase.twig" %}
 {% import _self as mm %}
+{% set is_project_admin = app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
 
 {% block content %}
     <h1 class="ui dividing header">
         <span>
             <i class="ui cube icon"></i>{{project.title}}
         </span>
-        {% if app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
+        {% if is_project_admin %}
             <a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
             <a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
         {% endif %}
@@ -14,7 +15,13 @@
 
     <p>{{project.description}}</p>
 
-    <h2>
+    {% if is_project_admin and project.templates.count() == 0 %}
+        <div class="ui error message">
+            Warning: No activity template has been defined for this project. <a href="{{app.path('template_create',controller.entityParams(project))}}">Click here to add a new activity template</a>.
+        </div>
+    {% endif %}
+
+    <h2 style="clear: both">
         Upcoming Deployments
         {% if app.securilex.isGranted('approval',project) %}
             <a class="ui right floated primary button no-print" href="{{app.path('deployment_create',controller.entityParams(project))}}">
@@ -88,8 +95,10 @@
                         </table>
                     {% else %}
                         <div class="meta">
-                            <i class="ui warning sign icon"></i>
-                            No deployment item has been added to this deployment yet
+                            <div class="ui basic segment">
+                                <i class="ui warning sign icon"></i>
+                                No deployment item has been added to this deployment yet
+                            </div>
                         </div>
                     {% endif %}
                 </div>

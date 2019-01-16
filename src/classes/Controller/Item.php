@@ -2,11 +2,16 @@
 
 namespace Renogen\Controller;
 
-use Doctrine\ORM\NoResultException;
+use DateTime;
+use Doctrine\Common\Collections\Criteria;
 use Renogen\Base\RenoController;
 use Renogen\Entity\ItemComment;
+use Renogen\Entity\RunItem;
+use Renogen\Entity\RunItemFile;
+use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class Item extends RenoController
 {
@@ -61,20 +66,74 @@ class Item extends RenoController
         $new_status = $request->request->get('new_status');
         $item_obj   = $this->app['datastore']->fetchItem($project, $deployment, $item);
         $user       = $this->app->user();
-        if (!$user && !$this->app['statemodel']->validateTransition('item', $item_obj->deployment->project->getUserAccess($user->getUsername()), $item_obj->status, $new_status)) {
-            return new \Symfony\Component\Security\Core\Exception\AccessDeniedException();
-        }
 
         $remark = trim($request->request->get('remark'));
-        if (empty($remark)) {
+        if (empty($remark) && $request->request->get('remark_required', 0)) {
             $this->app->addFlashMessage("Remark is required", "Unable to change status", "error");
         } else {
-            $item_obj->changeStatus($new_status);
-            $comment        = new \Renogen\Entity\ItemComment($item_obj);
-            $comment->event = $new_status;
-            $comment->text  = $remark;
-            $item_obj->comments->add($comment);
-            $this->app['datastore']->commit($item_obj);
+            $old_status = $item_obj->status;
+            $direction  = $item_obj->changeStatus($new_status);
+            if (!empty($remark)) {
+                $comment        = new ItemComment($item_obj);
+                $comment->event = "$old_status > $new_status";
+                $comment->text  = $remark;
+                $item_obj->comments->add($comment);
+            }
+            if ($item_obj->status == 'Ready For Release' && $direction > 0) {
+                /* @var $activity Activity */
+                foreach ($item_obj->activities as $activity) {
+                    if ($activity->runitem == null || $activity->runitem->status
+                        == 'Failed') {
+                        $runitems = $item_obj->deployment->runitems->matching(Criteria::create()
+                                ->where(Criteria::expr()->eq('signature', $activity->signature))
+                                ->andWhere(Criteria::expr()->eq('status', 'New'))
+                        );
+                        if ($runitems->isEmpty()) {
+                            $activity->runitem             = new RunItem($item_obj->deployment);
+                            $activity->runitem->signature  = $activity->signature;
+                            $activity->runitem->template   = $activity->template;
+                            $activity->runitem->stage      = $activity->stage;
+                            $activity->runitem->parameters = $activity->parameters;
+                            $activity->runitem->priority   = $activity->priority;
+                            foreach ($activity->files as $file) {
+                                $rfile              = new RunItemFile($activity->runitem);
+                                $rfile->filename    = $file->filename;
+                                $rfile->classifier  = $file->classifier;
+                                $rfile->description = $file->description;
+                                $rfile->filestore   = $file->filestore;
+                                $activity->runitem->files->add($rfile);
+                            }
+                            $this->app['datastore']->commit($activity->runitem);
+                        } else {
+                            $activity->runitem = $runitems->get(0);
+                        }
+                    }
+                }
+            } elseif ($old_status == 'Ready For Release' && $direction < 0) {
+                /* @var $activity Activity */
+                foreach ($item_obj->activities as $activity) {
+                    if ($activity->runitem != null && $activity->runitem->status
+                        == 'New') {
+                        $activity->runitem = null;
+                    }
+                }
+                // cleanup run items
+                $used_runitem_ids = array();
+                foreach ($item_obj->deployment->items as $d_item) {
+                    foreach ($d_item->activities as $d_activity) {
+                        if ($d_activity->runitem) {
+                            $used_runitem_ids[] = $d_activity->runitem->id;
+                        }
+                    }
+                }
+                foreach ($item_obj->deployment->runitems as $d_runitem) {
+                    if (!in_array($d_runitem->id, $used_runitem_ids) &&
+                        $d_runitem->status == 'New') {
+                        $this->app['datastore']->deleteEntity($d_runitem);
+                    }
+                }
+            }
+            $this->app['datastore']->commit();
             $this->app->addFlashMessage("Item '$item_obj->title' has been changed status to $new_status");
         }
         return $this->redirect('item_view', $this->entityParams($item_obj));
@@ -120,7 +179,7 @@ class Item extends RenoController
 
                     $item_obj->reject();
                     $actioned       = 'rejected';
-                    $comment        = new \Renogen\Entity\ItemComment($item_obj);
+                    $comment        = new ItemComment($item_obj);
                     $comment->event = 'Rejected';
                     $comment->text  = $remark;
                     $item_obj->comments->add($comment);
@@ -145,8 +204,13 @@ class Item extends RenoController
             switch ($post->get('_action')) {
                 case 'Move':
                     try {
-                        $ndeployment = $ds->fetchDeployment($item->deployment->project, $post->get('deployment'));
+                        $ndeployment = $ds->queryOne('\Renogen\Entity\Deployment', $post->get('deployment'));
                         if ($ndeployment != $item->deployment) {
+                            if ($ndeployment->project != $item->deployment->project) {
+                                // Different project = copy
+                                $ds->unmanage($item);
+                                $item->id = null;
+                            }
                             $data = new ParameterBag(array(
                                 'deployment' => $ndeployment,
                             ));
@@ -207,7 +271,7 @@ class Item extends RenoController
     public function comment_delete(Request $request, $project, $deployment,
                                    $item, $comment)
     {
-        return $this->comment_setDeletedDate($project, $deployment, $item, $comment, new \DateTime());
+        return $this->comment_setDeletedDate($project, $deployment, $item, $comment, new DateTime());
     }
 
     public function comment_undelete(Request $request, $project, $deployment,
@@ -217,7 +281,7 @@ class Item extends RenoController
     }
 
     protected function comment_setDeletedDate($project, $deployment, $item,
-                                              $comment, \DateTime $date = null)
+                                              $comment, DateTime $date = null)
     {
         try {
             $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);

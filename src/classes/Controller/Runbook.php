@@ -2,8 +2,8 @@
 
 namespace Renogen\Controller;
 
-use Doctrine\ORM\NoResultException;
 use Renogen\Base\RenoController;
+use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
 
 class Runbook extends RenoController
@@ -22,6 +22,64 @@ class Runbook extends RenoController
             return $this->render('runbook_view', array(
                     'deployment' => $deployment_obj,
             ));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
+    public function download_file(Request $request, $file)
+    {
+        try {
+            if (!($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\RunItemFile', $file))) {
+                throw new NoResultException("No such run item file with id '$file'");
+            }
+            return $activity_file->returnDownload();
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
+    public function runitem_completed(Request $request, $runitem)
+    {
+        try {
+            if (!($runitem = $this->app['datastore']->queryOne('\Renogen\Entity\RunItem', $runitem))) {
+                throw new NoResultException("No such run item with id '$file'");
+            }
+            $runitem->status = 'Completed';
+            $runitem->defaultUpdatedDate();
+            $this->app['datastore']->commit($runitem);
+            foreach ($runitem->deployment->items as $item) {
+                if ($item->activities->count() == 0) {
+                    continue;
+                }
+                foreach ($item->activities as $activity) {
+                    if ($activity->runitem->status != 'Completed') {
+                        continue 2;
+                    }
+                }
+                $item->changeStatus('Completed');
+                $this->app['datastore']->commit($item);
+            }
+            return $this->redirect('runbook_view', $this->entityParams($runitem->deployment), $runitem->id);
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
+    public function runitem_failed(Request $request, $runitem)
+    {
+        try {
+            if (!($runitem = $this->app['datastore']->queryOne('\Renogen\Entity\RunItem', $runitem))) {
+                throw new NoResultException("No such run item with id '$file'");
+            }
+            $runitem->status = 'Failed';
+            $runitem->defaultUpdatedDate();
+            $this->app['datastore']->commit($runitem);
+            foreach ($runitem->activities as $activity) {
+                $activity->item->changeStatus('Failed');
+                $this->app['datastore']->commit($activity->item);
+            }
+            return $this->redirect('runbook_view', $this->entityParams($runitem->deployment), $runitem->id);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }

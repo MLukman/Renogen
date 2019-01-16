@@ -3,8 +3,9 @@
 namespace Renogen\ActivityTemplate\Parameter;
 
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\Base\Actionable;
 use Renogen\Entity\ActivityFile;
+use Renogen\Entity\RunItem;
 use Symfony\Component\HttpFoundation\Request;
 
 class File extends Parameter
@@ -46,35 +47,42 @@ class File extends Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key)
+                                           array $parameters, $key,
+                                           Actionable $activity = null)
     {
-        if (isset($parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
-            'stored_filename' => $parameters[$key])))) {
+        if ($activity && isset($parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne($activity->fileClass, array(
+            "{$activity->actionableType}" => $activity,
+            'classifier' => $parameters[$key])))) {
             /* @var $activity_file ActivityFile */
             return array(
                 'fileid' => $activity_file->id,
                 'filename' => $activity_file->filename,
-                'filesize' => $activity_file->filesize,
-                'mime_type' => $activity_file->mime_type,
-                'filepath' => $activity_file->getFilesystemPath(),
+                'filesize' => $activity_file->filestore->filesize,
+                'mime_type' => $activity_file->filestore->mime_type,
             );
         }
         return null;
     }
 
-    public function displayActivityParameter(\Renogen\Entity\Activity $activity,
-                                             $key)
+    public function displayActivityParameter(Actionable $activity, $key)
     {
-        if (isset($activity->parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne('\Renogen\Entity\ActivityFile', array(
-            'stored_filename' => $activity->parameters[$key])))) {
+        if ($activity instanceof RunItem) {
+            $class  = '\Renogen\Entity\RunItemFile';
+            $parent = 'runitem';
+        } else {
+            $class  = '\Renogen\Entity\ActivityFile';
+            $parent = 'activity';
+        }
+        if (isset($activity->parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne($class, array(
+            "$parent" => $activity,
+            'classifier' => $activity->parameters[$key])))) {
             /* @var $activity_file ActivityFile */
             return $activity_file->getHtmlLink();
         }
         return null;
     }
 
-    public function handleActivityFiles(Request $request,
-                                        \Renogen\Entity\Activity $activity,
+    public function handleActivityFiles(Request $request, Actionable $activity,
                                         array &$input, $key)
     {
         if (isset($activity->parameters[$key]) && $activity->files->containsKey($activity->parameters[$key])) {
@@ -86,12 +94,11 @@ class File extends Parameter
         $files = $request->files->get('parameters');
         if (isset($files[$key]) &&
             ($file  = $files[$key])) {
-            $activity_file->processUploadedFile($file);
-            if (!$activity_file->id) {
-                $activity->files->add($activity_file);
-            }
+            $activity_file             = $this->app['datastore']->processFileUpload($file, $activity_file);
+            $activity_file->classifier = $key;
+            $this->app['datastore']->manage($activity_file);
         }
-        $input[$key] = $activity_file->stored_filename;
+        $input[$key] = $activity_file->classifier;
     }
 
     public function getTwigForTemplateForm()

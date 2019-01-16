@@ -47,4 +47,23 @@ abstract class Driver
      * @param MutableUserInterface $user The instance of user record
      */
     abstract public function prepareNewUser(MutableUserInterface $user);
+
+    /**
+     * Can this driver support resetting password?
+     * @return boolean If this driver supports resetting password
+     */
+    public function canResetPassword()
+    {
+        return false;
+    }
+
+    /**
+     * Perform password reset on a specific user
+     * @param MutableUserInterface $user
+     * @return string|null Success message. Null if failed.
+     */
+    public function resetPassword(MutableUserInterface $user)
+    {
+
+    }
 }

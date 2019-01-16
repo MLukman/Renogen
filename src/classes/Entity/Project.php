@@ -26,6 +26,11 @@ class Project extends Entity
     public $id;
 
     /**
+     * @Column(type="datetime")
+     */
+    public $created_date;
+
+    /**
      * @Column(type="string", length=16)
      */
     public $name;
@@ -57,7 +62,7 @@ class Project extends Entity
     public $deployments = null;
 
     /**
-     * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username", orphanRemoval=true)
+     * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username", orphanRemoval=true, cascade={"persist"})
      * @var ArrayCollection
      */
     public $userProjects = null;
@@ -75,16 +80,44 @@ class Project extends Entity
      */
     protected $validation_rules   = array(
         'name' => array('required' => 1, 'unique' => true, 'maxlen' => 16,
-            'preg_match' => '/^[0-9a-zA-Z_]+$/',
+            'preg_match' => '/^[0-9a-zA-Z_-]+$/',
             'invalidvalues' => array('login', 'admin')),
         'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),
         'categories' => array('required' => 1),
         'modules' => array('required' => 1),
     );
     protected $validation_default = array('trim' => 1);
+    public $item_statuses         = array(
+        'Documentation' => array(
+            'icon' => 'warning',
+            'rejectaction' => false,
+            'role' => ['entry', 'approval'],
+        ),
+        'Test Review' => array(
+            'icon' => 'help',
+            'rejectaction' => 'Rejected',
+            'role' => ['review', 'approval'],
+        ),
+        'Go No Go' => array(
+            'icon' => 'help',
+            'rejectaction' => 'Rejected',
+            'role' => 'approval',
+        ),
+        'Ready For Release' => array(
+            'icon' => 'check',
+            'rejectaction' => 'Failed',
+            'role' => 'execute',
+        ),
+        'Completed' => array(
+            'icon' => 'check',
+            'rejectaction' => false,
+            'role' => null,
+        )
+    );
 
     public function __construct()
     {
+        $this->created_date = new \DateTime();
         $this->deployments  = new ArrayCollection();
         $this->templates    = new ArrayCollection();
         $this->userProjects = new ArrayCollection();
@@ -148,20 +181,21 @@ class Project extends Entity
         if (method_exists($this, '__load')) {
             $this->__load();
         }
-        return ($this->userProjects->containsKey($username) &&
-            ($this->userProjects->get($username)->role == $attr || $attr == 'any'));
-    }
-
-    public function getAttachmentFolder()
-    {
-        return ROOTDIR.'/data/attachments/'.$this->name.'/';
-    }
-
-    public function delete(EntityManager $em)
-    {
-        if (file_exists($this->getAttachmentFolder())) {
-            rmdir($this->getAttachmentFolder());
+        if (!$this->userProjects->containsKey($username)) {
+            return false;
+        } elseif ($attr == 'any') {
+            return true;
         }
-        parent::delete($em);
+        if (!is_array($attr)) {
+            $attr = array($attr);
+        }
+        $role = $this->userProjects->get($username)->role;
+        foreach ($attr as $a) {
+            if ($role == $a) {
+                return true;
+            }
+        }
+        return false;
     }
+
 }

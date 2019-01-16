@@ -2,6 +2,9 @@
 
 {% block content %}
     <h1 class="ui dividing header">
+        <small>
+            {{r.crumb_project(deployment.project, true)}} &raquo;
+        </small><br />
         <span>
             <i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
         </span>
@@ -35,7 +38,7 @@
                     {{deployment.items|length}}
                 </div>
             </div>
-            {% set statuses = constant('Renogen\\Entity\\Item::STATUSES') %}
+            {% set statuses = deployment.project.item_statuses|keys %}
             {% for s in statuses %}
                 <div class="ui statistic column">
                     <div class="label">
@@ -46,16 +49,16 @@
                     </div>
                 </div>
             {% endfor %}
+            <div class="ui statistic column">
+                <div class="label">
+                    Rejected / Failed
+                </div>
+                <div class="value">
+                    {{deployment.getItemsWithStatus('Rejected')|length + deployment.getItemsWithStatus('Failed')|length}}
+                </div>
+            </div>
         </div>
     </div>
-
-    {% set approved = deployment.getItemsWithStatus('Approved') %}
-    {% if approved|length > 0 %}
-    <div class="ui secondary segment">
-        There are approved items
-    </div>
-    {% endif %}
-
 
     <table class="ui celled striped sortable table">
         <thead>

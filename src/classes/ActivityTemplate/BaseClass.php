@@ -2,14 +2,20 @@
 
 namespace Renogen\ActivityTemplate;
 
+use Renogen\Application;
+use Renogen\Base\Actionable;
+use Renogen\Base\RenoController;
 use Renogen\Entity\Activity;
+use Renogen\Entity\FileLink;
+use Renogen\Entity\RunItemFile;
+use Renogen\Runbook\Group;
 
 abstract class BaseClass
 {
     protected $app;
     private $_parameters = array();
 
-    public function __construct(\Renogen\Application $app)
+    public function __construct(Application $app)
     {
         $this->app = $app;
     }
@@ -45,7 +51,7 @@ abstract class BaseClass
     /**
      * @return array
      */
-    public function describeActivityAsArray(Activity $activity)
+    public function describeActivityAsArray(Actionable $activity)
     {
         $desc = array();
         foreach ($this->_parameters as $key => $param) {
@@ -62,13 +68,19 @@ abstract class BaseClass
      * @param Activity $activity
      * @return string
      */
-    public function activitySignature(Activity $activity)
+    public function activitySignature(Actionable $activity)
     {
         return md5(json_encode($this->describeActivityAsArray($activity)));
     }
 
+    public function getDownloadLink(FileLink $filelink)
+    {
+        return $this->app->path($filelink instanceof RunItemFile ?
+                'runitem_file_download' : 'activity_file_download', RenoController::entityParams($filelink));
+    }
+
     /**
-     * @return \Renogen\Runbook\Group[]
+     * @return Group[]
      */
     abstract public function convertActivitiesToRunbookGroups(array $activities);
 }

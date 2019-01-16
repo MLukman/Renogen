@@ -10,12 +10,13 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 class Attachment extends RenoController
 {
     const entityFields = array('description');
+    const editAccess   = array('entry', 'review', 'approval');
 
     public function create(Request $request, $project, $deployment, $item)
     {
         try {
             $item_obj       = $this->app['datastore']->fetchItem($project, $deployment, $item);
-            $this->checkAccess(array('entry', 'review'), $item_obj);
+            $this->checkAccess(static::editAccess, $item_obj);
             $this->addEntityCrumb($item_obj);
             $this->addCreateCrumb('Add attachment', $this->app->path('attachment_create', $this->entityParams($item_obj)));
             $attachment_obj = new \Renogen\Entity\Attachment($item_obj);
@@ -30,10 +31,7 @@ class Attachment extends RenoController
     {
         try {
             $attachment_obj = $this->app['datastore']->fetchAttachment($project, $deployment, $item, $attachment);
-            return $this->app
-                    ->sendFile($attachment_obj->getFilesystemPath(), 200, array(
-                        'Content-type' => $attachment_obj->mime_type))
-                    ->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $attachment_obj->filename);
+            return $attachment_obj->returnDownload();
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -44,7 +42,7 @@ class Attachment extends RenoController
     {
         try {
             $attachment_obj = $this->app['datastore']->fetchAttachment($project, $deployment, $item, $attachment);
-            $this->checkAccess(array('entry', 'review'), $attachment_obj->item);
+            $this->checkAccess(static::editAccess, $attachment_obj->item);
             $this->addEntityCrumb($attachment_obj);
             return $this->edit_or_create($attachment_obj, $request);
         } catch (NoResultException $ex) {
@@ -68,8 +66,9 @@ class Attachment extends RenoController
                 default:
                     $file = $request->files->get('file');
                     if ($file) {
-                        $errors = array();
-                        $attachment->processUploadedFile($file, $errors);
+                        $errors   = array();
+                        $filelink = $this->app['datastore']->processFileUpload($file, $attachment, $errors);
+                        $this->app['datastore']->commit($filelink);
                         if (!empty($errors)) {
                             $context['errors'] = $context['errors'] + array(
                                 'file' => $errors,

@@ -2,7 +2,8 @@
 
 namespace Renogen\ActivityTemplate;
 
-use Renogen\Entity\ActivityFile;
+use Renogen\Application;
+use Renogen\Base\Actionable;
 use Symfony\Component\HttpFoundation\Request;
 
 class Parameter
@@ -21,7 +22,7 @@ class Parameter
         $this->type = $type;
     }
 
-    public function setApplication(\Renogen\Application $app)
+    public function setApplication(Application $app)
     {
         $this->app = $app;
     }
@@ -43,6 +44,24 @@ class Parameter
                                   $templateRequired)
     {
         $param                      = new static('config');
+        $param->templateLabel       = $templateLabel;
+        $param->templateDescription = $templateDescription;
+        $param->templateRequired    = (bool) $templateRequired;
+        return $param;
+    }
+
+    /**
+     * ConfigType is for a parameter that needs be entered
+     * during template creation but not during activity creation
+     * @param type $templateLabel
+     * @param type $templateDescription
+     * @param type $templateRequired
+     * @return \static
+     */
+    static public function MultiLineConfig($templateLabel, $templateDescription,
+                                           $templateRequired)
+    {
+        $param                      = new static('multilineconfig');
         $param->templateLabel       = $templateLabel;
         $param->templateDescription = $templateDescription;
         $param->templateRequired    = (bool) $templateRequired;
@@ -273,20 +292,19 @@ class Parameter
     }
 
     public function activityDatabaseToForm(array $template_parameters,
-                                           array $parameters, $key)
+                                           array $parameters, $key,
+                                           Actionable $activity = null)
     {
         return (isset($parameters[$key]) ? $parameters[$key] : null);
     }
 
-    public function displayActivityParameter(\Renogen\Entity\Activity $activity,
-                                             $key)
+    public function displayActivityParameter(Actionable $activity, $key)
     {
         return (isset($activity->parameters[$key]) ? $activity->parameters[$key]
                 : null);
     }
 
-    public function handleActivityFiles(Request $request,
-                                        \Renogen\Entity\Activity $activity,
+    public function handleActivityFiles(Request $request, Actionable $activity,
                                         array &$input, $key)
     {
         // nothing to do

@@ -125,7 +125,7 @@ class Entity implements SecuredAccessInterface
         return $this->_caches[$cacheid];
     }
 
-    public function delete(EntityManager $em)
+    public function delete($em)
     {
         $em->remove($this);
     }

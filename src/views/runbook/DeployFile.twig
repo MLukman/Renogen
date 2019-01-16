@@ -1,0 +1,29 @@
+<table class="ui striped very compact table">
+    <thead>
+        <tr>
+            <th class="four wide">Nodes</th>
+            <th class="four wide">File</th>
+            <th>Instruction</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+            <tr>
+                <td class="top aligned"><a name="{{row.runitem.id}}"></a>
+                    {{ r.prettyDisplay(row.params.Nodes) }}
+                </td>
+                <td class="top aligned">
+                    <strong>{{row.params.File|raw}}</strong>
+                </td>
+                <td class="top aligned">
+                    {{ r.prettyDisplay(row.params.Instruction) }}
+                </td>
+                <td class="top aligned">
+                    {{ r.showStatus(row.runitem) }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
