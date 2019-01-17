@@ -202,27 +202,26 @@ class Item extends RenoController
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Move':
-                    try {
-                        $ndeployment = $ds->queryOne('\Renogen\Entity\Deployment', $post->get('deployment'));
-                        if ($ndeployment != $item->deployment) {
-                            if ($ndeployment->project != $item->deployment->project) {
-                                // Different project = copy
-                                $ds->unmanage($item);
-                                $item->id = null;
-                            }
-                            $data = new ParameterBag(array(
-                                'deployment' => $ndeployment,
-                            ));
-                            if ($ds->prepareValidateEntity($item, $data->keys(), $data)) {
-                                $ds->commit($item);
-                                $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
-                                return $this->redirect('item_view', $this->entityParams($item));
-                            }
-                        }
+                    $ndeployment = $ds->queryOne('\Renogen\Entity\Deployment', $post->get('deployment'));
+                    if (!$ndeployment) {
                         $context['errors'] = array(
-                            'deployment' => array('Please select another deployment')
+                            'deployment' => array('Please select a deployment')
                         );
-                    } catch (NoResultException $ex) {
+                    } elseif ($ndeployment != $item->deployment) {
+                        if ($ndeployment->project != $item->deployment->project) {
+                            // Different project = copy
+                            $ds->unmanage($item);
+                            $item->id = null;
+                        }
+                        $data = new ParameterBag(array(
+                            'deployment' => $ndeployment,
+                        ));
+                        if ($ds->prepareValidateEntity($item, $data->keys(), $data)) {
+                            $ds->commit($item);
+                            $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
+                            return $this->redirect('item_view', $this->entityParams($item));
+                        }
+                    } else {
                         $context['errors'] = array(
                             'deployment' => array('Please select another deployment')
                         );

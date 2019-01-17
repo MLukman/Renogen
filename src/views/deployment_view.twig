@@ -30,7 +30,7 @@
 
     <div class="ui basic segment">
         <div class="ui equal width stackable grid">
-            <div class="ui statistic column">
+            <div class="ui small statistic column">
                 <div class="label">
                     TOTAL
                 </div>
@@ -40,7 +40,7 @@
             </div>
             {% set statuses = deployment.project.item_statuses|keys %}
             {% for s in statuses %}
-                <div class="ui statistic column">
+                <div class="ui small statistic column">
                     <div class="label">
                         {{s}}
                     </div>
@@ -49,7 +49,7 @@
                     </div>
                 </div>
             {% endfor %}
-            <div class="ui statistic column">
+            <div class="ui small statistic column">
                 <div class="label">
                     Rejected / Failed
                 </div>

@@ -15,7 +15,7 @@ use Securilex\Authentication\User\MutableUserInterface;
 class User extends Entity implements MutableUserInterface
 {
     /**
-     * @Id @Column(type="string", length=16)
+     * @Id @Column(type="string", length=25)
      */
     public $username;
 
@@ -50,7 +50,7 @@ class User extends Entity implements MutableUserInterface
      * @var array
      */
     protected $validation_rules = array(
-        'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 16, 'unique' => 1),
+        'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 25, 'unique' => 1),
         'shortname' => array('trim' => 1, 'maxlen' => 100, 'unique' => 1),
         'auth' => array('required' => 1),
         'roles' => array('required' => 1),

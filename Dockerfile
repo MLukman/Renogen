@@ -14,12 +14,6 @@ RUN echo 'TLS_REQCERT never' >> /etc/ldap/ldap.conf \
     && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
     && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini
 
-COPY . /tmp/src/
-
-RUN mv /tmp/src/* /var/www/html/ \
-    && mv /tmp/src/.htaccess /var/www/html/ \
-    && chown -R www-data:www-data /var/www
-
 # If behind reverse proxy using path (e.g. /renogen), put the path here (without the preceding slash, e.g renogen). 
 # Also ensure the reverse proxy retains the path when proxying to this container.
 ENV BASE_URL=''
@@ -43,5 +37,10 @@ HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 
-CMD bash -c 'if [ -n "$BASE_URL" ] && [ ! -d "$BASE_URL" ]; then ln -s . "$BASE_URL"; fi && exec apache2-foreground'
+CMD bash -c 'if [ -n "$BASE_URL" ] && [ ! -d "$BASE_URL" ]; then ln -s . "$BASE_URL"; fi && php tools/updateSchemas.php > /dev/null && apache2-foreground'
 
+COPY . /tmp/src/
+
+RUN mv /tmp/src/* /var/www/html/ \
+    && mv /tmp/src/.htaccess /var/www/html/ \
+    && chown -R www-data:www-data /var/www
