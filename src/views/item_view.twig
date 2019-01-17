@@ -34,7 +34,6 @@
     {% set is_acl_entry = app.securilex.isGranted(['entry','review'],item.deployment.project) %}
     {% set is_acl_execute = app.securilex.isGranted(['execute','entry','review','approval'],item.deployment.project) %}
     {% set editable = app.securilex.isGranted(['entry', 'approval'],item.deployment.project) and item.compareCurrentStatusTo('Go No Go') > 0 %}
-    {% set next_status = app.statemodel.getAvailableTransitions('item', item.deployment.project.userProjects.get(app.user().username).role, item.status) %}
 
     <h1 class="ui dividing header">
         <div>

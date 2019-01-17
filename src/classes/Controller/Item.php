@@ -11,7 +11,6 @@ use Renogen\Entity\RunItemFile;
 use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class Item extends RenoController
 {
