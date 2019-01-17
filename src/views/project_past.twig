@@ -25,7 +25,7 @@
         {% for deployment in deployments %}
             <div class="ui blue card">
                 <div class="content">
-                    <a  class="ui header" href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}">
+                    <a  class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
                         <span class="ui right floated">
                             {{deployment.datetimeString(true)}}
                         </span>
@@ -52,7 +52,7 @@
                                 {% for item in deployment.items %}
                                     <tr>
                                         <td>
-                                            <a href="{{app.path('item_view',app.controller.entityParams(item))}}" class="ui item">
+                                            <a href="{{app.entity_path('item_view',item)}}" class="ui item">
                                                 {{item.displayTitle}}
                                             </a>
                                         </td>
@@ -81,7 +81,7 @@
             <tr>
                 <td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
                 <td class="ui eight wide top aligned">
-                    <a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
+                    <a href="{{app.entity_path('deployment_view',deployment)}}" class="header">
                         <h3>{{deployment.displayTitle}}</h3>
                     </a>
                     <div>{{deployment.description|nl2br}}</div>
@@ -94,7 +94,7 @@
                             <div class="menu">
                                 {% for item in deployment.items %}
                                     <div class="item">
-                                        <a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+                                        <a href="{{app.entity_path('item_view',item)}}">
                                             <i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
                                             {{item.displayTitle}}
                                         </a>

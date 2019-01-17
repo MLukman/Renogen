@@ -8,24 +8,24 @@
             <i class="ui cube icon"></i>{{project.title}}
         </span>
         {% if is_project_admin %}
-            <a class="ui right floated button no-print" href="{{app.path('project_edit',controller.entityParams(project))}}"><i class="ui pencil icon"></i>Edit</a>
-            <a class="ui right floated button" href="{{app.path('template_list',controller.entityParams(project))}}"><i class="ui clipboard icon"></i>Activity Templates</a>
+            <a class="ui right floated button no-print" href="{{app.entity_path('project_edit',project)}}"><i class="ui pencil icon"></i>Edit</a>
+            <a class="ui right floated button no-print" href="{{app.entity_path('template_list',project)}}"><i class="ui clipboard icon"></i>Templates</a>
         {% endif %}
     </h1>
 
-    <p>{{project.description}}</p>
+    <p style="clear: both">{{project.description}}</p>
 
     {% if is_project_admin and project.templates.count() == 0 %}
         <div class="ui error message">
-            Warning: No activity template has been defined for this project. <a href="{{app.path('template_create',controller.entityParams(project))}}">Click here to add a new activity template</a>.
+            Warning: No activity template has been defined for this project. <a href="{{app.entity_path('template_create',project)}}">Click here to add a new activity template</a>.
         </div>
     {% endif %}
 
     <h2 style="clear: both">
         Upcoming Deployments
         {% if app.securilex.isGranted('approval',project) %}
-            <a class="ui right floated primary button no-print" href="{{app.path('deployment_create',controller.entityParams(project))}}">
-                <i class="ui plus icon"></i>Create deployment
+            <a class="ui right floated primary button no-print" href="{{app.entity_path('deployment_create',project)}}">
+                <i class="ui plus icon"></i>Create
             </a>
         {% endif %}
     </h2>
@@ -41,7 +41,7 @@
     {% if project.past().count() > 0 %}
         <h2>
             Past Deployments (Showing last 10)
-            <a class="ui button right floated" href="{{app.path('project_past',controller.entityParams(project))}}"><i class="ui clock icon"></i>Show all past deployments</a>
+            <a class="ui button right floated" href="{{app.entity_path('project_past',project)}}"><i class="ui clock icon"></i>Show all past deployments</a>
         </h2>
         <div class="ui basic segment">
             {{ mm.deploymentList(project.past()|slice(0, 10)) }}
@@ -51,11 +51,11 @@
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-    <div class="ui one stackable cards">
+    <div class="ui two stackable cards">
         {% for deployment in deployments %}
             <div class="ui blue card">
                 <div class="content">
-                    <a  class="ui header" href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}">
+                    <a  class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
                         <span class="ui right floated">
                             {{deployment.datetimeString(true)}}
                         </span>
@@ -82,7 +82,7 @@
                                 {% for item in deployment.items %}
                                     <tr>
                                         <td>
-                                            <a href="{{app.path('item_view',app.controller.entityParams(item))}}" class="ui item">
+                                            <a href="{{app.entity_path('item_view',item)}}" class="ui item">
                                                 {{item.displayTitle}}
                                             </a>
                                         </td>
@@ -113,7 +113,7 @@
             <tr>
                 <td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
                 <td class="ui eight wide top aligned">
-                    <a href="{{app.path('deployment_view',app.controller.entityParams(deployment))}}" class="header">
+                    <a href="{{app.entity_path('deployment_view',deployment)}}" class="header">
                         <h3>{{deployment.displayTitle}}</h3>
                     </a>
                     <div>{{deployment.description|nl2br}}</div>
@@ -126,7 +126,7 @@
                             <div class="menu">
                                 {% for item in deployment.items %}
                                     <div class="item">
-                                        <a href="{{app.path('item_view',app.controller.entityParams(item))}}">
+                                        <a href="{{app.entity_path('item_view',item)}}">
                                             <i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
                                             {{item.displayTitle}}
                                         </a>

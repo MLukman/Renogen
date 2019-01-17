@@ -497,6 +497,10 @@ class Application extends \Silex\Application
             return $this->entityParams($entity->activity) + array(
                 'file' => $entity->id,
             );
+        } elseif ($entity instanceof Entity\ItemComment) {
+            return $this->entityParams($entity->item) + array(
+                'comment' => $entity->id,
+            );
         } elseif ($entity instanceof Entity\Attachment) {
             return $this->entityParams($entity->item) + array(
                 'attachment' => $entity->id,

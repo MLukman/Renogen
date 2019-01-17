@@ -3,8 +3,13 @@
 {% block content %}
     {% set is_existing = (template.id|default(null) is not empty) %}
     <h1 class="ui header">
-        <small><i class="ui cube icon"></i>{{project.title}} &raquo;</small><br />
-        <span><i class="ui clipboard icon"></i>{% if is_existing %}Edit{% else %}Create{% endif %} activity template</span>
+        <div>
+            <small>
+                {{r.crumb_project(project, true)}} &raquo;
+                <i class="ui clipboard icon"></i><a href="{{app.entity_path('template_list',project)}}">Activity Templates</a> &raquo;
+            </small>
+        </div>
+        <span><i class="ui copy icon"></i>{% if is_existing %}Edit{% else %}Create{% endif %} activity template</span>
     </h1>
 
     {% if errors|default(false) %}

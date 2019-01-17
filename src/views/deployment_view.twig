@@ -9,12 +9,12 @@
             <i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
         </span>
         {% if app.securilex.isGranted('approval',deployment.project) %}
-            <a class="ui right floated button no-print" href="{{app.path('deployment_edit',controller.entityParams(deployment))}}"><i class="ui pencil icon"></i>Edit</a>
+            <a class="ui right floated button no-print" href="{{app.entity_path('deployment_edit',deployment)}}"><i class="ui pencil icon"></i>Edit</a>
         {% endif %}
         {% if app.securilex.isGranted(['approval','execute'],deployment.project) %}
-            <a class="ui right floated primary button no-print" href="{{app.path('runbook_view',controller.entityParams(deployment))}}"><i class="ui checkmark box icon"></i>Run Book</a>
+            <a class="ui right floated primary button no-print" href="{{app.entity_path('runbook_view',deployment)}}"><i class="ui checkmark box icon"></i>Run Book</a>
         {% endif %}
-        <a class="ui right floated primary button no-print" href="{{app.path('release_note',controller.entityParams(deployment))}}"><i class="ui ordered list icon"></i>Release Note</a>
+        <a class="ui right floated primary button no-print" href="{{app.entity_path('release_note',deployment)}}"><i class="ui ordered list icon"></i>Release Note</a>
     </h1>
 
     <p>{{deployment.description|nl2br}}</p>
@@ -22,7 +22,7 @@
     <h2 class="ui header">
         Deployment Items
         {% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
-            <a class="ui right floated primary button no-print" href="{{app.path('item_create',controller.entityParams(deployment))}}">
+            <a class="ui right floated primary button no-print" href="{{app.entity_path('item_create',deployment)}}">
                 <i class="ui plus icon"></i>Add deployment item
             </a>
         {% endif %}
@@ -78,7 +78,7 @@
                 <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
                     <td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
                     <td>
-                        <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.path('item_view',controller.entityParams(item))}}">{{item.title}}</a></h3>
+                        <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a></h3>
                         {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
                     </td>
                     <td class="ui collapsing">

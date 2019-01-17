@@ -2,7 +2,8 @@
     {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,activity) %} 
     <div class="ui form">
         {% for p in template.parameters[param] %}
-            {% set pid='parameters-' ~ param ~ '-' ~ p.id %}
+            {% set pid = 'parameters-' ~ param ~ '-' ~ p.id %}
+            {% set paramkey = 'parameters.' ~ param ~ '.' ~ p.id %}
             <div class="{% if p.required %}required {% endif %}field">
                 <label for="{{pid}}">{{p.title}}</label>
                 {% if p.type == 'dropdown' %}
@@ -33,6 +34,9 @@
                             <div>
                                 Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes
                             </div>
+                            {% if errors|default(null) and errors[paramkey] is not defined %}
+                                {% set errors = errors + {(paramkey) : 'If you chose another file before, the file was not saved due to errors on other inputs, and you need to re-upload the file again'} %}
+                            {% endif %}
                             {% if not p.required %}
                                 <div class="ui checkbox">
                                     <label>Tick to remove the file</label> 
@@ -46,7 +50,7 @@
                 {% else %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
                 {% endif %}
-                {{ m.fieldError(errors|default([]), 'parameters.' ~ param ~ '.' ~ p.id) }}
+                {{ m.fieldError(errors|default([]), paramkey) }}
             </div>
         {% endfor %}
     </div>

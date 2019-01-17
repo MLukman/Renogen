@@ -6,4 +6,7 @@
         <input type="checkbox" name="parameters[{{param}}_delete]" value="1" />
     {% endif %}
 {% endif %}
+{% if errors|default(null) and errors['parameters.' ~ param] is not defined %}
+    {% set errors = errors + {('parameters.' ~ param) : 'If you chose another file before, the file was not saved due to errors on other inputs, and you need to re-upload the file again'} %}
+{% endif %}
 {{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}

@@ -29,7 +29,7 @@ class Template extends RenoController
         try {
             $project_obj = $this->app['datastore']->fetchProject($project);
             $this->addEntityCrumb($project_obj);
-            $this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
+            //$this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
             $this->addCreateCrumb('Create activity template', $this->app->path('template_create', $this->entityParams($project_obj)));
             return $this->edit_or_create(new \Renogen\Entity\Template($project_obj), $request->request);
         } catch (NoResultException $ex) {

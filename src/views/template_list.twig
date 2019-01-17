@@ -2,9 +2,13 @@
 
 {% block content %}
     <h1 class="ui dividing header">
-        <small><i class="ui cube icon"></i>{{project.title}} &raquo;</small><br />
+        <div>
+            <small>
+                {{r.crumb_project(project, true)}} &raquo;
+            </small>
+        </div>
         <span><i class="ui clipboard icon"></i>Activity Templates</span>
-        <a class="ui right floated primary button" href="{{app.path('template_create',controller.entityParams(project))}}">
+        <a class="ui right floated primary button" href="{{app.entity_path('template_create',project)}}">
             <i class="ui plus icon"></i>Create activity template
         </a>
     </h1>
@@ -18,7 +22,7 @@
                     <div class="ui item">
                         <i class="large copy middle aligned icon"></i>
                         <div class="content">
-                            <a href="{{app.path('template_view',controller.entityParams(template))}}" class="header"><h3>{{template.title}}</h3></a>
+                            <a href="{{app.entity_path('template_view',template)}}" class="header"><h3>{{template.title}}</h3></a>
                             <div class="ui description">
                                 <div>Category: {{template.templateClass().classTitle}}</div>
                                 <div>Used by {{template.activities.count}} {{ template.activities.count > 1 ? 'activities':'activity' }}</div>

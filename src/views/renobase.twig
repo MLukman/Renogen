@@ -99,7 +99,7 @@
             {% for key,val in arr %}
                 <tr>
                     {% if not (key matches '/^[0-9]+$/') %}
-                        <td class="top aligned right aligned collapsing">
+                        <td class="top aligned collapsing">
                             {% if level is not defined or level == 0 %}
                                 <strong>{{key}}</strong>
                             {% else %}

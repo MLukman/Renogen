@@ -28,7 +28,6 @@
 {% endblock %}
 
 {% block content %}
-    {% set params = controller.entityParams(item) %}
     {% set is_acl_approval = app.securilex.isGranted('approval',item.deployment.project) %}
     {% set is_acl_review = app.securilex.isGranted('review',item.deployment.project) %}
     {% set is_acl_entry = app.securilex.isGranted(['entry','review'],item.deployment.project) %}
@@ -47,7 +46,7 @@
         </span>
         <div>
             {% if editable %}
-                <a class="ui right floated button no-print" href="{{app.path('item_edit',controller.entityParams(item))}}"><i class="ui pencil icon"></i>Edit</a>
+                <a class="ui right floated button no-print" href="{{app.entity_path('item_edit',item)}}"><i class="ui pencil icon"></i>Edit</a>
             {% endif %}
             <div class="ui labels">
                 {{ r.itemCategoryLabel(item) }}
@@ -137,7 +136,7 @@
                     <i class="ui add to cart icon"></i> Activities
                 </span>
                 {% if editable %}
-                    <a class="ui right floated primary button no-print" href="{{app.path('activity_create',params)}}">
+                    <a class="ui right floated primary button no-print" href="{{app.entity_path('activity_create',item)}}">
                         <i class="ui plus icon"></i>Add activity
                     </a>
                 {% endif %}
@@ -172,7 +171,7 @@
                             <td class="ui top aligned collapsing no-print">
                                 <div>{{activity.runitem.status|default('New')}}</div>
                                 {% if editable and (not activity.runitem or activity.runitem.status != 'Completed') %}
-                                    <a class="ui icon button" title="Edit" href="{{app.path('activity_edit',controller.entityParams(activity))}}">
+                                    <a class="ui icon button" title="Edit" href="{{app.entity_path('activity_edit',activity)}}">
                                         <i class="ui pencil icon"></i>
                                     </a>
                                 {% endif %}
@@ -191,7 +190,7 @@
                     <i class="ui attach icon"></i> Attachments
                 </span>
                 {% if editable %}
-                    <a class="ui right floated primary button no-print" href="{{app.path('attachment_create',params)}}">
+                    <a class="ui right floated primary button no-print" href="{{app.entity_path('attachment_create',item)}}">
                         <i class="ui plus icon"></i>Add attachment
                     </a>
                 {% endif %}
@@ -214,7 +213,7 @@
                         <tr>
                             <td class="ui collapsing">{{loop.index}}</td>
                             <td>
-                                <a title="Download" href="{{app.path('attachment_download',controller.entityParams(attachment))}}">
+                                <a title="Download" href="{{app.entity_path('attachment_download',attachment)}}">
                                     <strong>{{attachment.filename}}</strong>
                                 </a>
                                 <div>
@@ -225,7 +224,7 @@
                             <td class="ui collapsing">{{attachment.filestore.filesize}}</td>
                             {% if editable %}
                                 <td class="ui collapsing no-print">
-                                    <a class="ui icon button" title="Edit" href="{{app.path('attachment_edit',controller.entityParams(attachment))}}">
+                                    <a class="ui icon button" title="Edit" href="{{app.entity_path('attachment_edit',attachment)}}">
                                         <i class="ui pencil icon"></i>
                                     </a>
                                 </td>
@@ -253,11 +252,11 @@
                                 {% if comment.created_by == app.userEntity() and comment.event is empty %}
                                     {% if comment.deleted_date %}
                                         <a class="ui right floated compact very tiny icon button" 
-                                           href="{{app.path('item_comment_undelete',controller.entityParams(item)+{'comment':comment.id})}}" title="Undo delete"><i class="ui undo icon"></i>
+                                           href="{{app.entity_path('item_comment_undelete',comment)}}" title="Undo delete"><i class="ui undo icon"></i>
                                         </a>
                                     {% else %}
                                         <a class="ui right floated compact very tiny icon button" 
-                                           href="{{app.path('item_comment_delete',controller.entityParams(item)+{'comment':comment.id})}}" title="Delete"><i class="ui x icon"></i>
+                                           href="{{app.entity_path('item_comment_delete',comment)}}" title="Delete"><i class="ui x icon"></i>
                                         </a>
                                     {% endif %}
                                 {% endif %}
@@ -284,7 +283,7 @@
                         <em>No comments yet</em>
                     {% endfor %}
                     {% if is_acl_execute %}
-                        <form class="ui center aligned form basic segment no-print" method="POST" action="{{app.path('item_comment_add',controller.entityParams(item))}}">
+                        <form class="ui center aligned form basic segment no-print" method="POST" action="{{app.entity_path('item_comment_add',item)}}">
                             <h4 class="ui horizontal divider header">
                                 Add comment
                             </h4>
@@ -312,7 +311,7 @@
         <div class="header">
             Change Status to <span id="change_status_next">next</span>
         </div>
-        <form class="ui form basic segment" method="POST" action="{{app.path('item_change_status',params)}}">
+        <form class="ui form basic segment" method="POST" action="{{app.entity_path('item_change_status',item)}}">
             <div id="changeStatusRemarkField" class="ui field content">
                 <label>Remark</label>
                 <textarea placeholder="Please enter a remark" name="remark"></textarea>

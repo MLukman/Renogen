@@ -3,12 +3,14 @@
 
 {% block content %}
     <h1 class="ui dividing header">
-        <small>
-            <i class="ui cube icon"></i>{{template.project.title}} &raquo; 
-            <i class="ui clipboard icon"></i>Activity Templates &raquo;
-        </small><br />
+        <div>
+            <small>
+                {{r.crumb_project(template.project, true)}} &raquo;
+                <i class="ui clipboard icon"></i><a href="{{app.entity_path('template_list',template.project)}}">Activity Templates</a> &raquo;
+            </small>
+        </div>
         <span><i class="ui copy icon"></i>{{template.title}}</span>
-        <a class="ui right floated button" href="{{app.path('template_edit',controller.entityParams(template))}}"><i class="ui pencil icon"></i>Edit</a>
+        <a class="ui right floated button" href="{{app.entity_path('template_edit',template)}}"><i class="ui pencil icon"></i>Edit</a>
     </h1>
 
 

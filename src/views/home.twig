@@ -2,16 +2,13 @@
 
 {% block content %}
     <h1 class="ui header">Welcome to Release Note Generator (Renogen)
-        {% if app.securilex.isGranted('prefix', 'project_create') %}
-            <a class="ui right floated primary button" href="{{app.path('project_create')}}"><i class="ui plus icon"></i>Create new project</a>
-        {% endif %}
     </h1>
     <h3>Please select a project below <i class="ui level down icon"></i></h3>
     <p>&nbsp;</p>
     <div class="ui three stackable cards secondary segment">
         {% for project in projects %}
             {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
-            <a class="ui card" {% if has_access %}href="{{app.path('project_view', { project: project.name })}}"{% endif %}>
+            <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
                 <div class="content">
                     <div class="ui {% if has_access %}blue{% else %}disabled{% endif %} header">
                         <h2><i class="ui cube icon"></i> {{project.title}}</h2>
@@ -32,8 +29,19 @@
                     </div>
                 </div>
             </a>
-        {% else %}
-            <h2 class="ui text centered header">No project has been created by the administrator</h2>
         {% endfor %}
+        {% if app.securilex.isGranted('prefix', 'project_create') %}
+            <a class="ui card" href="{{app.path('project_create')}}">
+                <div class="content">
+                    <div class="ui blue header">
+                        <h2>                
+                            <i class="ui plus icon"></i>Create new project
+                        </h2>
+                    </div>
+                </div>
+            </a>
+        {% elseif projects|length == 0 %}
+            <h2 class="ui text centered header">No project has been created by the administrator</h2>
+        {% endif %}
     </div>
 {% endblock %}
