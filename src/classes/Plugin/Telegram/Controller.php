@@ -23,7 +23,8 @@ class Controller extends \Renogen\Plugin\BaseController
         if (isset($options['group_id']) && isset($options['group_name'])) {
             $post['groups'][$options['group_id']] = $options['group_name'];
         }
-        if (($token = $request->request->get('bot_token'))) {
+        if (($token = $request->request->get('bot_token') ?: (isset($options['bot_token'])
+                ? $options['bot_token'] : null))) {
             $post['token'] = $token;
             $client        = new \GuzzleHttp\Client();
             $response      = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
@@ -35,14 +36,14 @@ class Controller extends \Renogen\Plugin\BaseController
                     }
                 }
             }
-            if (($group_id = $request->request->get('group_id'))) {
-                $pluginCore->setOptions(array(
-                    'bot_token' => $token,
-                    'group_id' => $group_id,
-                    'group_name' => $request->request->get('group_name')[$group_id],
-                ));
-                $this->savePlugin();
-            }
+        }
+        if ($token && ($group_id = $request->request->get('group_id'))) {
+            $pluginCore->setOptions(array(
+                'bot_token' => $token,
+                'group_id' => $group_id,
+                'group_name' => $request->request->get('group_name')[$group_id],
+            ));
+            $this->savePlugin();
         }
         return $this->render('admin', $post);
     }
