@@ -43,7 +43,7 @@ COPY . /tmp/src/
 
 RUN mv /tmp/src/* /var/www/html/ && \
     mv /tmp/src/.htaccess /var/www/html/ && \
-    mkdir /var/www/html/src/Entity/Proxy && \
+    mkdir /var/www/html/src/classes/Entity/Proxy && \
     chown -R www-data:www-data /var/www && \
     chmod +x ./init_renogen.sh
 
