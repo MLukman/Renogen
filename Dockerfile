@@ -37,10 +37,11 @@ HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 
 ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 
-CMD bash -c 'if [ -n "$BASE_URL" ] && [ ! -d "$BASE_URL" ]; then ln -s . "$BASE_URL"; fi && php tools/updateSchemas.php > /dev/null && apache2-foreground'
+CMD bash -c './init_renogen.sh && apache2-foreground'
 
 COPY . /tmp/src/
 
 RUN mv /tmp/src/* /var/www/html/ \
     && mv /tmp/src/.htaccess /var/www/html/ \
     && chown -R www-data:www-data /var/www
+    && chmod +x ./init_renogen.sh
