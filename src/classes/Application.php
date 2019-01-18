@@ -37,6 +37,7 @@ use Silex\Provider\ServiceControllerServiceProvider;
 use Silex\Provider\SessionServiceProvider;
 use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -55,6 +56,7 @@ class Application extends \Silex\Application
 
     static protected $instance;
     protected $_templateClasses = array();
+    protected $_pluginClasses   = array();
     protected $_authClassNames  = array();
     protected $security;
     protected $admin_route      = null;
@@ -112,6 +114,9 @@ class Application extends \Silex\Application
         $app->register(new TwigServiceProvider(), array(
             'twig.path' => realpath(__DIR__."/../views"),
         ));
+        // for plugins
+        $app['twig.loader.filesystem']->addPath(realpath(__DIR__."/Plugin"), 'plugin');
+
 
         /* Security */
         foreach (glob(__DIR__.'/Auth/Driver/*.php') as $fn) {
@@ -122,9 +127,6 @@ class Application extends \Silex\Application
             $this->_authClassNames[$classId] = $className;
         }
 
-        $this->activateSecurity();
-        $this->configureRoutes();
-
         /* Init activity template classes */
         foreach (glob(__DIR__.'/ActivityTemplate/Impl/*.php') as $templateClass) {
             $templateClassName = 'Renogen\ActivityTemplate\Impl\\'.basename($templateClass, '.php');
@@ -133,6 +135,16 @@ class Application extends \Silex\Application
         uasort($this->_templateClasses, function($a, $b) {
             return strcmp($a->classTitle(), $b->classTitle());
         });
+
+        foreach (glob(__DIR__.'/Plugin/*', GLOB_ONLYDIR) as $plugin) {
+            $plugin                        = basename($plugin);
+            $pclass                        = "\\Renogen\\Plugin\\$plugin\\Core";
+            $this->_pluginClasses[$plugin] = array(
+                'name' => $plugin,
+                'class' => $pclass,
+                'title' => $pclass::getPluginTitle(),
+            );
+        }
 
         static::$instance = $this;
     }
@@ -215,13 +227,13 @@ class Application extends \Silex\Application
         $this['admin.controller'] = $this->share(function() {
             return new Admin($this);
         });
-        $this->match('/admin/', 'admin.controller:index')->bind('admin_index');
-        $this->match('/admin/users/', 'admin.controller:users')->bind('admin_users');
-        $this->match('/admin/users/+', 'admin.controller:user_create')->bind('admin_user_add');
-        $this->match('/admin/users/{username}/', 'admin.controller:user_edit')->bind('admin_user_edit');
-        $this->match('/admin/auth/', 'admin.controller:auth')->bind('admin_auth');
-        $this->match('/admin/auth/{driver}', 'admin.controller:auth_edit')->bind('admin_auth_edit');
         $this->admin_route = 'admin_index';
+        $this->match('/!/', 'admin.controller:index')->bind('admin_index');
+        $this->match('/!/users/', 'admin.controller:users')->bind('admin_users');
+        $this->match('/!/users/+', 'admin.controller:user_create')->bind('admin_user_add');
+        $this->match('/!/users/{username}/', 'admin.controller:user_edit')->bind('admin_user_edit');
+        $this->match('/!/auth/', 'admin.controller:auth')->bind('admin_auth');
+        $this->match('/!/auth/{driver}', 'admin.controller:auth_edit')->bind('admin_auth_edit');
 
         /* Routes: Project */
         $this['project.controller'] = $this->share(function() {
@@ -231,6 +243,20 @@ class Application extends \Silex\Application
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
         $this->match('/{project}/edit', 'project.controller:edit')->bind('project_edit');
         $this->match('/{project}/past', 'project.controller:past')->bind('project_past');
+
+        /* Routes: Plugins */
+        $this['plugin.controller'] = $this->share(function() {
+            return new Controller\Plugin($this);
+        });
+        $this->match('/{project}/plugins', 'plugin.controller:index')->bind('plugin_index');
+
+        foreach ($this->_pluginClasses as $plugin => $details) {
+            $this["plugin.$plugin.controller"] = $this->share(function() use ($details) {
+                $ctrlname = '\\Renogen\\Plugin\\'.$details['name'].'\\Controller';
+                return new $ctrlname($this);
+            });
+            $this->match("/{project}/plugins/$plugin", "plugin.$plugin.controller:configure")->bind("plugin_{$plugin}_configure");
+        }
 
         /* Routes: Template */
         $this['template.controller'] = $this->share(function() {
@@ -319,6 +345,8 @@ class Application extends \Silex\Application
     {
         $app          = new static();
         $app['debug'] = $debug;
+        $app->activateSecurity();
+        $app->configureRoutes();
         $app->run();
     }
 
@@ -369,7 +397,14 @@ class Application extends \Silex\Application
     public function initializeOrRefreshDatabaseSchemas()
     {
         /* @var $em EntityManager */
-        $em      = $this['em'];
+        $em = $this['em'];
+
+        // for specific database platform
+        switch ($em->getConnection()->getDatabasePlatform()->getName()) {
+            case "mysql":
+                $em->getConnection()->exec("SET foreign_key_checks = 0");
+                break;
+        }
         $tool    = new SchemaTool($em);
         $classes = array();
         foreach (glob(__DIR__.'/Entity/*.php') as $entityfn) {
@@ -522,8 +557,20 @@ class Application extends \Silex\Application
         }
     }
 
-    public function entity_path($path, Base\Entity $entity)
+    public function entity_path($path, Base\Entity $entity,
+                                array $extras = array())
     {
-        return $this->path($path, $this->entityParams($entity));
+        return $this->path($path, $this->entityParams($entity) + $extras);
+    }
+
+    public function redirect($path, Array $params = array(), $anchor = null)
+    {
+        return new RedirectResponse($this->path($path, $params).
+            ($anchor ? "#$anchor" : ""));
+    }
+
+    public function entity_redirect($path, Base\Entity $entity, $anchor = null)
+    {
+        return $this->redirect($path, $this->entityParams($entity), $anchor);
     }
 }

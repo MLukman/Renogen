@@ -7,13 +7,11 @@ use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Renogen\Base\Entity;
-use const ROOTDIR;
 
 /**
  * @Entity @Table(name="projects")
@@ -75,6 +73,12 @@ class Project extends Entity
     public $templates = null;
 
     /**
+     * @OneToMany(targetEntity="Plugin", mappedBy="project", indexBy="name", orphanRemoval=true, cascade={"persist"})
+     * @var ArrayCollection
+     */
+    public $plugins = null;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -120,6 +124,7 @@ class Project extends Entity
         $this->created_date = new \DateTime();
         $this->deployments  = new ArrayCollection();
         $this->templates    = new ArrayCollection();
+        $this->plugins      = new ArrayCollection();
         $this->userProjects = new ArrayCollection();
     }
 
@@ -197,5 +202,4 @@ class Project extends Entity
         }
         return false;
     }
-
 }

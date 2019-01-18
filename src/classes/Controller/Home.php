@@ -13,7 +13,7 @@ class Home extends Controller
         $projects = $this->app['datastore']->queryMany('\Renogen\Entity\Project', array(), array(
             'created_date' => 'ASC'));
         if (count($projects) == 0 && $this->app['securilex']->isGranted('ROLE_ADMIN')) {
-            return $this->redirect('project_create');
+            return $this->app->redirect('project_create');
         }
         return $this->render('home', array(
                 'projects' => $projects,

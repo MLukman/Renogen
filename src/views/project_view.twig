@@ -10,6 +10,7 @@
         {% if is_project_admin %}
             <a class="ui right floated button no-print" href="{{app.entity_path('project_edit',project)}}"><i class="ui pencil icon"></i>Edit</a>
             <a class="ui right floated button no-print" href="{{app.entity_path('template_list',project)}}"><i class="ui clipboard icon"></i>Templates</a>
+            <a class="ui right floated button no-print" href="{{app.entity_path('plugin_index',project)}}"><i class="ui plug icon"></i>Plugins</a>
         {% endif %}
     </h1>
 
@@ -75,6 +76,7 @@
                             <thead>
                                 <tr>
                                     <th>Item</th>
+                                    <th>Category</th>
                                     <th>Status</th>
                                 </tr>
                             </thead>					
@@ -85,6 +87,9 @@
                                             <a href="{{app.entity_path('item_view',item)}}" class="ui item">
                                                 {{item.displayTitle}}
                                             </a>
+                                        </td>
+                                        <td class="ui collapsing">
+                                            {{item.category}}
                                         </td>
                                         <td class="collapsing">									
                                             <i class="ui {{item.statusIcon}} icon"></i>{{item.status}}

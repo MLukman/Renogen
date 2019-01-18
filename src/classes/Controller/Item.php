@@ -22,7 +22,7 @@ class Item extends RenoController
             $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
-            $this->addCreateCrumb('Add deployment item', $this->app->path('item_create', $this->entityParams($deployment_obj)));
+            $this->addCreateCrumb('Add deployment item', $this->app->entity_path('item_create', $deployment_obj));
             return $this->edit_or_create(new \Renogen\Entity\Item($deployment_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -53,7 +53,7 @@ class Item extends RenoController
                 $this->checkAccess(array('entry', 'approval'), $item_obj);
             }
             $this->addEntityCrumb($item_obj);
-            $this->addEditCrumb($this->app->path('item_edit', $this->entityParams($item_obj)));
+            $this->addEditCrumb($this->app->entity_path('item_edit', $item_obj));
             return $this->edit_or_create($item_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -132,10 +132,14 @@ class Item extends RenoController
                     }
                 }
             }
+            foreach ($item_obj->deployment->project->plugins as $plugin) {
+                /** @var \Renogen\Entity\Plugin $plugin */
+                $plugin->instance()->onItemStatusUpdated($item_obj, $old_status);
+            }
             $this->app['datastore']->commit();
             $this->app->addFlashMessage("Item '$item_obj->title' has been changed status to $new_status");
         }
-        return $this->redirect('item_view', $this->entityParams($item_obj));
+        return $this->app->entity_redirect('item_view', $item_obj);
     }
 
     public function action(Request $request, $project, $deployment, $item,
@@ -188,7 +192,7 @@ class Item extends RenoController
                 $this->app['datastore']->commit($item_obj);
                 $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");
             }
-            return $this->redirect('item_view', $this->entityParams($item_obj));
+            return $this->app->entity_redirect('item_view', $item_obj);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -219,7 +223,7 @@ class Item extends RenoController
                         if ($ds->prepareValidateEntity($item, $data->keys(), $data)) {
                             $ds->commit($item);
                             $this->app->addFlashMessage("Item '$item->title' has been moved to deployment '".$item->deployment->displayTitle()."'");
-                            return $this->redirect('item_view', $this->entityParams($item));
+                            return $this->app->entity_redirect('item_view', $item);
                         }
                     } else {
                         $context['errors'] = array(
@@ -231,14 +235,21 @@ class Item extends RenoController
                 case 'Delete':
                     $ds->deleteEntity($item);
                     $ds->commit();
+                    foreach ($item->deployment->project->plugins as $plugin) {
+                        $plugin->instance()->onItemDeleted($item);
+                    }
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
-                    return $this->redirect('deployment_view', $this->entityParams($item->deployment));
+                    return $this->app->entity_redirect('deployment_view', $item->deployment);
 
                 default:
                     if ($ds->prepareValidateEntity($item, static::entityFields, $post)) {
+                        $is_new = ($item->id == null);
                         $ds->commit($item);
+                        foreach ($item->deployment->project->plugins as $plugin) {
+                            $plugin->instance()->onItemStatusUpdated($item);
+                        }
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
-                        return $this->redirect('item_view', $this->entityParams($item));
+                        return $this->app->entity_redirect('item_view', $item);
                     } else {
                         $context['errors'] = $item->errors;
                     }
@@ -260,7 +271,7 @@ class Item extends RenoController
             } else {
                 $this->app->addFlashMessage("Failed to post a comment: please ensure you enter a reply and please try again");
             }
-            return $this->redirect('item_view', $this->entityParams($item_obj));
+            return $this->app->entity_redirect('item_view', $item_obj);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -288,7 +299,7 @@ class Item extends RenoController
                 $comment_obj->deleted_date = $date;
                 $this->app['datastore']->commit($comment_obj);
             }
-            return $this->redirect('item_view', $this->entityParams($item_obj));
+            return $this->app->entity_redirect('item_view', $item_obj);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }

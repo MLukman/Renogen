@@ -75,8 +75,8 @@ abstract class BaseClass
 
     public function getDownloadLink(FileLink $filelink)
     {
-        return $this->app->path($filelink instanceof RunItemFile ?
-                'runitem_file_download' : 'activity_file_download', RenoController::entityParams($filelink));
+        return $this->app->entity_path($filelink instanceof RunItemFile ?
+                'runitem_file_download' : 'activity_file_download', $filelink);
     }
 
     /**

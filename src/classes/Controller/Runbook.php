@@ -14,11 +14,11 @@ class Runbook extends RenoController
         try {
             $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
-                return $this->redirect('runbook_view', $this->entityParams($deployment_obj));
+                return $this->app->entity_redirect('runbook_view', $deployment_obj);
             }
             $this->checkAccess(array('approval', 'review', 'execute'), $deployment_obj->project);
             $this->addEntityCrumb($deployment_obj);
-            $this->addCrumb('Run Book', $this->app->path('runbook_view', $this->entityParams($deployment_obj)), 'checkmark box');
+            $this->addCrumb('Run Book', $this->app->entity_path('runbook_view', $deployment_obj), 'checkmark box');
             return $this->render('runbook_view', array(
                     'deployment' => $deployment_obj,
             ));
@@ -60,7 +60,7 @@ class Runbook extends RenoController
                 $item->changeStatus('Completed');
                 $this->app['datastore']->commit($item);
             }
-            return $this->redirect('runbook_view', $this->entityParams($runitem->deployment), $runitem->id);
+            return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -79,7 +79,7 @@ class Runbook extends RenoController
                 $activity->item->changeStatus('Failed');
                 $this->app['datastore']->commit($activity->item);
             }
-            return $this->redirect('runbook_view', $this->entityParams($runitem->deployment), $runitem->id);
+            return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }

@@ -19,7 +19,7 @@ class Deployment extends RenoController
             $project_obj = $this->app['datastore']->fetchProject($project);
             $this->checkAccess('approval', $project_obj);
             $this->addEntityCrumb($project_obj);
-            $this->addCreateCrumb('Create deployment', $this->app->path('deployment_create', $this->entityParams($project_obj)));
+            $this->addCreateCrumb('Create deployment', $this->app->entity_path('deployment_create', $project_obj));
             return $this->edit_or_create(new DeploymentEntity($project_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -31,7 +31,7 @@ class Deployment extends RenoController
         try {
             $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
-                return $this->redirect('deployment_view', $this->entityParams($deployment_obj));
+                return $this->app->entity_redirect('deployment_view', $deployment_obj);
             }
             $this->addEntityCrumb($deployment_obj);
             return $this->render('deployment_view', array(
@@ -48,11 +48,11 @@ class Deployment extends RenoController
         try {
             $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
             if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
-                return $this->redirect('deployment_edit', $this->entityParams($deployment_obj));
+                return $this->app->entity_redirect('deployment_edit', $deployment_obj);
             }
             $this->checkAccess('approval', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
-            $this->addEditCrumb($this->app->path('deployment_edit', $this->entityParams($deployment_obj)));
+            $this->addEditCrumb($this->app->entity_path('deployment_edit', $deployment_obj));
             return $this->edit_or_create($deployment_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Deployment not found', $ex->getMessage());
@@ -69,16 +69,30 @@ class Deployment extends RenoController
                     $this->app['datastore']->deleteEntity($deployment);
                     $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Deployment '$deployment->title' has been deleted");
-                    return $this->redirect('project_view', $this->entityParams($deployment->project));
+                    return $this->app->entity_redirect('project_view', $deployment->project);
                 } else {
                     $this->app->addFlashMessage("Deployment '$deployment->title' cannot be deleted because it contains item(s).\nMove or delete the item(s) first.", "Invalid action", "error");
-                    return $this->redirect('deployment_edit', $this->entityParams($deployment));
+                    return $this->app->entity_redirect('deployment_edit', $deployment);
                 }
             }
+
+            $old_date = $deployment->execute_date;
             if ($this->app['datastore']->prepareValidateEntity($deployment, static::entityFields, $post)) {
+                $is_new = ($deployment->id == null);
+                if ($is_new) {
+                    foreach ($deployment->project->plugins as $plugin) {
+                        /** @var \Renogen\Entity\Plugin $plugin */
+                        $plugin->instance()->onDeploymentCreated($deployment);
+                    }
+                } else if ($old_date != $deployment->execute_date) {
+                    foreach ($deployment->project->plugins as $plugin) {
+                        /** @var \Renogen\Entity\Plugin $plugin */
+                        $plugin->instance()->onDeploymentDateChanged($deployment, $old_date);
+                    }
+                }
                 $this->app['datastore']->commit($deployment);
                 $this->app->addFlashMessage("Deployment '$deployment->title' has been successfully saved");
-                return $this->redirect('deployment_view', $this->entityParams($deployment));
+                return $this->app->entity_redirect('deployment_view', $deployment);
             } else {
                 $context['errors'] = $deployment->errors;
             }
@@ -94,10 +108,10 @@ class Deployment extends RenoController
     {
         $deployment_obj = $this->app['datastore']->fetchDeployment($project, $deployment);
         if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
-            return $this->redirect('release_note', $this->entityParams($deployment_obj));
+            return $this->app->entity_redirect('release_note', $deployment_obj);
         }
         $this->addEntityCrumb($deployment_obj);
-        $this->addCrumb('Release Note', $this->app->path('release_note', $this->entityParams($deployment_obj)), 'ordered list');
+        $this->addCrumb('Release Note', $this->app->entity_path('release_note', $deployment_obj), 'ordered list');
         $context = array(
             'deployment' => $deployment_obj,
             'project' => $deployment_obj->project,

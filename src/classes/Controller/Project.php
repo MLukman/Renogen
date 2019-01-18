@@ -44,7 +44,7 @@ class Project extends RenoController
         }
         $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
         $this->addEntityCrumb($project);
-        $this->addCrumb('Past deployments', $this->app->path('project_past', $this->entityParams($project)), 'clock');
+        $this->addCrumb('Past deployments', $this->app->entity_path('project_past', $project), 'clock');
         return $this->render('project_past', array(
                 'project' => $project
         ));
@@ -63,7 +63,7 @@ class Project extends RenoController
             throw new AccessDeniedException();
         }
         $this->addEntityCrumb($project);
-        $this->addEditCrumb($this->app->path('project_edit', $this->entityParams($project)));
+        $this->addEditCrumb($this->app->entity_path('project_edit', $project));
         return $this->edit_or_create($request->request, $project);
     }
 
@@ -76,7 +76,7 @@ class Project extends RenoController
                 $this->app['datastore']->deleteEntity($project);
                 $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
-                return $this->redirect('home');
+                return $this->app->redirect('home');
             }
             if (!$project) {
                 $project     = new \Renogen\Entity\Project();
@@ -91,7 +91,7 @@ class Project extends RenoController
             if ($this->app['datastore']->prepareValidateEntity($project, static::entityFields, $post)) {
                 $this->app['datastore']->commit($project);
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");
-                return $this->redirect('project_view', $this->entityParams($project));
+                return $this->app->entity_redirect('project_view', $project);
             } else {
                 $context['errors'] = $project->errors;
             }

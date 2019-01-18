@@ -18,7 +18,7 @@ class Attachment extends RenoController
             $item_obj       = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $this->checkAccess(static::editAccess, $item_obj);
             $this->addEntityCrumb($item_obj);
-            $this->addCreateCrumb('Add attachment', $this->app->path('attachment_create', $this->entityParams($item_obj)));
+            $this->addCreateCrumb('Add attachment', $this->app->entity_path('attachment_create', $item_obj));
             $attachment_obj = new \Renogen\Entity\Attachment($item_obj);
             return $this->edit_or_create($attachment_obj, $request);
         } catch (NoResultException $ex) {
@@ -61,7 +61,7 @@ class Attachment extends RenoController
                     $this->app['datastore']->deleteEntity($attachment);
                     $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Attachment has been deleted");
-                    return $this->redirect('item_view', $this->entityParams($attachment->item));
+                    return $this->app->entity_redirect('item_view', $attachment->item);
 
                 default:
                     $file = $request->files->get('file');
@@ -83,7 +83,7 @@ class Attachment extends RenoController
                         && empty($context['errors'])) {
                         $this->app['datastore']->commit($attachment);
                         $this->app->addFlashMessage("Attachment has been successfully saved");
-                        return $this->redirect('item_view', $this->entityParams($attachment->item));
+                        return $this->app->entity_redirect('item_view', $attachment->item);
                     } else {
                         $context['errors'] = $context['errors'] + $attachment->errors
                             + array('file' => array('Your file is fine but you need to re-upload your file since other field(s) failed validations'));

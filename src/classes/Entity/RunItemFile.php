@@ -18,6 +18,6 @@ class RunItemFile extends FileLink
 
     public function getHtmlLink()
     {
-        return '<a href="'.htmlentities(Application::instance()->path('runitem_file_download', RenoController::entityParams($this))).'">'.htmlentities($this->filename).'</a>';
+        return '<a href="'.htmlentities(Application::instance()->entity_path('runitem_file_download', $this)).'">'.htmlentities($this->filename).'</a>';
     }
 }

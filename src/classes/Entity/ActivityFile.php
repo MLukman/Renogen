@@ -18,7 +18,6 @@ class ActivityFile extends FileLink
 
     public function getHtmlLink()
     {
-        return '<a href="'.htmlentities(Application::instance()->path('activity_file_download', RenoController::entityParams($this->activity)
-                    + array('file' => $this->id))).'">'.htmlentities($this->filename).'</a>';
+        return '<a href="'.htmlentities(Application::instance()->entity_path('activity_file_download', $this)).'">'.htmlentities($this->filename).'</a>';
     }
 }

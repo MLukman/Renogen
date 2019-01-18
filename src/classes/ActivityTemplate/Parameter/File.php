@@ -20,8 +20,10 @@ class File extends Parameter
     public function validateTemplateInput(array &$input, $key, array &$errors,
                                           $error_prefix = '')
     {
-        $input[$key] = $this->templateFormToDatabase($input[$key]);
-        $errkey      = ($error_prefix ? "$error_prefix.$key" : $key);
+        if (isset($input[$key])) {
+            $input[$key] = $this->templateFormToDatabase($input[$key]);
+        }
+        $errkey = ($error_prefix ? "$error_prefix.$key" : $key);
 
         if (empty($input[$key]) && $this->templateRequired) {
             $errors[$errkey] = array('Required');

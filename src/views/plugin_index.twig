@@ -1,0 +1,16 @@
+{% extends "plugin_base.twig" %}
+
+{% block pluginView %}
+    <h2>Available Plugins</h2>
+    <div class="ui relaxed divided list">
+        {% for p in pluginClasses %}
+            <div class="item">
+                <i class="large plug middle aligned icon"></i>
+                <div class="content">
+                    <a class="header" href="{{app.entity_path('plugin_'~p.name~'_configure', project)}}">{{p.name}}</a>
+                    <div class="description">{{p.title}}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

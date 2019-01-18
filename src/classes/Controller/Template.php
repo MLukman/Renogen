@@ -17,7 +17,7 @@ class Template extends RenoController
         try {
             $project_obj = $this->app['datastore']->fetchProject($project);
             $this->addEntityCrumb($project_obj);
-            $this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
+            $this->addCrumb('Activity templates', $this->app->entity_path('template_list', $project_obj), 'clipboard');
             return $this->render('template_list', array('project' => $project_obj));
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -29,8 +29,8 @@ class Template extends RenoController
         try {
             $project_obj = $this->app['datastore']->fetchProject($project);
             $this->addEntityCrumb($project_obj);
-            //$this->addCrumb('Activity templates', $this->app->path('template_list', $this->entityParams($project_obj)), 'clipboard');
-            $this->addCreateCrumb('Create activity template', $this->app->path('template_create', $this->entityParams($project_obj)));
+            //$this->addCrumb('Activity templates', $this->app->entity_path('template_list', $project_obj), 'clipboard');
+            $this->addCreateCrumb('Create activity template', $this->app->entity_path('template_create', $project_obj));
             return $this->edit_or_create(new \Renogen\Entity\Template($project_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -53,7 +53,7 @@ class Template extends RenoController
         try {
             $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
-            $this->addEditCrumb($this->app->path('template_edit', $this->entityParams($template_obj)));
+            $this->addEditCrumb($this->app->entity_path('template_edit', $template_obj));
             return $this->edit_or_create($template_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -88,7 +88,7 @@ class Template extends RenoController
                 }
                 $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Template '$template->title' has been deleted");
-                return $this->redirect('template_list', $this->entityParams($template));
+                return $this->app->entity_redirect('template_list', $template);
             }
 
             $parameters = $post->get('parameters', array());
@@ -125,7 +125,7 @@ class Template extends RenoController
                 }
                 $this->app['datastore']->commit($template);
                 $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
-                return $this->redirect('template_view', $this->entityParams($template));
+                return $this->app->entity_redirect('template_view', $template);
             } else {
                 $context['errors'] = $errors + $template->errors;
             }

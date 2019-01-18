@@ -47,14 +47,14 @@ class Admin extends RenoController
                     $this->app['datastore']->deleteEntity($user);
                     $this->app['datastore']->commit();
                     $this->app->addFlashMessage("User '$user->username' has been deleted");
-                    return $this->redirect('admin_users');
+                    return $this->app->redirect('admin_users');
                 case 'Reset Password':
                     $res = $this->app->getAuthDriver($user->auth)->resetPassword($user);
                     if ($res) {
                         $this->app['datastore']->commit($user);
                         $this->app->addFlashMessage($res);
                     }
-                    return $this->redirect('admin_users');
+                    return $this->app->redirect('admin_users');
             }
             if (!$post->has('roles')) {
                 $post->set('roles', array());
@@ -82,7 +82,7 @@ class Admin extends RenoController
                         continue;
                     }
                 }
-                return $this->redirect('admin_users');
+                return $this->app->redirect('admin_users');
             } else {
                 $errors = $user->errors;
             }
@@ -124,7 +124,7 @@ class Admin extends RenoController
                     $p_errors = call_user_func(array($auth->class, 'checkParams'), $auth->parameters);
                     if (empty($p_errors)) {
                         $this->app['datastore']->commit($auth);
-                        return $this->redirect('admin_auth');
+                        return $this->app->redirect('admin_auth');
                     }
                     $errors['parameters'] = $p_errors;
                 }
