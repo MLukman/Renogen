@@ -245,8 +245,10 @@ class Item extends RenoController
                     if ($ds->prepareValidateEntity($item, static::entityFields, $post)) {
                         $is_new = ($item->id == null);
                         $ds->commit($item);
-                        foreach ($item->deployment->project->plugins as $plugin) {
-                            $plugin->instance()->onItemStatusUpdated($item);
+                        if ($is_new) {
+                            foreach ($item->deployment->project->plugins as $plugin) {
+                                $plugin->instance()->onItemStatusUpdated($item);
+                            }
                         }
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
                         return $this->app->entity_redirect('item_view', $item);

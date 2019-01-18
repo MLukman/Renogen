@@ -27,7 +27,7 @@ class Core extends \Renogen\Plugin\BaseCore
             'json' => array(
                 'chat_id' => $group_id,
                 'text' => $message,
-                'parse_mode' => 'markdown',
+                'parse_mode' => 'html',
             )
         ));
         register_shutdown_function(function() use ($send) {
@@ -35,10 +35,28 @@ class Core extends \Renogen\Plugin\BaseCore
         });
     }
 
+    protected function byWho()
+    {
+        return ($this->app->userEntity() ? "by ".$this->app->userEntity()->getName()
+                : '');
+    }
+
+    protected function escape($text)
+    {
+        /*
+          $text = str_replace("\\", "\\\\", $text);
+          $text = str_replace("[", "\\[", $text);
+          $text = str_replace("_", "\\_", $text);
+          $text = str_replace("*", "\\*", $text);
+          $text = str_replace("`", "\\`", $text);
+         */
+        return htmlentities($text);
+    }
+
     public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment)
     {
         $this->sendMessage(
-            "*Deployment* [{$deployment->title}](".$this->app->url('deployment_view', $this->app->entityParams($deployment)).") has been created for *".$deployment->datetimeString(true)."*"
+            '<b>Deployment</b> <a href="'.$this->app->url('deployment_view', $this->app->entityParams($deployment)).'">'.$this->escape($deployment->title).'</a> has been created for <b>'.$deployment->datetimeString(true).'</b> '.$this->byWho()
         );
     }
 
@@ -46,7 +64,7 @@ class Core extends \Renogen\Plugin\BaseCore
                                             \DateTime $old_date)
     {
         $this->sendMessage(
-            "*Deployment* [{$deployment->title}](".$this->app->url('deployment_view', $this->app->entityParams($deployment)).") has changed date from *".$old_date->format('d/m/Y h:i A')."* to *".$deployment->execute_date->format('d/m/Y h:i A')."* by ".$this->app->userEntity()->getName()
+            '<b>Deployment</b> <a href="'.$this->app->url('deployment_view', $this->app->entityParams($deployment)).'">'.$this->escape($deployment->title).'</a> has changed date from <b>'.$old_date->format('d/m/Y h:i A').'</b> to <b>'.$deployment->execute_date->format('d/m/Y h:i A').'</b> '.$this->byWho()
         );
     }
 
@@ -55,11 +73,11 @@ class Core extends \Renogen\Plugin\BaseCore
     {
         if ($old_status) {
             $this->sendMessage(
-                "*Item* [".$item->displayTitle()."](".$this->app->url('item_view', $this->app->entityParams($item)).") for deployment *{$item->deployment->title}* has been changed status from *".$old_status."* to *{$item->status}* by ".$this->app->userEntity()->getName()
+                '<b>Item</b> <a href="'.$this->app->url('item_view', $this->app->entityParams($item)).'">'.$this->escape($item->displayTitle()).'</a> has been changed status from <b>'.$old_status.'</b> to <b>'.$item->status.'</b> '.$this->byWho()
             );
         } else {
             $this->sendMessage(
-                "*Item* [".$item->displayTitle()."](".$this->app->url('item_view', $this->app->entityParams($item)).") has been created for deployment *{$item->deployment->title}* by ".$this->app->userEntity()->getName()
+                '<b>Item</b> <a href="'.$this->app->url('item_view', $this->app->entityParams($item)).'">'.$this->escape($item->displayTitle()).'</a> has been created for deployment <b>'.$this->escape($item->deployment->title).'</b> '.$this->byWho()
             );
         }
     }
@@ -67,7 +85,7 @@ class Core extends \Renogen\Plugin\BaseCore
     public function onItemDeleted(\Renogen\Entity\Item $item)
     {
         $this->sendMessage(
-            "*Item* ".$item->displayTitle()." has been deleted from deployment *{$item->deployment->title}* by ".$this->app->userEntity()->getName()
+            '<b>Item</b> '.$this->escape($item->displayTitle()).' has been deleted from deployment <b>'.$this->escape($item->deployment->title).'</b> '.$this->byWho()
         );
     }
 }
