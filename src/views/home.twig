@@ -10,7 +10,7 @@
             {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
             <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
                 <div class="content">
-                    <div class="ui {% if has_access %}blue{% else %}disabled{% endif %} header">
+                    <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
                         <h2><i class="ui cube icon"></i> {{project.title}}</h2>
                     </div>
                     {% if project.description %}

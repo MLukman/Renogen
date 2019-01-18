@@ -49,6 +49,9 @@ class Runbook extends RenoController
             $runitem->defaultUpdatedDate();
             $this->app['datastore']->commit($runitem);
             foreach ($runitem->deployment->items as $item) {
+                if ($item->status == 'Completed') {
+                    continue;
+                }
                 if ($item->activities->count() == 0) {
                     continue;
                 }
@@ -57,7 +60,11 @@ class Runbook extends RenoController
                         continue 2;
                     }
                 }
+                $old_status = $item->status;
                 $item->changeStatus('Completed');
+                foreach ($item->deployment->project->plugins as $plugin) {
+                    $plugin->instance()->onItemStatusUpdated($item, $old_status);
+                }
                 $this->app['datastore']->commit($item);
             }
             return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);
@@ -76,7 +83,11 @@ class Runbook extends RenoController
             $runitem->defaultUpdatedDate();
             $this->app['datastore']->commit($runitem);
             foreach ($runitem->activities as $activity) {
+                $old_status = $activity->item->status;
                 $activity->item->changeStatus('Failed');
+                foreach ($runitem->deployment->project->plugins as $plugin) {
+                    $plugin->instance()->onItemStatusUpdated($activity->item, $old_status);
+                }
                 $this->app['datastore']->commit($activity->item);
             }
             return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);

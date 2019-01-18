@@ -71,4 +71,16 @@ abstract class BaseController extends RenoController
         $plugin->options = $this->pluginCore->getOptions();
         $this->app['datastore']->commit($plugin);
     }
+
+    protected function deletePlugin()
+    {
+        $plugin = $this->app['datastore']->queryOne('\Renogen\Entity\Plugin', array(
+            'project' => $this->project,
+            'name' => $this->getName(),
+        ));
+        if ($plugin) {
+            $this->app['datastore']->deleteEntity($plugin);
+            $this->app['datastore']->commit();
+        }
+    }
 }

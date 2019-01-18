@@ -563,10 +563,11 @@ class Application extends \Silex\Application
         return $this->path($path, $this->entityParams($entity) + $extras);
     }
 
-    public function redirect($path, Array $params = array(), $anchor = null)
+    public function redirect($path = null, Array $params = array(),
+                             $anchor = null)
     {
-        return new RedirectResponse($this->path($path, $params).
-            ($anchor ? "#$anchor" : ""));
+        return new RedirectResponse($path ? $this->path($path, $params).
+            ($anchor ? "#$anchor" : "") : $this['request']->getUri());
     }
 
     public function entity_redirect($path, Base\Entity $entity, $anchor = null)
