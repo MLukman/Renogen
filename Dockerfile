@@ -41,9 +41,9 @@ CMD bash -c './init_renogen.sh && apache2-foreground'
 
 COPY . /tmp/src/
 
-RUN mv /tmp/src/* /var/www/html/ \
-    && mv /tmp/src/.htaccess /var/www/html/ \
-    && chown -R www-data:www-data /var/www \
-    && chmod +x ./init_renogen.sh
+RUN mv /tmp/src/* /var/www/html/ && \
+    mv /tmp/src/.htaccess /var/www/html/ && \
+    mkdir /var/www/html/src/Entity/Proxy && \
+    chown -R www-data:www-data /var/www && \
+    chmod +x ./init_renogen.sh
 
-USER www-data
