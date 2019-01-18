@@ -6,7 +6,10 @@
             <small>
                 {{r.crumb_project(project, true)}} &raquo;
                 {% if plugin.title is defined %}
-                    <i class="ui plug icon"></i><a href="{{app.entity_path('plugin_index',project)}}">Plugins</a> &raquo;
+                    <span>
+                        <i class="ui plug icon"></i>
+                        <a href="{{app.entity_path('plugin_index',project)}}">Plugins</a> &raquo;
+                    </span>
                 {% endif %}
             </small>
         </div>

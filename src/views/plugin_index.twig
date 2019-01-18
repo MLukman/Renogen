@@ -2,15 +2,17 @@
 
 {% block pluginView %}
     <h2>Available Plugins</h2>
-    <div class="ui relaxed divided list">
-        {% for p in pluginClasses %}
-            <div class="item">
-                <i class="large plug middle aligned icon"></i>
-                <div class="content">
-                    <a class="header" href="{{app.entity_path('plugin_'~p.name~'_configure', project)}}">{{p.name}}</a>
-                    <div class="description">{{p.title}}</div>
+    <div class="ui segment">
+        <div class="ui relaxed divided list">
+            {% for p in pluginClasses %}
+                <div class="ui item">
+                    <i class="large plug middle aligned icon"></i>
+                    <div class="content">
+                        <a class="header" href="{{app.entity_path('plugin_'~p.name~'_configure', project)}}"><h3>{{p.name}}</h3></a>
+                        <div class="description">{{p.title}}</div>
+                    </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

@@ -82,7 +82,7 @@
                 </div>
                 {% for param,parameter in class_instance.getParameters() %}
                     {% if parameter.templateLabel %}
-                        <div class="ui field basic segment blue {% if parameter.templateRequired %}required{% endif %}">
+                        <div class="ui field basic segment purple {% if parameter.templateRequired %}required{% endif %}">
                             <label class="ui top attached large label">{{parameter.templateLabel}}</label>
                             {% include parameter.getTwigForTemplateForm() %}
                             {{ m.fieldError(errors|default([]), 'parameters.'~param) }}

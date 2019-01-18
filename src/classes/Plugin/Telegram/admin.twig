@@ -11,7 +11,7 @@
             <div class="ui required field grey basic segment">
                 <label class="ui top attached large label">Group</label>
                 <p>Please select a group from below. If the group not visible, post something there and refresh this page.</p>
-                <div class="inline fields">
+                <div class="ui basic segment grouped fields">
                     {% for id,group in groups|default([]) %}
                         <div class="field">
                             <div class="ui radio checkbox">
