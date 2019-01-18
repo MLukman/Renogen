@@ -39,11 +39,11 @@ ENTRYPOINT ["/usr/local/bin/dumb-init", "--"]
 
 CMD bash -c './init_renogen.sh && apache2-foreground'
 
-USER www-data
-
 COPY . /tmp/src/
 
 RUN mv /tmp/src/* /var/www/html/ \
     && mv /tmp/src/.htaccess /var/www/html/ \
     && chown -R www-data:www-data /var/www \
     && chmod +x ./init_renogen.sh
+
+USER www-data
