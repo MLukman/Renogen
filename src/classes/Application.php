@@ -264,8 +264,7 @@ class Application extends \Silex\Application
         });
         $this->match('/{project}/templates/', 'template.controller:index')->bind('template_list');
         $this->match('/{project}/templates/+', 'template.controller:create')->bind('template_create');
-        $this->match('/{project}/templates/{template}/', 'template.controller:view')->bind('template_view');
-        $this->match('/{project}/templates/{template}/edit', 'template.controller:edit')->bind('template_edit');
+        $this->match('/{project}/templates/{template}/', 'template.controller:edit')->bind('template_edit');
 
         /* Routes: Deployment */
         $this['deployment.controller'] = $this->share(function() {

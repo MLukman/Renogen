@@ -37,23 +37,11 @@ class Template extends RenoController
         }
     }
 
-    public function view(Request $request, $project, $template)
-    {
-        try {
-            $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
-            $this->addEntityCrumb($template_obj);
-            return $this->render('template_view', array('template' => $template_obj));
-        } catch (NoResultException $ex) {
-            return $this->errorPage('Object not found', $ex->getMessage());
-        }
-    }
-
     public function edit(Request $request, $project, $template)
     {
         try {
             $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
-            $this->addEditCrumb($this->app->entity_path('template_edit', $template_obj));
             return $this->edit_or_create($template_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -125,7 +113,7 @@ class Template extends RenoController
                 }
                 $this->app['datastore']->commit($template);
                 $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
-                return $this->app->entity_redirect('template_view', $template);
+                return $this->app->entity_redirect('template_edit', $template);
             } else {
                 $context['errors'] = $errors + $template->errors;
             }

@@ -33,7 +33,7 @@ class Parameter
     }
 
     /**
-     * ConfigType is for a parameter that needs be entered
+     * Config is for a parameter that needs be entered
      * during template creation but not during activity creation
      * @param type $templateLabel
      * @param type $templateDescription
@@ -41,17 +41,20 @@ class Parameter
      * @return \static
      */
     static public function Config($templateLabel, $templateDescription,
-                                  $templateRequired)
+                                  $templateRequired, $activityLabel = null,
+                                  $activityDescription = null)
     {
         $param                      = new static('config');
         $param->templateLabel       = $templateLabel;
         $param->templateDescription = $templateDescription;
         $param->templateRequired    = (bool) $templateRequired;
+        $param->activityLabel       = $activityLabel;
+        $param->activityDescription = $activityDescription;
         return $param;
     }
 
     /**
-     * ConfigType is for a parameter that needs be entered
+     * MultiLineConfig is for a parameter that needs be entered
      * during template creation but not during activity creation
      * @param type $templateLabel
      * @param type $templateDescription
@@ -59,12 +62,16 @@ class Parameter
      * @return \static
      */
     static public function MultiLineConfig($templateLabel, $templateDescription,
-                                           $templateRequired)
+                                           $templateRequired,
+                                           $activityLabel = null,
+                                           $activityDescription = null)
     {
         $param                      = new static('multilineconfig');
         $param->templateLabel       = $templateLabel;
         $param->templateDescription = $templateDescription;
         $param->templateRequired    = (bool) $templateRequired;
+        $param->activityLabel       = $activityLabel;
+        $param->activityDescription = $activityDescription;
         return $param;
     }
 
@@ -83,13 +90,13 @@ class Parameter
     {
         return static::generateParameter('freetext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
     }
-
-    static public function RegexText($templateLabel, $templateDescription,
-                                     $templateRequired, $activityLabel,
-                                     $activityDescription, $activityRequired)
-    {
-        return static::generateParameter('regextext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
-    }
+    /*
+      static public function RegexText($templateLabel, $templateDescription,
+      $templateRequired, $activityLabel,
+      $activityDescription, $activityRequired)
+      {
+      return static::generateParameter('regextext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+      } */
 
     static public function MultiLineText($activityLabel, $activityDescription,
                                          $activityRequired)

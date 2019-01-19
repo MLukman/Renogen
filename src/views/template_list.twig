@@ -22,7 +22,7 @@
                     <div class="ui item">
                         <i class="large copy middle aligned icon"></i>
                         <div class="content">
-                            <a href="{{app.entity_path('template_view',template)}}" class="header"><h3>{{template.title}}</h3></a>
+                            <a href="{{app.entity_path('template_edit',template)}}" class="header"><h3>{{template.title}}</h3></a>
                             <div class="ui description">
                                 <div>Category: {{template.templateClass().classTitle}}</div>
                                 <div>Used by {{template.activities.count}} {{ template.activities.count > 1 ? 'activities':'activity' }}</div>

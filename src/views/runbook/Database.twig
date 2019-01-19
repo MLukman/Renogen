@@ -1,6 +1,7 @@
 <table class="ui striped very compact table">
     <thead>
         <tr>
+            <th>#</th>
             <th>Login</th>
             <th>SQL Script</th>
             <th>Status</th>
@@ -9,6 +10,9 @@
     <tbody>
         {% for row in data %}
             <tr>
+                <td class="top aligned collapsing">
+                    {{loop.index}}
+                </td>
                 <td class="ui collapsing top aligned"><a name="{{row.runitem.id}}"></a>
                     {{row.params.login}}
                 </td>
@@ -17,7 +21,7 @@
                         <textarea readonly="readonly" style="font-family: monospace">{{row.params.sql}}</textarea>
                     </div>
                 </td>
-                <td class="top aligned">
+                <td class="top aligned collapsing">
                     {{ r.showStatus(row.runitem) }}
                 </td>
             </tr>

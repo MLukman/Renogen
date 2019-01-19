@@ -47,6 +47,8 @@
                     </div>
                 {% elseif p.type == 'password' %}
                     <input id="{{pid}}" type="password" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+                {% elseif p.type == 'multiline' %}
+                    <textarea id="{{pid}}" name="parameters[{{param}}][{{p.id}}]">{{paramval[p.id]|default(p.details)}}</textarea>
                 {% else %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
                 {% endif %}

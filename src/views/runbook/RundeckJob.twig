@@ -1,6 +1,7 @@
 <table class="ui striped very compact table">
     <thead>
         <tr>
+            <th>#</th>
             <th class="three wide">Project</th>
             <th class="four wide">Job</th>
             <th>Options</th>
@@ -11,6 +12,9 @@
     <tbody>
         {% for row in data %}
             <tr>
+                <td class="top aligned collapsing">
+                    {{loop.index}}
+                </td>
                 <td class="top aligned"><a name="{{row.runitem.id}}"></a>{{row.params.project}}</td>
                 <td class="top aligned">
                     {% if row.params.group %}<small>{{row.params.group}} &raquo;</small><br />{% endif %}
@@ -26,7 +30,7 @@
                 <td class="top aligned">
                     {{ r.prettyDisplay(row.params.remark) }}
                 </td>
-                <td class="top aligned">
+                <td class="top aligned collapsing">
                     {{ r.showStatus(row.runitem) }}
                 </td>
             </tr>

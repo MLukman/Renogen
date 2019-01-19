@@ -9,7 +9,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class MultiField extends Parameter
 {
-    public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'file'];
+    public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
+        'file'];
     public $default_type  = null;
 
     static public function create($templateLabel, $templateDescription,
@@ -140,6 +141,38 @@ class MultiField extends Parameter
                 $input[$key][$pid] = $activity_file->classifier;
             }
         }
+    }
+
+    public function displayActivityParameter(Actionable $activity, $key)
+    {
+        $isForRunbook = ($activity instanceof \Renogen\Entity\RunItem);
+        $options      = array();
+        $data         = $this->activityDatabaseToForm($activity->template->parameters, $activity->parameters, $key, $activity);
+        foreach ($activity->template->parameters[$key] as $p) {
+            if ($isForRunbook) {
+                $d = $p['id'];
+            } else {
+                $d = $p['title'];
+            }
+
+            $options[$d] = null;
+            if (isset($data[$p['id']])) {
+                if ($p['type'] == 'file') {
+                    $file = $this->app['datastore']->queryOne($activity->fileClass, array(
+                        "{$activity->actionableType}" => $activity,
+                        'classifier' => $key.'.'.$p['id'],
+                    ));
+                    if ($file) {
+                        $options[$d] = '<a href="'.htmlentities($this->getDownloadLink($file)).'">'.htmlentities($file->filename).'</a>';
+                    }
+                } elseif ($p['type'] == 'password' && !$isForRunbook) {
+                    $options[$d] = '******';
+                } else {
+                    $options[$d] = $data[$p['id']];
+                }
+            }
+        }
+        return $options;
     }
 
     public function getTwigForTemplateForm()

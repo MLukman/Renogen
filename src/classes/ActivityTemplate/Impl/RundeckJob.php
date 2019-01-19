@@ -34,7 +34,7 @@ class RundeckJob extends BaseClass
         );
 
         $optParam = $this->getParameter('options');
-        $options  = $this->getOptions($activity, true);
+        $options  = $optParam->displayActivityParameter($activity, 'options');
         $optLabel = $optParam->activityLabel($activity->template->parameters);
         if (!empty($options)) {
             $describe[$optLabel] = $options;
@@ -113,7 +113,7 @@ class RundeckJob extends BaseClass
                         'project' => $templates[$template_id]->parameters['project'],
                         'group' => $templates[$template_id]->parameters['group'],
                         'job' => $activity->parameters['job'],
-                        'options' => $this->getOptions($activity),
+                        'options' => $this->getParameter('options')->displayActivityParameter($activity, 'options'),
                         'remark' => $activity->parameters['remark'],
                     ));
                 }

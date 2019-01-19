@@ -1,6 +1,7 @@
 <table class="ui striped very compact table">
     <thead>
         <tr>
+            <th>#</th>
             <th class="four wide">Nodes</th>
             <th class="four wide">File</th>
             <th>Instruction</th>
@@ -10,6 +11,9 @@
     <tbody>
         {% for row in data %}
             <tr>
+                <td class="top aligned collapsing">
+                    {{loop.index}}
+                </td>
                 <td class="top aligned"><a name="{{row.runitem.id}}"></a>
                     {{ r.prettyDisplay(row.params.Nodes) }}
                 </td>
@@ -19,7 +23,7 @@
                 <td class="top aligned">
                     {{ r.prettyDisplay(row.params.Instruction) }}
                 </td>
-                <td class="top aligned">
+                <td class="top aligned collapsing">
                     {{ r.showStatus(row.runitem) }}
                 </td>
             </tr>

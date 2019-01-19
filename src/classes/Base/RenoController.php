@@ -50,7 +50,7 @@ abstract class RenoController extends Controller
             $this->addEntityCrumb($template->project);
             $this->addCrumb('Activity templates', $this->app->entity_path('template_list', $template->project), 'clipboard');
             $this->title = $template->title;
-            $this->addCrumb($this->title, $this->app->entity_path('template_view', $template), 'copy');
+            $this->addCrumb($this->title, $this->app->entity_path('template_edit', $template), 'copy');
         }
     }
 
