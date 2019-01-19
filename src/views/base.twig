@@ -1,5 +1,4 @@
 {% import _self as m %}
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -102,7 +101,10 @@
                 $(window).resize(function () {
                     $('#topfiller').css('height', $('#topbar').outerHeight(true));
                 });
-                $('.tabular.menu .item').tab();
+                $('.tabular.menu .item').tab({
+                    history: true,
+                    historyType: 'hash'
+                });
                 $('table.sortable').tablesort();
                 $('.ui.checkbox').checkbox();
                 $('.ui.dropdown.action-nothing').dropdown({

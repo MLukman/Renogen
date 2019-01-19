@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MultiField extends Parameter
 {
     public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
-        'file'];
+        'url', 'file'];
     public $default_type  = null;
 
     static public function create($templateLabel, $templateDescription,
@@ -63,6 +63,8 @@ class MultiField extends Parameter
         foreach ($template_parameters[$key] as $p) {
             if ($p['required'] && empty($input[$key][$p['id']])) {
                 $errors[$errkey.'.'.$p['id']] = array('Required');
+            } elseif ($p['type'] == 'url' && !filter_var($input[$key][$p['id']], FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
+                $errors[$errkey.'.'.$p['id']] = array('Must be a valid URL');
             }
         }
         return empty($errors);
@@ -167,6 +169,8 @@ class MultiField extends Parameter
                     }
                 } elseif ($p['type'] == 'password' && !$isForRunbook) {
                     $options[$d] = '******';
+                } elseif ($p['type'] == 'url') {
+                    $options[$d] = '<a href="'.htmlentities($data[$p['id']]).'" target="_blank">'.htmlentities($data[$p['id']]).'</a>';
                 } else {
                     $options[$d] = $data[$p['id']];
                 }

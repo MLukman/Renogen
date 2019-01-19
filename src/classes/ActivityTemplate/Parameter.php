@@ -104,6 +104,16 @@ class Parameter
         return static::generateParameterSimpler('multilinetext', $activityLabel, $activityDescription, $activityRequired);
     }
 
+    static public function MultiLineTextWithDefault($templateLabel,
+                                                    $templateDescription,
+                                                    $templateRequired,
+                                                    $activityLabel,
+                                                    $activityDescription,
+                                                    $activityRequired)
+    {
+        return static::generateParameter('multilinetext', $templateLabel, $templateDescription, $templateRequired, $activityLabel, $activityDescription, $activityRequired);
+    }
+
     static public function MultiFreeText($templateLabel, $templateDescription,
                                          $templateRequired, $activityLabel,
                                          $activityDescription, $activityRequired)

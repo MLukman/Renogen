@@ -1,5 +1,4 @@
 {% if template.parameters[param]|length > 0 %}
-    {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,activity) %} 
     <div class="ui form">
         {% for p in template.parameters[param] %}
             {% set pid = 'parameters-' ~ param ~ '-' ~ p.id %}
@@ -46,11 +45,13 @@
                         {% endif %}
                     </div>
                 {% elseif p.type == 'password' %}
-                    <input id="{{pid}}" type="password" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+                    <input id="{{pid}}" type="password" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" />
                 {% elseif p.type == 'multiline' %}
                     <textarea id="{{pid}}" name="parameters[{{param}}][{{p.id}}]">{{paramval[p.id]|default(p.details)}}</textarea>
+                {% elseif p.type == 'url' %}
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://" />
                 {% else %}
-                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(null)}}" />
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" />
                 {% endif %}
                 {{ m.fieldError(errors|default([]), paramkey) }}
             </div>

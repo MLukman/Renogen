@@ -67,9 +67,9 @@
                 <th>Title</th>
                 <th class="ui collapsing">Category</th>
                 <th class="ui collapsing">Modules</th>
-                <th class="ui collapsing center aligned"><i class="ui add to cart icon" title="Activity Count"></i></th>
-                <th class="ui collapsing center aligned"><i class="ui attach icon" title="Attachment Count"></i></th>
-                <th class="ui collapsing center aligned"><i class="ui comment icon" title="Comment Count"></i></th>
+                <th class="ui collapsing"><i class="ui add to cart icon" title="Activity Count"></i></th>
+                <th class="ui collapsing"><i class="ui attach icon" title="Attachment Count"></i></th>
+                <th class="ui collapsing"><i class="ui comment icon" title="Comment Count"></i></th>
                 <th class="ui collapsing">Status</th>
             </tr>
         </thead>
@@ -87,15 +87,15 @@
                     <td class="ui collapsing">
                         {{ r.itemModulesLabel(item) }}
                     </td>
-                    <td class="ui collapsing center aligned">
+                    <td class="ui collapsing">
                         {% set activities = item.activities.count() %}
                         <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
                     </td>
-                    <td class="ui collapsing center aligned">
+                    <td class="ui collapsing">
                         {% set attachments = item.attachments.count() %}
                         <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
                     </td>
-                    <td class="ui collapsing center aligned">
+                    <td class="ui collapsing">
                         {% set comments = item.comments.count() %}
                         {% set last = item.comments.last() %}
                         <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>

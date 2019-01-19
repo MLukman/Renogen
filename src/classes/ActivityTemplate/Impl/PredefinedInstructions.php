@@ -15,7 +15,7 @@ class PredefinedInstructions extends BaseClass
     {
         parent::__construct($app);
         $this->addParameter('instructions', Parameter::MultiLineConfig('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below', true, 'Instructions'));
-        $this->addParameter('details', Parameter\MultiField::create('Additional Details', 'Define configurable activity details to be entered when creating activities', false, 'Additional Details', '', false));
+        $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
     }
 
     public function classTitle()

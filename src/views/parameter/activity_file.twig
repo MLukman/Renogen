@@ -1,4 +1,3 @@
-{% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,activity) %} 
 <input id="parameters-{{param}}" type="file" name="parameters[{{param}}]" />
 {% if paramval|default(null) %}
     <p>Existing file: <strong>{{paramval.filename}}</strong> of type <strong>{{paramval.mime_type}}</strong> with size <strong>{{paramval.filesize}}</strong> bytes</p>

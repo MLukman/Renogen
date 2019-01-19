@@ -13,7 +13,7 @@
             <textarea name="parameters[{{param}}][texts]" rows="3">{{paramval.texts|default(null)}}</textarea>
         </div>
     </div>
-{% elseif parameter.type == 'multilineconfig' %}
+{% elseif parameter.type in ['multilineconfig', 'multilinetext'] %}
     <textarea placeholder="{{parameter.templateDescription}}" name="parameters[{{param}}]">{{template.parameters[param]|default(null)}}</textarea>
 {% elseif parameter.type == 'multifreetext' %}
     <p>{{parameter.templateDescription}}</p>

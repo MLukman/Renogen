@@ -117,13 +117,23 @@
 
     {% if is_existing %}
         <div class="ui bottom attached tab segment" data-tab="preview">
-
+            <!-- 
+            <form method="POST">
+            -->
             <div class="ui form">
-                {{ actform.activityConfigForm(template) }}
+                {{ actform.activityConfigForm(template, sample.activity|default(null), sample.errors|default(null)) }}
+                <!--
+                <div class="ui field">
+                    <input type="submit" class="ui submit primary button" name="_action" value="Test Form Validation" />
+                </div>
+                -->
             </div>
-
+            <!-- 
+            </form>
+            -->
         </div>
-        {{ r.timestamps(template) }}
-    {% endif %}
+    </div>
+    {{ r.timestamps(template) }}
+{% endif %}
 
 {% endblock %}

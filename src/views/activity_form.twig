@@ -91,6 +91,7 @@
         {% if parameter.activityRequireInputs(template.parameters[param]|default(null)) %}
             <div class="ui field basic segment {% if parameter.activityRequired %}required{% endif %}">
                 <label for="parameters-{{param}}" class="ui top attached large label">{{parameter.activityLabel(template.parameters)}}</label>
+                {% set paramval = parameter.activityDatabaseToForm(template.parameters,activity.parameters|default([]),param,activity) %} 
                 {% include parameter.getTwigForActivityForm() %}
             </div>
         {% endif %}

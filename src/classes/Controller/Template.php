@@ -31,7 +31,7 @@ class Template extends RenoController
             $this->addEntityCrumb($project_obj);
             //$this->addCrumb('Activity templates', $this->app->entity_path('template_list', $project_obj), 'clipboard');
             $this->addCreateCrumb('Create activity template', $this->app->entity_path('template_create', $project_obj));
-            return $this->edit_or_create(new \Renogen\Entity\Template($project_obj), $request->request);
+            return $this->edit_or_create($request, new \Renogen\Entity\Template($project_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -42,13 +42,14 @@ class Template extends RenoController
         try {
             $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
             $this->addEntityCrumb($template_obj);
-            return $this->edit_or_create($template_obj, $request->request);
+            return $this->edit_or_create($request, $template_obj, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
     }
 
-    protected function edit_or_create(\Renogen\Entity\Template $template,
+    protected function edit_or_create(Request $request,
+                                      \Renogen\Entity\Template $template,
                                       ParameterBag $post)
     {
         $context = array();
@@ -63,20 +64,44 @@ class Template extends RenoController
             isset($context['class_instance']) &&
             $post->get('_action') != 'Next') {
 
-            if ($post->get('_action') == 'Delete') {
-                $this->app['datastore']->deleteEntity($template);
-                // Adjust priority of the other templates
-                $qb = $this->app['em']->createQueryBuilder()
-                    ->select('e')
-                    ->from('\Renogen\Entity\Template', 'e')
-                    ->where('e.priority > :from')
-                    ->setParameter('from', $template->priority);
-                foreach ($qb->getQuery()->getResult() as $atemplate) {
-                    $atemplate->priority--;
-                }
-                $this->app['datastore']->commit();
-                $this->app->addFlashMessage("Template '$template->title' has been deleted");
-                return $this->app->entity_redirect('template_list', $template);
+            switch ($post->get('_action')) {
+                case 'Delete':
+                    $this->app['datastore']->deleteEntity($template);
+                    // Adjust priority of the other templates
+                    $qb = $this->app['em']->createQueryBuilder()
+                        ->select('e')
+                        ->from('\Renogen\Entity\Template', 'e')
+                        ->where('e.priority > :from')
+                        ->setParameter('from', $template->priority);
+                    foreach ($qb->getQuery()->getResult() as $atemplate) {
+                        $atemplate->priority--;
+                    }
+                    $this->app['datastore']->commit();
+                    $this->app->addFlashMessage("Template '$template->title' has been deleted");
+                    return $this->app->entity_redirect('template_list', $template);
+
+                case 'Test Form Validation':
+                    $context['sample']                       = array(
+                        'data' => array(),
+                        'errors' => array(),
+                    );
+                    $context['sample']['activity']           = new \Renogen\Entity\Activity(new \Renogen\Entity\Item(new \Renogen\Entity\Deployment($template->project)));
+                    $context['sample']['activity']->template = $template;
+                    $parameters                              = $post->get('parameters', array());
+                    foreach ($template->templateClass()->getParameters() as $param => $parameter) {
+                        $parameter->handleActivityFiles($request, $context['sample']['activity'], $parameters, $param);
+                        $parameter->validateActivityInput($template->parameters, $parameters, $param, $context['sample']['errors'], 'parameters');
+                    }
+                    $post->set('parameters', $parameters);
+                    if ($this->app['datastore']->prepareValidateEntity($context['sample']['activity'], array(
+                            'parameters'), $post) && empty($context['sample']['errors'])) {
+                        $this->app->addFlashMessage("Form validation success");
+                    } else {
+                        $this->app->addFlashMessage("Form validation failure");
+                    }
+                    $context['project']  = $template->project;
+                    $context['template'] = $template;
+                    return $this->render('template_form', $context);
             }
 
             $parameters = $post->get('parameters', array());
