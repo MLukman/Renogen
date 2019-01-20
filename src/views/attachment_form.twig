@@ -4,12 +4,10 @@
 {% block content %}
     {% set is_existing = (attachment.id|default(null) is not empty) %}
     <h1 class="ui header">
-        <div>
-            <small>
-                {{r.crumb_project(attachment.item.deployment.project, true)}} &raquo;
-                {{r.crumb_deployment(attachment.item.deployment, true)}} &raquo;
-                {{r.crumb_item(attachment.item, true)}} &raquo;
-            </small>
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(attachment.item.deployment.project, true)}} &raquo;</span>
+            <span>{{r.crumb_deployment(attachment.item.deployment, true)}} &raquo;</span>
+            <span>{{r.crumb_item(attachment.item, true)}} &raquo;</span>
         </div>
         <span>
             <i class="ui attach icon"></i>{% if is_existing %}Edit{% else %}Add{% endif %} attachment
@@ -29,7 +27,7 @@
                 <label class="ui top attached large label">Upload File</label>
                 <input type="file" name="file" />
                 {% if is_existing %}
-                    <p>Existing file: <strong>{{attachment.filename}}</strong> of type <strong>{{attachment.filestore.mime_type}}</strong> with size <strong>{{attachment.filestore.filesize}}</strong> bytes</p>
+                    <p>Existing file: <strong>{{attachment.filename}}</strong> of type <strong>{{attachment.filestore.mime_type}}</strong> with size <strong>{{r.bytesToSize(attachment.filestore.filesize)}}</strong></p>
                 {% endif %}
                 {{ m.fieldError(errors|default([]), 'file') }}
             </div>

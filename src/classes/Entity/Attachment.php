@@ -2,6 +2,9 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\ORM\Mapping\Entity;
+use Renogen\Application;
+
 /**
  * @Entity
  */
@@ -18,5 +21,10 @@ class Attachment extends FileLink
     {
         return parent::isUsernameAllowed($username, $attribute) ||
             $this->item->isUsernameAllowed($username, $attribute);
+    }
+
+    public function downloadUrl()
+    {
+        return Application::instance()->entity_path('attachment_download', $this);
     }
 }

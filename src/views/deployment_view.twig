@@ -2,9 +2,9 @@
 
 {% block content %}
     <h1 class="ui dividing header">
-        <small>
-            {{r.crumb_project(deployment.project, true)}} &raquo;
-        </small><br />
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(deployment.project, true)}} &raquo;</span>
+        </div>
         <span>
             <i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
         </span>
@@ -15,6 +15,7 @@
             <a class="ui right floated primary button no-print" href="{{app.entity_path('runbook_view',deployment)}}"><i class="ui checkmark box icon"></i>Run Book</a>
         {% endif %}
         <a class="ui right floated primary button no-print" href="{{app.entity_path('release_note',deployment)}}"><i class="ui ordered list icon"></i>Release Note</a>
+        <div style="clear:both"></div>
     </h1>
 
     <p>{{deployment.description|nl2br}}</p>
@@ -23,9 +24,10 @@
         Deployment Items
         {% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('item_create',deployment)}}">
-                <i class="ui plus icon"></i>Add deployment item
+                <i class="ui plus icon"></i>Add Item
             </a>
         {% endif %}
+        <div style="clear:both"></div>
     </h2>
 
     <div class="ui basic segment">
@@ -76,31 +78,31 @@
         <tbody>
             {% for item in deployment.items %}
                 <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
-                    <td class="ui collapsing top aligned center aligned">{{item.refnum|default('-')}}</td>
-                    <td>
+                    <td class="ui collapsing top aligned">{{item.refnum|default('-')}}</td>
+                    <td class="ui top aligned">
                         <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a></h3>
                         {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {{ r.itemCategoryLabel(item) }}
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {{ r.itemModulesLabel(item) }}
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {% set activities = item.activities.count() %}
                         <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {% set attachments = item.attachments.count() %}
                         <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {% set comments = item.comments.count() %}
                         {% set last = item.comments.last() %}
                         <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui collapsing top aligned">
                         {{ r.itemStatusLabel(item) }}
                     </td>
                 </tr>

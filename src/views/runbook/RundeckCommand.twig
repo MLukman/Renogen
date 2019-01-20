@@ -12,9 +12,9 @@
         {% for row in data %}
             <tr>
                 <td class="top aligned collapsing">
-                    {{loop.index}}
+                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
                 </td>
-                <td class="top aligned"><a name="{{row.runitem.id}}"></a>
+                <td class="top aligned">
                     <div class="ui form">
                         <input type="text" value="{{row.params.command}}" readonly="readonly" />
                     </div>

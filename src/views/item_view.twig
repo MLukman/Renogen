@@ -35,11 +35,9 @@
     {% set editable = app.securilex.isGranted(['entry', 'approval'],item.deployment.project) and item.compareCurrentStatusTo('Go No Go') > 0 %}
 
     <h1 class="ui dividing header">
-        <div>
-            <small>
-                {{r.crumb_project(item.deployment.project, true)}} &raquo;
-                {{r.crumb_deployment(item.deployment, true)}} &raquo;
-            </small>
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(item.deployment.project, true)}} &raquo;</span>
+            <span>{{r.crumb_deployment(item.deployment, true)}} &raquo;</span>
         </div>
         <span>
             <i class="ui idea icon"></i>{{item.displayTitle}}
@@ -53,6 +51,7 @@
                 {{ r.itemModulesLabel(item) }}
             </div>
         </div>
+        <div style="clear:both"></div>
     </h1>
 
     {% if item.description %}
@@ -140,6 +139,7 @@
                         <i class="ui plus icon"></i>Add activity
                     </a>
                 {% endif %}
+                <div style="clear:both"></div>
             </h2>
 
             <table class="ui celled striped table">
@@ -153,7 +153,7 @@
                 <tbody>
                     {% for activity in item.activities %}
                         {% set description = activity.template.templateClass().describeActivityAsArray(activity) %}
-                        <tr>
+                        <tr style="position:relative">
                             <td class="ui top aligned collapsing">{{loop.index}}</td>
                             <td class="ui top aligned">
                                 {% if activity.stage < 0 %}
@@ -163,8 +163,8 @@
                                 {% endif %}
                                 {{activity.template.title}}
                             </td>
-                            <td class="ui top aligned" style="max-width: 600px; overflow-x: auto;">
-                                <div style="max-height: 400px; overflow-y: auto;">
+                            <td class="ui top aligned" style="position:relative;">
+                                <div style="overflow: auto; max-height: 400px; max-width: inherit">
                                     {{ r.arrayTable(description) }}
                                 </div>
                             </td>
@@ -194,6 +194,7 @@
                         <i class="ui plus icon"></i>Add attachment
                     </a>
                 {% endif %}
+                <div style="clear:both"></div>
             </h2>
 
             <table class="ui celled striped table">
@@ -221,7 +222,7 @@
                                 </div>
                             </td>
                             <td>{{attachment.description}}</td>
-                            <td class="ui collapsing">{{attachment.filestore.filesize}}</td>
+                            <td class="ui collapsing">{{r.bytesToSize(attachment.filestore.filesize)}}</td>
                             {% if editable %}
                                 <td class="ui collapsing no-print">
                                     <a class="ui icon button" title="Edit" href="{{app.entity_path('attachment_edit',attachment)}}">

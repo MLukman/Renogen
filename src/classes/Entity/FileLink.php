@@ -18,10 +18,10 @@ use Symfony\Component\HttpFoundation\Response;
  * @Entity @Table(name="file_links")
  * @InheritanceType("SINGLE_TABLE")
  * @DiscriminatorColumn(name="parent_type", type="string")
- * @DiscriminatorMap({"" = "FileLink", "item" = "Attachment", "activity" = "ActivityFile", "runitem" = "RunItemFile"})
+ * @DiscriminatorMap({"item" = "Attachment", "activity" = "ActivityFile", "runitem" = "RunItemFile"})
  * @HasLifecycleCallbacks
  */
-class FileLink extends Entity
+abstract class FileLink extends Entity
 {
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
@@ -87,6 +87,21 @@ class FileLink extends Entity
         if ($this->filestore->links->count() == 1) {
             $this->filestore->delete($em);
         }
+    }
+
+    abstract public function downloadUrl();
+
+    public function getHtmlLink()
+    {
+        $base      = log($this->filestore->filesize) / log(1024);
+        $suffix    = array(" bytes", " KB", " MB", " GB", " TB")[floor($base)];
+        $humansize = round(pow(1024, $base - floor($base)), 2).$suffix;
+        return '<a href="'.htmlentities($this->downloadUrl()).'" title="'.$humansize.' '.$this->filestore->mime_type.'">'.htmlentities($this->filename).'</a>';
+    }
+
+    public function __toString()
+    {
+        return $this->filename;
     }
 
     public function returnDownload()

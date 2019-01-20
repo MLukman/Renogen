@@ -2,11 +2,9 @@
 
 {% block content %}
     <h1 class="ui dividing header">
-        <div>
-            <small>
-                {{r.crumb_project(deployment.project, true)}} &raquo;
-                {{r.crumb_deployment(deployment, true)}} &raquo;
-            </small>
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(deployment.project, true)}} &raquo;</span>
+            <span>{{r.crumb_deployment(deployment, true)}} &raquo;</span>
         </div>
         <span>
             <i class="ui checkmark box o icon"></i>Run Book

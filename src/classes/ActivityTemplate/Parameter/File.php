@@ -75,11 +75,10 @@ class File extends Parameter
             $class  = '\Renogen\Entity\ActivityFile';
             $parent = 'activity';
         }
-        if (isset($activity->parameters[$key]) && ($activity_file = $this->app['datastore']->queryOne($class, array(
-            "$parent" => $activity,
-            'classifier' => $activity->parameters[$key])))) {
-            /* @var $activity_file ActivityFile */
-            return $activity_file->getHtmlLink();
+        if (isset($activity->parameters[$key])) {
+            return $this->app['datastore']->queryOne($class, array(
+                    "$parent" => $activity,
+                    'classifier' => $activity->parameters[$key]));
         }
         return null;
     }

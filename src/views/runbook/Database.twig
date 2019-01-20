@@ -11,9 +11,9 @@
         {% for row in data %}
             <tr>
                 <td class="top aligned collapsing">
-                    {{loop.index}}
+                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
                 </td>
-                <td class="ui collapsing top aligned"><a name="{{row.runitem.id}}"></a>
+                <td class="ui collapsing top aligned">
                     {{row.params.login}}
                 </td>
                 <td class="top aligned">

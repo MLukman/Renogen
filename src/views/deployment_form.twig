@@ -3,6 +3,9 @@
 {% block content %}
     {% set is_existing = (deployment.id|default(null) is not empty) %}
     <h1 class="ui header">
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(deployment.project, true)}} &raquo;</span>
+        </div>
         {% if is_existing %}Edit{% else %}Create{% endif %} deployment
     </h1>
 

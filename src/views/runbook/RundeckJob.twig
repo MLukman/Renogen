@@ -13,9 +13,9 @@
         {% for row in data %}
             <tr>
                 <td class="top aligned collapsing">
-                    {{loop.index}}
+                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
                 </td>
-                <td class="top aligned"><a name="{{row.runitem.id}}"></a>{{row.params.project}}</td>
+                <td class="top aligned">{{row.params.project}}</td>
                 <td class="top aligned">
                     {% if row.params.group %}<small>{{row.params.group}} &raquo;</small><br />{% endif %}
                     <strong>{{row.params.job}}</strong>

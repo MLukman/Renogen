@@ -2,8 +2,8 @@
 
 namespace Renogen\Entity;
 
+use Doctrine\ORM\Mapping\Entity;
 use Renogen\Application;
-use Renogen\Base\RenoController;
 
 /**
  * @Entity
@@ -16,8 +16,8 @@ class RunItemFile extends FileLink
         $this->runitem = $runitem;
     }
 
-    public function getHtmlLink()
+    public function downloadUrl()
     {
-        return '<a href="'.htmlentities(Application::instance()->entity_path('runitem_file_download', $this)).'">'.htmlentities($this->filename).'</a>';
+        return Application::instance()->entity_path('runitem_file_download', $this);
     }
 }

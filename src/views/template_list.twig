@@ -2,10 +2,8 @@
 
 {% block content %}
     <h1 class="ui dividing header">
-        <div>
-            <small>
-                {{r.crumb_project(project, true)}} &raquo;
-            </small>
+        <div class="breadcrumb">
+            <span>{{r.crumb_project(project, true)}} &raquo;</span>
         </div>
         <span><i class="ui clipboard icon"></i>Activity Templates</span>
         <a class="ui right floated primary button" href="{{app.entity_path('template_create',project)}}">

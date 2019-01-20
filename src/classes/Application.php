@@ -114,9 +114,9 @@ class Application extends \Silex\Application
         $app->register(new TwigServiceProvider(), array(
             'twig.path' => realpath(__DIR__."/../views"),
         ));
+        $app['twig']->addExtension(new TwigInstanceOf());
         // for plugins
         $app['twig.loader.filesystem']->addPath(realpath(__DIR__."/Plugin"), 'plugin');
-
 
         /* Security */
         foreach (glob(__DIR__.'/Auth/Driver/*.php') as $fn) {

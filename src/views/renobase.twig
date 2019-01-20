@@ -95,11 +95,11 @@
 {% macro arrayTable(arr,level) %}
     {% if arr is iterable %}
         {% import _self as r %}	
-        <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
+        <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table" style="margin:0; table-layout: fixed;">
             {% for key,val in arr %}
                 <tr>
                     {% if not (key matches '/^[0-9]+$/') %}
-                        <td class="top aligned collapsing">
+                        <td class="top aligned" style="overflow:auto">
                             {% if level is not defined or level == 0 %}
                                 <strong>{{key}}</strong>
                             {% else %}
@@ -107,7 +107,7 @@
                             {% endif %}
                         </td>
                     {% endif %}
-                    <td class="ui top aligned" colspan="2">
+                    <td class="ui top aligned" style="overflow:auto" colspan="2">
                         {{r.prettyDisplay(val,level|default(0)+1)}}
                     </td>
                 </tr>
@@ -122,6 +122,8 @@
     {% import _self as r %}	
     {% if val is empty %}
         <em>-- Not Specified --</em>
+    {% elseif val is instanceof('\\Renogen\\Entity\\FileLink') %}
+        {{val.getHtmlLink()|raw}}
     {% elseif val is iterable %}
         {{r.arrayTable(val,level|default(0)+1)}}
     {% elseif val|first == '<' %}
@@ -146,6 +148,24 @@
         </div>
     {% endif %}
 {% endmacro %}
+
+{% macro bytesToSize(bytes) %}{% spaceless %}
+        {% set kilobyte = 1024 %}
+        {% set megabyte = kilobyte * 1024 %}
+        {% set gigabyte = megabyte * 1024 %}
+        {% set terabyte = gigabyte * 1024 %}
+        {% if bytes < kilobyte %}
+            {{ bytes ~ ' B' }}
+        {% elseif bytes < megabyte %}
+            {{ (bytes / kilobyte)|number_format(2, '.') ~ ' KB' }}
+        {% elseif bytes < gigabyte %}
+            {{ (bytes / megabyte)|number_format(2, '.') ~ ' MB' }}
+        {% elseif bytes < terabyte %}
+            {{ (bytes / gigabyte)|number_format(2, '.') ~ ' GB' }}
+        {% else %}
+            {{ (bytes / terabyte)|number_format(2, '.') ~ ' TB' }}
+        {% endif %}
+{% endspaceless %}{% endmacro %}
 
 {% macro crumb_project(project, link) %}
     <i class="ui cube icon"></i>

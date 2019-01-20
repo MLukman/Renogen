@@ -8,13 +8,21 @@
             <i class="ui cube icon"></i>{{project.title}}
         </span>
         {% if is_project_admin %}
-            <a class="ui right floated button no-print" href="{{app.entity_path('project_edit',project)}}"><i class="ui pencil icon"></i>Edit</a>
-            <a class="ui right floated button no-print" href="{{app.entity_path('template_list',project)}}"><i class="ui clipboard icon"></i>Templates</a>
-            <a class="ui right floated button no-print" href="{{app.entity_path('plugin_index',project)}}"><i class="ui plug icon"></i>Plugins</a>
+            <div class="ui right floated buttons no-print">
+                <a class="ui button" href="{{app.entity_path('project_edit',project)}}"><i class="ui pencil icon"></i>Edit</a>
+                <div class="ui floating dropdown icon button">
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        <a class="ui item" href="{{app.entity_path('template_list',project)}}"><i class="ui clipboard icon"></i>Templates</a>
+                        <a class="ui item" href="{{app.entity_path('plugin_index',project)}}"><i class="ui plug icon"></i>Plugins</a>
+                    </div>
+                </div>
+            </div>
+            <div style="clear: both"></div>
         {% endif %}
     </h1>
 
-    <p style="clear: both">{{project.description}}</p>
+    <p>{{project.description}}</p>
 
     {% if is_project_admin and project.templates.count() == 0 %}
         <div class="ui error message">
@@ -22,13 +30,14 @@
         </div>
     {% endif %}
 
-    <h2 style="clear: both">
+    <h2>
         Upcoming Deployments
         {% if app.securilex.isGranted('approval',project) %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('deployment_create',project)}}">
                 <i class="ui plus icon"></i>Create
             </a>
         {% endif %}
+        <div style="clear:both"></div>
     </h2>
 
     <div class="ui basic segment">
@@ -52,7 +61,7 @@
 {% endblock %}
 
 {% macro deploymentList(deployments) %}
-    <div class="ui two stackable cards">
+    <div class="ui {%if deployments|length > 1 %}two{% else %}one{% endif %} stackable cards">
         {% for deployment in deployments %}
             <div class="ui purple card">
                 <div class="content">
@@ -110,38 +119,4 @@
             </div>
         {% endfor %}
     </div>
-{% endmacro %}
-
-{% macro deploymentList2(deployments) %}
-    <table class="ui padded table">
-        {% for deployment in deployments %}
-            <tr>
-                <td class="ui collapsing top aligned"><i class="large calendar check o icon"></i></td>
-                <td class="ui eight wide top aligned">
-                    <a href="{{app.entity_path('deployment_view',deployment)}}" class="header">
-                        <h3>{{deployment.displayTitle}}</h3>
-                    </a>
-                    <div>{{deployment.description|nl2br}}</div>
-                </td>
-                <td class="ui eight wide top aligned">
-                    {% if deployment.items.count() > 0 %}
-                        <div class="ui dropdown action-nothing">
-                            <div class="text">{{deployment.items.count()}} items</div>
-                            <i class="dropdown icon"></i>
-                            <div class="menu">
-                                {% for item in deployment.items %}
-                                    <div class="item">
-                                        <a href="{{app.entity_path('item_view',item)}}">
-                                            <i class="ui {{item.statusIcon}} icon" title="{{item.status}}"></i>
-                                            {{item.displayTitle}}
-                                        </a>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </td>
-            </tr>
-        {% endfor %}
-    </table>
 {% endmacro %}

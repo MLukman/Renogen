@@ -6,7 +6,7 @@
             <th>Label in Runbook view</th>
             <th>Label in Activity view</th>
             <th>Type</th>
-            <th>Details</th>
+            <th>Configuration</th>
             <th>Required</th>
         </tr>
     </thead>
@@ -31,7 +31,7 @@
                     {{ m.fieldError(errors|default([]), 'parameters.'~param~'.'~i~'.type') }}
                 </td>
                 <td>
-                    <textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type &quot;dropdown&quot; or &quot;multiselect&quot; (One value per line)">{{paramval[i].details|default(null)}}</textarea>
+                    <textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type &quot;dropdown&quot; or &quot;multiselect&quot;, or the default value that will be prepopulated during activity creation for other text-based types">{{paramval[i].details|default(null)}}</textarea>
                 </td>
                 <td class="ui center aligned collapsing">
                     <input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{i}}][required]" value="1" {% if paramval[i].required|default(null) %}checked="checked"{% endif %} />
