@@ -22,7 +22,7 @@ class Activity extends Actionable
 
     /**
      * @OneToMany(targetEntity="ActivityFile", mappedBy="activity", indexBy="classifier", orphanRemoval=true, cascade={"persist", "remove"})
-     * @var ArrayCollection
+     * @var ArrayCollection|ActivityFile[]
      */
     public $files = null;
 

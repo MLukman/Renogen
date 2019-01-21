@@ -61,7 +61,7 @@ class Template extends Entity
 
     /**
      * @OneToMany(targetEntity="Activity", mappedBy="template", indexBy="id")
-     * @var ArrayCollection
+     * @var ArrayCollection|Activity[]
      */
     public $activities = null;
 

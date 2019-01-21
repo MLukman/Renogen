@@ -15,7 +15,7 @@ use Renogen\Application;
 use Renogen\Base\ApproveableEntity;
 
 /**
- * @Entity @Table(name="deployments")
+ * @Entity @Table(name="deployments") @HasLifecycleCallbacks
  */
 class Deployment extends ApproveableEntity
 {
@@ -43,21 +43,28 @@ class Deployment extends ApproveableEntity
 
     /**
      * @Column(type="datetime")
+     * @var \DateTime
      */
     public $execute_date;
 
     /**
      * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id", orphanRemoval=true)
-     * @var ArrayCollection
+     * @var ArrayCollection|Item[]
      */
     public $items = null;
 
     /**
      * @OneToMany(targetEntity="RunItem", mappedBy="deployment", indexBy="id", orphanRemoval=true)
      * @OrderBy({"created_date" = "ASC"})
-     * @var ArrayCollection
+     * @var ArrayCollection|RunItem[]
      */
     public $runitems = null;
+
+    /**
+     * @Column(type="json_array", nullable=true)
+     * @var array
+     */
+    public $plugin_data = array();
 
     /**
      * Validation rules
@@ -65,7 +72,7 @@ class Deployment extends ApproveableEntity
      */
     protected $validation_rules = array(
         'execute_date' => array('required' => 1, 'unique' => 'project'),
-        'title' => array('trim' => 1, 'required' => 1, 'maxlen' => 100),
+        'title' => array('trim' => 1, 'required' => 1, 'truncate' => 100),
     );
 
     public function __construct(Project $project)
@@ -161,5 +168,29 @@ class Deployment extends ApproveableEntity
     public function isUsernameAllowed($username, $attribute)
     {
         return $this->project->isUsernameAllowed($username, $attribute);
+    }
+
+    /**
+     * @PostPersist
+     */
+    public function onInserted()
+    {
+        foreach ($this->project->plugins as $plugin) {
+            /** @var \Renogen\Entity\Plugin $plugin */
+            $plugin->instance()->onDeploymentCreated($this);
+        }
+    }
+
+    /**
+     * @PostUpdate
+     */
+    public function onUpdated()
+    {
+        if (isset($this->old_values['execute_date']) && $this->execute_date != $this->old_values['execute_date']) {
+            foreach ($this->project->plugins as $plugin) {
+                /** @var \Renogen\Entity\Plugin $plugin */
+                $plugin->instance()->onDeploymentDateChanged($this, $this->old_values['execute_date']);
+            }
+        }
     }
 }

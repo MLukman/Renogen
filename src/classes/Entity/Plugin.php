@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Renogen\Base\Entity;
-use Renogen\Plugin\BaseCore;
+use Renogen\Plugin\PluginCore;
 
 /**
  * @Entity @Table(name="plugins")
@@ -33,8 +33,7 @@ class Plugin extends Entity
     public $class;
 
     /**
-     *
-     * @var BaseCore
+     * @var PluginCore
      */
     protected $instance;
 
@@ -43,7 +42,7 @@ class Plugin extends Entity
      */
     public $options;
 
-    public function __construct(Project $project, BaseCore $pluginInstance)
+    public function __construct(Project $project, PluginCore $pluginInstance)
     {
         $this->project = $project;
         $this->setInstance($pluginInstance);
@@ -51,7 +50,7 @@ class Plugin extends Entity
 
     /**
      *
-     * @return BaseCore
+     * @return PluginCore
      */
     public function instance()
     {
@@ -62,7 +61,7 @@ class Plugin extends Entity
         return $this->instance;
     }
 
-    public function setInstance(BaseCore $pluginInstance)
+    public function setInstance(PluginCore $pluginInstance)
     {
         $this->instance = $pluginInstance;
         $this->class    = get_class($this->instance);

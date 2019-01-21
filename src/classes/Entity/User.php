@@ -41,7 +41,7 @@ class User extends Entity implements MutableUserInterface
 
     /**
      * @OneToMany(targetEntity="UserProject", mappedBy="user", orphanRemoval=true)
-     * @var ArrayCollection
+     * @var ArrayCollection|UserProject[]
      */
     public $userProjects = null;
 
@@ -51,7 +51,7 @@ class User extends Entity implements MutableUserInterface
      */
     protected $validation_rules = array(
         'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 25, 'unique' => 1),
-        'shortname' => array('trim' => 1, 'maxlen' => 100, 'unique' => 1),
+        'shortname' => array('trim' => 1, 'trunaate' => 100, 'unique' => 1),
         'auth' => array('required' => 1),
         'roles' => array('required' => 1),
     );

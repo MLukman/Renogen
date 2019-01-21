@@ -55,26 +55,26 @@ class Project extends Entity
 
     /**
      * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true)
-     * @var ArrayCollection
+     * @var ArrayCollection|Deployment[]
      */
     public $deployments = null;
 
     /**
      * @OneToMany(targetEntity="UserProject", mappedBy="project", indexBy="username", orphanRemoval=true, cascade={"persist"})
-     * @var ArrayCollection
+     * @var ArrayCollection|UserProject[]
      */
     public $userProjects = null;
 
     /**
      * @OneToMany(targetEntity="Template", mappedBy="project", indexBy="id", orphanRemoval=true)
      * @OrderBy({"priority" = "asc", "created_date" = "asc"})
-     * @var ArrayCollection
+     * @var ArrayCollection|Template[]
      */
     public $templates = null;
 
     /**
      * @OneToMany(targetEntity="Plugin", mappedBy="project", indexBy="name", orphanRemoval=true, cascade={"persist"})
-     * @var ArrayCollection
+     * @var ArrayCollection|Plugin[]
      */
     public $plugins = null;
 

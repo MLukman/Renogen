@@ -22,7 +22,7 @@ class Plugin extends RenoController
                 $pclass           = "\\Renogen\\Plugin\\$plugin\\Core";
                 $plugins[$pclass] = array(
                     'name' => $plugin,
-                    'title' => $pclass::getPluginTitle(),
+                    'title' => $pclass::getTitle(),
                 );
             }
             return $this->render('plugin_index', array(

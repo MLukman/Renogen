@@ -1,0 +1,21 @@
+{% extends "plugin_base.twig" %}
+
+{% block pluginView %}
+    <p><strong>Instruction: Go to your Taiga project &raquo; Admin &raquo; Integrations &raquo; WebHooks and add the following details:</strong></p>
+
+    <table class="ui celled table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Renogen</td>
+                <td>{{app.url('plugin_Taiga_action',app.entityParams(project) + {'action':'webhook'})}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+{% endblock %}

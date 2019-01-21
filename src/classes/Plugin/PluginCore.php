@@ -2,20 +2,20 @@
 
 namespace Renogen\Plugin;
 
-abstract class BaseCore
+abstract class PluginCore
 {
     protected $options = array();
     protected $app;
 
     public function __construct(array $options)
     {
-        $this->options = $options;
-        $this->app     = \Renogen\Application::instance();
+        $this->app = \Renogen\Application::instance();
+        $this->setOptions($options);
     }
 
-    abstract function getPluginTitle();
+    abstract static function getIcon();
 
-    abstract function getIcon();
+    abstract static function getTitle();
 
     abstract public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment);
 
@@ -34,7 +34,7 @@ abstract class BaseCore
 
     public function setOptions(array $options)
     {
-        $this->options = $options;
+        $this->options = array_merge($this->options, $options);
     }
 
     public function getName()

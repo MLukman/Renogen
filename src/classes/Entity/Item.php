@@ -16,7 +16,7 @@ use Securilex\Authorization\SecuredAccessInterface;
 use Securilex\Authorization\SecuredAccessTrait;
 
 /**
- * @Entity @Table(name="items")
+ * @Entity @Table(name="items") @HasLifecycleCallbacks
  */
 class Item extends ApproveableEntity implements SecuredAccessInterface
 {
@@ -40,7 +40,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public $refnum;
 
     /**
-     * @Column(type="string", length=100)
+     * @Column(type="string", length=255)
      */
     public $title;
 
@@ -62,28 +62,28 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     /**
      * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id", orphanRemoval=true)
      * @OrderBy({"stage" = "asc", "priority" = "asc", "created_date" = "asc"})
-     * @var ArrayCollection
+     * @var ArrayCollection|Activity[]
      */
     public $activities = null;
 
     /**
      * @OneToMany(targetEntity="Attachment", mappedBy="item", indexBy="id", orphanRemoval=true)
      * @OrderBy({"created_date" = "asc"})
-     * @var ArrayCollection
+     * @var ArrayCollection|Attachment[]
      */
     public $attachments = null;
 
     /**
      * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"})
      * @OrderBy({"created_date" = "asc"})
-     * @var ArrayCollection
+     * @var ArrayCollection|ItemComment[]
      */
     public $comments = null;
 
     /**
      * @OneToMany(targetEntity="ItemStatusLog", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"})
      * @OrderBy({"created_date" = "asc"})
-     * @var ArrayCollection
+     * @var ArrayCollection|ItemStatusLog[]
      */
     public $status_logs = null;
 
@@ -93,12 +93,18 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public $status = 'Documentation';
 
     /**
+     * @Column(type="json_array", nullable=true)
+     * @var array
+     */
+    public $plugin_data = array();
+
+    /**
      * Validation rules
      * @var array
      */
     protected $validation_rules = array(
         'refnum' => array('trim' => 1, 'maxlen' => 16),
-        'title' => array('trim' => 1, 'required' => 1, 'maxlen' => 100, 'unique' => 'deployment'),
+        'title' => array('trim' => 1, 'required' => 1, 'truncate' => 255, 'unique' => 'deployment'),
         'category' => array('required' => 1),
         'modules' => array('required' => 1),
     );
@@ -174,25 +180,26 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
 
     public function changeStatus($status)
     {
-        $project    = $this->deployment->project;
-        $old_status = $this->status();
+        $project         = $this->deployment->project;
+        $old_status_real = $this->status();
         if ($status == 'Test Review' &&
-            static::compareStatuses($project, $old_status, $status) > 0) {
+            static::compareStatuses($project, $old_status_real, $status) > 0) {
             parent::submit();
         }
         if (static::compareStatuses($project, $status, 'Documentation') >= 0) {
             parent::unsubmit();
         }
         if ($status == 'Ready For Release' &&
-            static::compareStatuses($project, $old_status, $status) > 0) {
+            static::compareStatuses($project, $old_status_real, $status) > 0) {
             parent::approve();
         }
         if (static::compareStatuses($project, $status, 'Go No Go') >= 0) {
             parent::unapprove();
         }
+        $this->storeOldValues(array('status'));
         $this->status = $status;
         $this->status_logs->add(new ItemStatusLog($this, $this->status));
-        return static::compareStatuses($project, $old_status, $status);
+        return static::compareStatuses($project, $old_status_real, $status);
     }
 
     public function getStatusLog($status)
@@ -230,5 +237,37 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
         }
 
         return $allowed || $this->deployment->isUsernameAllowed($username, $attribute);
+    }
+
+    /**
+     * @PostPersist
+     */
+    public function onInserted()
+    {
+        foreach ($this->deployment->project->plugins as $plugin) {
+            $plugin->instance()->onItemStatusUpdated($this);
+        }
+    }
+
+    /**
+     * @PostUpdate
+     */
+    public function onUpdated()
+    {
+        if (isset($this->old_values['status']) && $this->status != $this->old_values['status']) {
+            foreach ($this->deployment->project->plugins as $plugin) {
+                $plugin->instance()->onItemStatusUpdated($this, $this->old_values['status']);
+            }
+        }
+    }
+
+    /**
+     * @PostRemove
+     */
+    public function onDeleted()
+    {
+        foreach ($this->deployment->project->plugins as $plugin) {
+            $plugin->instance()->onItemDeleted($this);
+        }
     }
 }

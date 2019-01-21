@@ -2,21 +2,35 @@
 
 namespace Renogen\Plugin\Telegram;
 
-class Core extends \Renogen\Plugin\BaseCore
+class Core extends \Renogen\Plugin\PluginCore
 {
+    protected $options = array(
+        'bot_token' => null,
+        'group_id' => null,
+        'group_name' => null,
+        'template_deployment_created' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has been created for <b>{datetime}</b> {bywho}',
+        'template_deployment_date_changed' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has changed date from <b>{old}</b> to <b>{new}</b> {bywho}',
+        'template_item_created' => '&#x1F381; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
+        'template_item_status_changed' => '&#x1F381; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
+        'template_item_deleted' => '&#x1F381; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
+    );
 
-    public function getIcon()
+    static public function getIcon()
     {
         return 'send';
     }
 
-    public function getPluginTitle()
+    static public function getTitle()
     {
         return "Telegram Notification";
     }
 
     protected function sendMessage($message)
     {
+        if (substr($message, 0, 1) == '-') {
+            // Not send if message template starts with a dash
+            return;
+        }
         $token    = $this->options['bot_token'];
         $group_id = $this->options['group_id'];
         if (!$token || !$group_id) {
@@ -31,7 +45,11 @@ class Core extends \Renogen\Plugin\BaseCore
             )
         ));
         register_shutdown_function(function() use ($send) {
-            $send->wait();
+            try {
+                $send->wait();
+            } catch (\Exception $ex) {
+                // failed silently
+            }
         });
     }
 
@@ -50,42 +68,64 @@ class Core extends \Renogen\Plugin\BaseCore
           $text = str_replace("*", "\\*", $text);
           $text = str_replace("`", "\\`", $text);
          */
-        return htmlentities($text);
+        $text = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
+            $char = current($m);
+            $utf  = iconv('UTF-8', 'UCS-4', $char);
+            return sprintf("&#x%s;", ltrim(strtoupper(bin2hex($utf)), "0"));
+        }, $text);
+        return htmlentities($text, ENT_COMPAT | ENT_HTML401, null, false);
     }
 
     public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment)
     {
-        $this->sendMessage(
-            '<b>Deployment</b> <a href="'.$this->app->url('deployment_view', $this->app->entityParams($deployment)).'">'.$this->escape($deployment->title).'</a> has been created for <b>'.$deployment->datetimeString(true).'</b> '.$this->byWho()
-        );
+        $message = $this->options['template_deployment_created'];
+        $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
+        $message = str_replace('{url}', $this->escape($this->app->url('deployment_view', $this->app->entityParams($deployment))), $message);
+        $message = str_replace('{title}', $this->escape($deployment->title), $message);
+        $message = str_replace('{datetime}', $this->escape($deployment->execute_date->format('d/m/Y h:i A')), $message);
+        $message = str_replace('{bywho}', ' by '.$this->escape($deployment->created_by->shortname), $message);
+        $this->sendMessage($message);
     }
 
     public function onDeploymentDateChanged(\Renogen\Entity\Deployment $deployment,
                                             \DateTime $old_date)
     {
-        $this->sendMessage(
-            '<b>Deployment</b> <a href="'.$this->app->url('deployment_view', $this->app->entityParams($deployment)).'">'.$this->escape($deployment->title).'</a> has changed date from <b>'.$old_date->format('d/m/Y h:i A').'</b> to <b>'.$deployment->execute_date->format('d/m/Y h:i A').'</b> '.$this->byWho()
-        );
+        $message = $this->options['template_deployment_date_changed'];
+        $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
+        $message = str_replace('{url}', $this->escape($this->app->url('deployment_view', $this->app->entityParams($deployment))), $message);
+        $message = str_replace('{title}', $this->escape($deployment->title), $message);
+        $message = str_replace('{old}', $this->escape($old_date->format('d/m/Y h:i A')), $message);
+        $message = str_replace('{new}', $this->escape($deployment->execute_date->format('d/m/Y h:i A')), $message);
+        $message = str_replace('{bywho}', ' by '.$this->escape($deployment->updated_by->shortname), $message);
+        $this->sendMessage($message);
     }
 
     public function onItemStatusUpdated(\Renogen\Entity\Item $item,
                                         $old_status = null)
     {
         if ($old_status) {
-            $this->sendMessage(
-                '<b>Item</b> <a href="'.$this->app->url('item_view', $this->app->entityParams($item)).'">'.$this->escape($item->displayTitle()).'</a> has been changed status from <b>'.$old_status.'</b> to <b>'.$item->status.'</b> '.$this->byWho()
-            );
+            $message = $this->options['template_item_status_changed'];
+            $message = str_replace('{old}', $this->escape($old_status), $message);
+            $message = str_replace('{new}', $this->escape($item->status), $message);
+            $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
         } else {
-            $this->sendMessage(
-                '<b>Item</b> <a href="'.$this->app->url('item_view', $this->app->entityParams($item)).'">'.$this->escape($item->displayTitle()).'</a> has been created for deployment <b>'.$this->escape($item->deployment->title).'</b> '.$this->byWho()
-            );
+            $message = $this->options['template_item_created'];
+            $message = str_replace('{bywho}', ' by '.$this->escape($item->created_by->shortname), $message);
         }
+        $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
+        $message = str_replace('{url}', $this->escape($this->app->url('item_view', $this->app->entityParams($item))), $message);
+        $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
+        $message = str_replace('{deployment}', $this->escape($item->deployment->title), $message);
+        $this->sendMessage($message);
     }
 
     public function onItemDeleted(\Renogen\Entity\Item $item)
     {
-        $this->sendMessage(
-            '<b>Item</b> '.$this->escape($item->displayTitle()).' has been deleted from deployment <b>'.$this->escape($item->deployment->title).'</b> '.$this->byWho()
-        );
+        $message = $this->options['template_item_deleted'];
+        $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
+        $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
+        $message = str_replace('{deployment}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
+        $this->sendMessage($message);
     }
 }

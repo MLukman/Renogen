@@ -19,6 +19,7 @@ use Twig\Template;
 
 class DataStore implements ServiceProviderInterface
 {
+    /** @var Application */
     protected $app;
 
     public function boot(\Silex\Application $app)
@@ -202,16 +203,17 @@ class DataStore implements ServiceProviderInterface
             if (!$data->has($field)) {
                 continue;
             }
-            if (substr($field, -5) == '_date') {
-                $raw_date = $data->get($field);
-                if (!empty($raw_date) && strlen($raw_date) <= 10) {
-                    $raw_date .= ' 00:00 AM';
+            $entity->storeOldValues(array($field));
+            $field_value = $data->get($field);
+            if (substr($field, -5) == '_date' && !($field_value instanceof \DateTime)) {
+                if (!empty($field_value) && strlen($field_value) <= 10) {
+                    $field_value .= ' 00:00 AM';
                 }
-                $entity->$field = (!$raw_date ? null : DateTime::createFromFormat('d/m/Y h:i A', $raw_date));
+                $entity->$field = (!$field_value ? null : DateTime::createFromFormat('d/m/Y h:i A', $field_value));
             } elseif (substr($field, -3) == '_by') {
-                $entity->$field = $this->queryOne('\Renogen\Entity\User', $data->get($field));
+                $entity->$field = $this->queryOne('\Renogen\Entity\User', $field_value);
             } else {
-                $entity->$field = $data->get($field);
+                $entity->$field = $field_value;
             }
         }
         return $entity->validate($this->app['em']);
@@ -219,6 +221,8 @@ class DataStore implements ServiceProviderInterface
 
     public function deleteEntity(Entity &$entity)
     {
+        $entity->updated_by   = $this->app->userEntity() ?: $entity->updated_by;
+        $entity->updated_date = new \DateTime();
         $entity->delete($this->app['em']);
     }
 
@@ -226,7 +230,7 @@ class DataStore implements ServiceProviderInterface
                                       FileLink $filelink = null,
                                       array &$errors = array())
     {
-        if ($file->isValid()) {
+        if ($file->isValid() && $filelink) {
             $sha1      = sha1_file($file->getRealPath());
             $filestore = $this->queryOne('\\Renogen\\Entity\\FileStore', array('id' => $sha1));
             if (!$filestore) {
@@ -235,9 +239,6 @@ class DataStore implements ServiceProviderInterface
                 $filestore->data      = file_get_contents($file->getRealPath());
                 $filestore->filesize  = $file->getClientSize();
                 $filestore->mime_type = $file->getMimeType();
-            }
-            if (!$filelink) {
-                $filelink = new FileLink();
             }
             $filelink->filestore = $filestore;
             $filelink->filename  = $file->getClientOriginalName();

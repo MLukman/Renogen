@@ -4,7 +4,6 @@ namespace Renogen\Base;
 
 use ReflectionClass;
 use Renogen\Application;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 abstract class Controller
 {

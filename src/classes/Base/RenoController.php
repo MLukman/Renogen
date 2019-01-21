@@ -3,13 +3,10 @@
 namespace Renogen\Base;
 
 use Renogen\Entity\Activity;
-use Renogen\Entity\ActivityFile;
 use Renogen\Entity\Attachment;
 use Renogen\Entity\Deployment;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
-use Renogen\Entity\RunItem;
-use Renogen\Entity\RunItemFile;
 use Renogen\Entity\Template;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 

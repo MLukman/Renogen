@@ -24,13 +24,13 @@ class RunItem extends \Renogen\Base\Actionable
 
     /**
      * @OneToMany(targetEntity="Activity", mappedBy="runitem", indexBy="id")
-     * @var ArrayCollection
+     * @var ArrayCollection|Activity[]
      */
     public $activities = null;
 
     /**
      * @OneToMany(targetEntity="RunItemFile", mappedBy="runitem", indexBy="classifier", orphanRemoval=true, cascade={"persist", "remove"})
-     * @var ArrayCollection
+     * @var ArrayCollection|RunItemFile[]
      */
     public $files = null;
 

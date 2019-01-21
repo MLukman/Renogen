@@ -132,10 +132,6 @@ class Item extends RenoController
                     }
                 }
             }
-            foreach ($item_obj->deployment->project->plugins as $plugin) {
-                /** @var \Renogen\Entity\Plugin $plugin */
-                $plugin->instance()->onItemStatusUpdated($item_obj, $old_status);
-            }
             $this->app['datastore']->commit();
             $this->app->addFlashMessage("Item '$item_obj->title' has been changed status to $new_status");
         }
@@ -235,21 +231,12 @@ class Item extends RenoController
                 case 'Delete':
                     $ds->deleteEntity($item);
                     $ds->commit();
-                    foreach ($item->deployment->project->plugins as $plugin) {
-                        $plugin->instance()->onItemDeleted($item);
-                    }
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");
                     return $this->app->entity_redirect('deployment_view', $item->deployment);
 
                 default:
                     if ($ds->prepareValidateEntity($item, static::entityFields, $post)) {
-                        $is_new = ($item->id == null);
                         $ds->commit($item);
-                        if ($is_new) {
-                            foreach ($item->deployment->project->plugins as $plugin) {
-                                $plugin->instance()->onItemStatusUpdated($item);
-                            }
-                        }
                         $this->app->addFlashMessage("Item '$item->title' has been successfully saved");
                         return $this->app->entity_redirect('item_view', $item);
                     } else {

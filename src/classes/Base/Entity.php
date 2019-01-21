@@ -13,10 +13,10 @@ use Doctrine\ORM\Mapping\MappedSuperclass;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\PreUpdate;
 use Renogen\Application;
+use Renogen\Entity\User;
 use Renogen\Validation\DoctrineValidator;
 use Securilex\Authorization\SecuredAccessInterface;
 use Securilex\Authorization\SecuredAccessTrait;
-use Symfony\Component\Security\Core\User\User;
 
 /**
  * @MappedSuperclass @HasLifecycleCallbacks
@@ -56,6 +56,12 @@ class Entity implements SecuredAccessInterface
     protected $validation_default = array();
     protected $validation_rules   = array();
     public $errors                = array();
+
+    /**
+     *
+     * @var array Old values
+     */
+    public $old_values = array();
 
     /**
      * Cache
@@ -112,8 +118,16 @@ class Entity implements SecuredAccessInterface
     public function defaultUpdatedDate()
     {
         if (($user = Application::instance()->userEntity())) {
+            $this->storeOldValues(array('updated_date', 'updated_by'));
             $this->updated_date = new DateTime();
             $this->updated_by   = $user;
+        }
+    }
+
+    public function storeOldValues(array $fields)
+    {
+        foreach ($fields as $field) {
+            $this->old_values[$field] = $this->$field;
         }
     }
 

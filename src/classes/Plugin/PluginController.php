@@ -8,44 +8,80 @@ use Renogen\Entity\Project;
 use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
 
-abstract class BaseController extends RenoController
+abstract class PluginController extends RenoController
 {
     protected $project;
     protected $pluginCore;
 
     abstract function handleConfigure(Request $request, Project $project,
-                                      BaseCore &$pluginCore);
+                                      PluginCore &$pluginCore);
 
     public function getName()
     {
         $reflection = new ReflectionClass($this);
-        return basename(dirname($reflection->getFileName()));
+        $coreClass  = $reflection->getNamespaceName().'\\Core';
+        return $coreClass::getName();
+    }
+
+    public function getTitle()
+    {
+        $reflection = new ReflectionClass($this);
+        $coreClass  = $reflection->getNamespaceName().'\\Core';
+        return $coreClass::getTitle();
     }
 
     public function configure(Request $request, $project)
     {
         $pname = $this->getName();
         try {
-            $this->project = $this->app['datastore']->fetchProject($project);
-            $this->addEntityCrumb($this->project);
-            $plugin        = $this->app['datastore']->queryOne('\Renogen\Entity\Plugin', array(
-                'project' => $this->project,
-                'name' => $this->getName(),
-            ));
-
-            if ($plugin) {
-                $this->pluginCore = $plugin->instance();
-            } else {
+            if (!$this->fetchPluginCore($project)) {
                 $pclass           = "\\Renogen\\Plugin\\$pname\\Core";
                 $this->pluginCore = new $pclass(array());
             }
 
+            $this->addEntityCrumb($this->project);
             $this->addCrumb($this->getTitle(), $this->app->path("plugin_{$pname}_configure", array(
                     'project' => $project)), $this->pluginCore->getIcon());
 
             return $this->handleConfigure($request, $this->project, $this->pluginCore);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
+        }
+    }
+
+    static function availableActions()
+    {
+        return array();
+    }
+
+    public function action(Request $request, $project, $action)
+    {
+        $pname = $this->getName();
+        if (!in_array($action, array_keys(static::availableActions()))) {
+            throw new NoResultException("Plugin '$pname' does not support action '$action'");
+        }
+        if (!$this->fetchPluginCore($project)) {
+            throw new NoResultException("Project '$project' does not have plugin named '$pname'");
+        }
+        return $this->handleAction($request, $this->project, $this->pluginCore, $action);
+    }
+
+    abstract function handleAction(Request $request, Project $project,
+                                   PluginCore &$pluginCore, $action);
+
+    protected function fetchPluginCore($project)
+    {
+        $pname         = $this->getName();
+        $this->project = $this->app['datastore']->fetchProject($project);
+        $plugin        = $this->app['datastore']->queryOne('\\Renogen\\Entity\\Plugin', array(
+            'project' => $this->project,
+            'name' => $pname,
+        ));
+        if ($plugin) {
+            $this->pluginCore = $plugin->instance();
+            return $this->pluginCore;
+        } else {
+            return null;
         }
     }
 
@@ -58,7 +94,7 @@ abstract class BaseController extends RenoController
                 'plugin' => array(
                     'name' => $pname,
                     'icon' => $this->pluginCore->getIcon(),
-                    'title' => $this->pluginCore->getPluginTitle(),
+                    'title' => $this->pluginCore->getTitle(),
                 )), $context));
     }
 

@@ -2,7 +2,7 @@
 
 namespace Renogen\Plugin\Telegram;
 
-class Controller extends \Renogen\Plugin\BaseController
+class Controller extends \Renogen\Plugin\PluginController
 {
     protected $twigpath;
 
@@ -13,14 +13,13 @@ class Controller extends \Renogen\Plugin\BaseController
 
     public function handleConfigure(\Symfony\Component\HttpFoundation\Request $request,
                                     \Renogen\Entity\Project $project,
-                                    \Renogen\Plugin\BaseCore &$pluginCore)
+                                    \Renogen\Plugin\PluginCore &$pluginCore)
     {
-        $post       = array(
-            'token' => null,
+        $post       = array_merge($pluginCore->getOptions(), array(
             'groups' => array(
                 '' => '-- Disabled --',
             ),
-        );
+        ));
         $options    = $pluginCore->getOptions();
         $hasUpdates = false;
         if (isset($options['group_id']) && isset($options['group_name'])) {
@@ -28,11 +27,11 @@ class Controller extends \Renogen\Plugin\BaseController
         }
         if (($token = $request->request->get('bot_token') ?: (isset($options['bot_token'])
                 ? $options['bot_token'] : null))) {
-            $post['token'] = $token;
-            $client        = new \GuzzleHttp\Client();
-            $response      = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
-            $updates       = json_decode($response->getBody(), true);
-            $time          = time();
+            $post['bot_token'] = $token;
+            $client            = new \GuzzleHttp\Client();
+            $response          = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
+            $updates           = json_decode($response->getBody(), true);
+            $time              = time();
             if (isset($updates['result'])) {
                 $hasUpdates   = true;
                 $lastUpdateId = null;
@@ -58,17 +57,43 @@ class Controller extends \Renogen\Plugin\BaseController
                     $this->deletePlugin();
                     return $this->app->redirect();
                 } else if ($token) {
-                    $pluginCore->setOptions(array(
+                    $noptions = array(
                         'bot_token' => $token,
                         'group_id' => $group_id,
                         'group_name' => ($group_id && isset($group_names[$group_id]))
-                                ? $group_names[$group_id] : null,
-                    ));
+                            ? $group_names[$group_id] : null,
+                    );
+                    foreach (array('template_deployment_created', 'template_deployment_date_changed',
+                    'template_item_created', 'template_item_status_changed', 'template_item_deleted') as $template) {
+                        if ($request->request->get($template)) {
+                            $noptions[$template] = $request->request->get($template);
+                        }
+                    }
+                    $pluginCore->setOptions($noptions);
                     $this->savePlugin();
                     return $this->app->redirect();
                 }
                 break;
         }
-        return $this->render('admin', $post);
+        return $this->render('configure', $post);
+    }
+
+    public static function availableActions()
+    {
+        return array('callback');
+    }
+
+    public function handleAction(\Symfony\Component\HttpFoundation\Request $request,
+                                 \Renogen\Entity\Project $project,
+                                 \Renogen\Plugin\PluginCore &$pluginCore,
+                                 $action)
+    {
+        switch ($action) {
+            case 'callback':
+                return new \Symfony\Component\HttpFoundation\JsonResponse(array(
+                    'status' => 'success',
+                    'params' => $request->query->all(),
+                ));
+        }
     }
 }

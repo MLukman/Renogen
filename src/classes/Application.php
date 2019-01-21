@@ -142,7 +142,7 @@ class Application extends \Silex\Application
             $this->_pluginClasses[$plugin] = array(
                 'name' => $plugin,
                 'class' => $pclass,
-                'title' => $pclass::getPluginTitle(),
+                'title' => $pclass::getTitle(),
             );
         }
 
@@ -194,6 +194,7 @@ class Application extends \Silex\Application
             }
 
             if (($routeName = $request->get('_route')) &&
+                $app->user() &&
                 !$app['securilex']->isGranted('prefix', $routeName)) {
                 throw new AccessDeniedException();
             }
@@ -204,7 +205,7 @@ class Application extends \Silex\Application
                 'message' => $e->getMessage(),
             );
 
-            if ($e instanceof AccessDeniedHttpException) {
+            if ($e instanceof AccessDeniedException) {
                 $error['message'] = 'You are not authorized to access this page.';
                 $error['title']   = 'Access Denied';
             }
@@ -248,14 +249,20 @@ class Application extends \Silex\Application
         $this['plugin.controller'] = $this->share(function() {
             return new Controller\Plugin($this);
         });
-        $this->match('/{project}/plugins', 'plugin.controller:index')->bind('plugin_index');
+        $this->match('/{project}/plugins/', 'plugin.controller:index')->bind('plugin_index');
 
         foreach ($this->_pluginClasses as $plugin => $details) {
-            $this["plugin.$plugin.controller"] = $this->share(function() use ($details) {
-                $ctrlname = '\\Renogen\\Plugin\\'.$details['name'].'\\Controller';
+            $ctrlname = '\\Renogen\\Plugin\\'.$details['name'].'\\Controller';
+            foreach ($ctrlname::availableActions() as $action => $option) {
+                if (isset($option['public']) && $option['public']) {
+                    $this['securilex']->addUnsecurePattern("/[^/]+/plugins/$plugin/$action");
+                }
+            }
+            $this["plugin.$plugin.controller"] = $this->share(function() use ($ctrlname) {
                 return new $ctrlname($this);
             });
-            $this->match("/{project}/plugins/$plugin", "plugin.$plugin.controller:configure")->bind("plugin_{$plugin}_configure");
+            $this->match("/{project}/plugins/$plugin/", "plugin.$plugin.controller:configure")->bind("plugin_{$plugin}_configure");
+            $this->match("/{project}/plugins/$plugin/{action}/", "plugin.$plugin.controller:action")->bind("plugin_{$plugin}_action");
         }
 
         /* Routes: Template */

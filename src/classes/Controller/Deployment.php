@@ -79,17 +79,6 @@ class Deployment extends RenoController
             $old_date = $deployment->execute_date;
             if ($this->app['datastore']->prepareValidateEntity($deployment, static::entityFields, $post)) {
                 $is_new = ($deployment->id == null);
-                if ($is_new) {
-                    foreach ($deployment->project->plugins as $plugin) {
-                        /** @var \Renogen\Entity\Plugin $plugin */
-                        $plugin->instance()->onDeploymentCreated($deployment);
-                    }
-                } else if ($old_date != $deployment->execute_date) {
-                    foreach ($deployment->project->plugins as $plugin) {
-                        /** @var \Renogen\Entity\Plugin $plugin */
-                        $plugin->instance()->onDeploymentDateChanged($deployment, $old_date);
-                    }
-                }
                 $this->app['datastore']->commit($deployment);
                 $this->app->addFlashMessage("Deployment '$deployment->title' has been successfully saved");
                 return $this->app->entity_redirect('deployment_view', $deployment);
