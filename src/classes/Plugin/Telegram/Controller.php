@@ -78,22 +78,11 @@ class Controller extends \Renogen\Plugin\PluginController
         return $this->render('configure', $post);
     }
 
-    public static function availableActions()
-    {
-        return array('callback');
-    }
-
     public function handleAction(\Symfony\Component\HttpFoundation\Request $request,
                                  \Renogen\Entity\Project $project,
                                  \Renogen\Plugin\PluginCore &$pluginCore,
                                  $action)
     {
-        switch ($action) {
-            case 'callback':
-                return new \Symfony\Component\HttpFoundation\JsonResponse(array(
-                    'status' => 'success',
-                    'params' => $request->query->all(),
-                ));
-        }
+
     }
 }

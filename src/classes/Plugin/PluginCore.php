@@ -27,8 +27,11 @@ abstract class PluginCore
 
     abstract public function onItemDeleted(\Renogen\Entity\Item $item);
 
-    public function getOptions()
+    public function getOptions($key = null)
     {
+        if ($key) {
+            return isset($this->options[$key]) ? $this->options[$key] : null;
+        }
         return $this->options;
     }
 

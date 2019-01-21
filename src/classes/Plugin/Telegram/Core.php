@@ -10,9 +10,9 @@ class Core extends \Renogen\Plugin\PluginCore
         'group_name' => null,
         'template_deployment_created' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has been created for <b>{datetime}</b> {bywho}',
         'template_deployment_date_changed' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has changed date from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_created' => '&#x1F381; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
-        'template_item_status_changed' => '&#x1F381; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_deleted' => '&#x1F381; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
+        'template_item_created' => '&#x1F4E6; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
+        'template_item_status_changed' => '&#x1F4E6; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
+        'template_item_deleted' => '&#x1F4E6; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
     );
 
     static public function getIcon()

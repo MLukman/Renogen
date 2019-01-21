@@ -23,6 +23,7 @@ class Plugin extends RenoController
                 $plugins[$pclass] = array(
                     'name' => $plugin,
                     'title' => $pclass::getTitle(),
+                    'icon' => $pclass::getIcon(),
                 );
             }
             return $this->render('plugin_index', array(

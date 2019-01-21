@@ -39,7 +39,6 @@ use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -64,6 +63,10 @@ class Application extends \Silex\Application
     public function __construct($values = array())
     {
         parent::__construct($values);
+
+        if (($tz = getenv('PHP_TIMEZONE')) && in_array($tz, timezone_identifiers_list())) {
+            date_default_timezone_set($tz);
+        }
 
         $app = $this;
         $app->register(new UrlGeneratorServiceProvider());

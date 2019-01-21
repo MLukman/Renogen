@@ -4,18 +4,21 @@
     <h1 class="ui dividing header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(project, true)}} &raquo;</span>
-            {% if plugin.title is defined %}
+            {% if plugin is defined %}
                 <span>
                     <i class="ui plug icon"></i><a href="{{app.entity_path('plugin_index',project)}}">Plugins</a> &raquo;
                 </span>
             {% endif %}
         </div>
-        {% if plugin.title is defined %}
-            <span><i class="ui {{plugin.icon}} icon"></i>{{plugin.title}}</span>
+        {% if plugin is defined %}
+            <span><i class="ui {{plugin.icon}} icon"></i>{{plugin.name}}</span>
             {% else %}
             <span><i class="ui plug icon"></i>Plugins</span>
         {% endif %}
     </h1>
+    {% if plugin is defined %}
+        <div class="ui message">{{plugin.title}}</div>
+    {%endif %}
 
     {% block pluginView %}
 

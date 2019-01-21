@@ -83,14 +83,6 @@ class Controller extends PluginController
     protected function handleWebhookItem(Project $project,
                                          PluginCore &$pluginCore, $payload)
     {
-        if (empty($payload['data']['milestone'])) {
-            // do not process user story without milestone
-            return;
-        }
-        if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id']))) {
-            // do not process the milestone was not integrated into Renogen
-            return;
-        }
         $d_item = null;
         foreach ($project->deployments as $deployment) {
             foreach ($deployment->items as $item) {
@@ -100,6 +92,23 @@ class Controller extends PluginController
                     break 2;
                 }
             }
+        }
+
+        if ($d_item && $payload['action'] == 'delete' && $pluginCore->getOptions('allow_delete_item')) {
+            $this->app['datastore']->deleteEntity($d_item);
+            $this->app['datastore']->commit();
+            return new JsonResponse(array(
+                'status' => 'success',
+            ));
+        }
+
+        if (empty($payload['data']['milestone'])) {
+            // do not process user story without milestone
+            return;
+        }
+        if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id']))) {
+            // do not process the milestone was not integrated into Renogen
+            return;
         }
 
         $errors     = null;
@@ -119,18 +128,13 @@ class Controller extends PluginController
             $d_item->updated_date = new \DateTime();
         }
 
-        if ($payload['action'] == 'delete') {
-            $this->app['datastore']->deleteEntity($d_item);
-            $this->app['datastore']->commit();
+        $d_item->plugin_data['Taiga'] = array(
+            'id' => $payload['data']['id'],
+        );
+        if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
+            $this->app['datastore']->commit($d_item);
         } else {
-            $d_item->plugin_data['Taiga'] = array(
-                'id' => $payload['data']['id'],
-            );
-            if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
-                $this->app['datastore']->commit($d_item);
-            } else {
-                $errors = $d_item->errors;
-            }
+            $errors = $d_item->errors;
         }
         return new JsonResponse(array(
             'status' => empty($errors) ? 'success' : 'error',
@@ -149,6 +153,11 @@ class Controller extends PluginController
             $taiga->auth      = 'password';
             $taiga->password  = md5(random_bytes(100));
             $this->app['datastore']->commit($taiga);
+        }
+        if ($request->request->get('_action') == 'Save') {
+            $pluginCore->setOptions(array(
+                'allow_delete_item' => $request->request->get('allow_delete_item', 0),
+            ));
         }
         $this->savePlugin();
         return $this->render('configure');

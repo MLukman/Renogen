@@ -40,7 +40,7 @@ abstract class PluginController extends RenoController
             }
 
             $this->addEntityCrumb($this->project);
-            $this->addCrumb($this->getTitle(), $this->app->path("plugin_{$pname}_configure", array(
+            $this->addCrumb($this->getName(), $this->app->path("plugin_{$pname}_configure", array(
                     'project' => $project)), $this->pluginCore->getIcon());
 
             return $this->handleConfigure($request, $this->project, $this->pluginCore);
