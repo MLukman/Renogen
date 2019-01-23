@@ -94,26 +94,31 @@ class Project extends Entity
     public $item_statuses         = array(
         'Documentation' => array(
             'icon' => 'warning',
+            'proceedaction' => 'Submit For Review',
             'rejectaction' => false,
             'role' => ['entry', 'approval'],
         ),
         'Test Review' => array(
             'icon' => 'help',
+            'proceedaction' => 'Verified',
             'rejectaction' => 'Rejected',
             'role' => ['review', 'approval'],
         ),
         'Go No Go' => array(
             'icon' => 'help',
+            'proceedaction' => 'Approved',
             'rejectaction' => 'Rejected',
             'role' => 'approval',
         ),
         'Ready For Release' => array(
             'icon' => 'check',
+            'proceedaction' => 'Completed',
             'rejectaction' => 'Failed',
-            'role' => 'execute',
+            'role' => ['execute', 'approval'],
         ),
         'Completed' => array(
             'icon' => 'check',
+            'proceedaction' => false,
             'rejectaction' => false,
             'role' => null,
         )

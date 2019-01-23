@@ -65,9 +65,17 @@
             </div>
             <div class="ui field grey basic segment">
                 <label class="ui top attached large label">Allow item deletion?</label>
-                <div class="ui checkbox">
-                    <input type="checkbox" value="1" name="allow_delete_item" {% if core.options.allow_delete_item %}checked="checked"{% endif %} />
-                    <label>Deleting a user story in Taiga will delete corresponding deployment item in Renogen</label>
+                <div>
+                    <div class="ui checkbox">
+                        <input type="checkbox" value="1" name="allow_delete_item" {% if core.options.allow_delete_item %}checked="checked"{% endif %} />
+                        <label>Deleting a user story in Taiga will delete corresponding deployment item in Renogen</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="ui checkbox">
+                        <input type="checkbox" value="1" name="delete_fresh_item_only" {% if core.options.delete_fresh_item_only %}checked="checked"{% endif %} />
+                        <label>... only if the user story is in 'Documentation' status</label>
+                    </div>
                 </div>
             </div>
             <div class="ui field">

@@ -4,25 +4,24 @@
 {% block head %}
     <script>
         function changeStatus(status, required) {
-        $('#change_status_field').val(status);
-        $('#change_status_next').text(status);
-        if (required) {
-        $('#changeStatusRemarkField').addClass('required');
-        $('#changeStatusRemarkRequired').val(1);
-        } else {
-        $('#changeStatusRemarkField').removeClass('required');
-        $('#changeStatusRemarkRequired').val(0);
-        }
-        $('#change_status_confirmation').modal('show');
+            $('#change_status_field').val(status);
+            $('#change_status_next').text(status);
+            if (required) {
+                $('#changeStatusRemarkField').addClass('required');
+                $('#changeStatusRemarkRequired').val(1);
+            } else {
+                $('#changeStatusRemarkField').removeClass('required');
+                $('#changeStatusRemarkRequired').val(0);
+            }
+            $('#change_status_confirmation').modal('show');
         }
         $(function () {
-        $('#change_status_dropdown')
-                .dropdown({
+            $('#change_status_dropdown').dropdown({
                 action: function (text, value, element) {
-                changeStatus(value);
-                $('#change_status_dropdown').dropdown('hide');
+                    changeStatus(value);
+                    $('#change_status_dropdown').dropdown('hide');
                 }
-                });
+            });
         });
     </script>
 {% endblock %}
@@ -72,31 +71,17 @@
 
                 <div class="ui bottom attached tab segment active" data-tab="status-progress">
                     <div class="ui stackable ordered small vertical fluid steps">
+                        {% set transitions = item.getAllowedTransitions() %}
                         {% for s in item.deployment.project.item_statuses|keys %}
                             {% set prog = item.compareCurrentStatusTo(s) %}
                             <div class="{% if prog < 0 or item.status == 'Completed' %}completed{% endif %} {% if prog == 0 %}active{% endif %} step">
                                 <div class="content">
-                                    {% if prog < 0 %}
-                                        <div class="title" style="text-decoration: line-through">{{s}}</div>
-                                        {% if item.deployment.project.isUserNameAllowed(app.user().username, item.deployment.project.item_statuses[s].role) %}
-                                            <div class="ui button" onclick="changeStatus({{s|json_encode|e('html_attr')}}, true)">
-                                                Revert
-                                            </div>
-                                        {% endif %}
-                                    {% else %}
-                                        <div class="title">{{s}}</div>
-                                        {% if prog == 0 and item.deployment.project.isUserNameAllowed(app.user().username, item.deployment.project.item_statuses[s].role) %}
-                                            <div class="description">
-                                                <div class="ui primary button" onclick="changeStatus({{item.nextStatus()|json_encode|e('html_attr')}})">
-                                                    Proceed</div>
-                                                    {% if item.deployment.project.item_statuses[s].rejectaction %}
-                                                    <div class="ui button" onclick="changeStatus({{item.deployment.project.item_statuses[s].rejectaction|json_encode|e('html_attr')}}, true)">
-                                                        {{item.deployment.project.item_statuses[s].rejectaction}}
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
+                                    <div class="title" {% if prog < 0 %}style="text-decoration: line-through"{% endif %}>{{s}}</div>
+                                    {% for ts,tc in transitions[s]|default([]) %}
+                                        <div class="ui {{tc.type}} button" onclick="changeStatus({{tc.status|json_encode|e('html_attr')}}, {{tc.remark ? 1:0}})">
+                                            {{ts}}
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         {% endfor %}
@@ -304,8 +289,7 @@
 
     <script>
         $(function () {
-        $('.menu .item')
-                .tab();
+            $('.menu .item').tab();
         });
     </script>
 

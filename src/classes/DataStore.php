@@ -236,7 +236,7 @@ class DataStore implements ServiceProviderInterface
             if (!$filestore) {
                 $filestore            = new FileStore();
                 $filestore->id        = $sha1;
-                $filestore->data      = file_get_contents($file->getRealPath());
+                $filestore->data      = fopen($file->getRealPath());
                 $filestore->filesize  = $file->getClientSize();
                 $filestore->mime_type = $file->getMimeType();
             }

@@ -287,4 +287,51 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
             $plugin->instance()->onItemDeleted($this);
         }
     }
+
+    public function getAllowedTransitions(User $user = null)
+    {
+        if (!$user) {
+            $user = \Renogen\Application::instance()->userEntity();
+        }
+        $transitions = array();
+        foreach ($this->deployment->project->item_statuses as $status => $config) {
+            $progress   = $this->compareCurrentStatusTo($status);
+            $transition = array();
+            if ($progress < 0) {
+                // iterated status is behind current status
+                if ($this->deployment->project->isUserNameAllowed($user->username, $config['role'])) {
+                    $transition['Revert'] = array(
+                        'status' => $status,
+                        'remark' => true,
+                        'type' => '',
+                    );
+                }
+            } else if ($progress == 0) {
+                // iterated status = current status
+                if ($this->deployment->project->isUserNameAllowed($user->username, $config['role'])) {
+                    $transition[$config['proceedaction']] = array(
+                        'status' => $this->getNextStatus(),
+                        'remark' => false,
+                        'type' => 'primary',
+                    );
+                    if ($config['rejectaction']) {
+                        $transition[$config['rejectaction']] = array(
+                            'status' => $config['rejectaction'],
+                            'remark' => true,
+                            'type' => '',
+                        );
+                    }
+                }
+                if ($this->status == 'Ready For Release' &&
+                    $this->activities->count() > 0) {
+                    // Special condition: Ready For Release cannot be completed here
+                    $transition = array();
+                }
+            }
+            if (!empty($transition)) {
+                $transitions[$status] = $transition;
+            }
+        }
+        return $transitions;
+    }
 }

@@ -6,10 +6,11 @@ class Core extends \Renogen\Plugin\PluginCore
 {
     protected $options = array(
         'allow_delete_item' => false,
+        'delete_fresh_item_only' => false,
         'extract_refnum_from_subject' => null,
         'auto_refnum_from_id_prefix' => null,
         'auto_refnum_from_id_lpad' => 1,
-        'deployment_date_adjust' => '1',
+        'deployment_date_adjust' => '+1 day',
         'deployment_time' => '12:00 AM',
     );
 

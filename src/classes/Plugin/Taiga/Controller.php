@@ -2,10 +2,10 @@
 
 namespace Renogen\Plugin\Taiga;
 
-use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Renogen\Entity\Deployment;
+use Renogen\Entity\Item;
 use Renogen\Entity\Project;
 use Renogen\Entity\User;
 use Renogen\Plugin\PluginController;
@@ -18,15 +18,20 @@ use function random_bytes;
 class Controller extends PluginController
 {
     protected $extract_refnum_patterns     = array(
-        '\[([^\]\s]+)\]\s*(.*)' => '[REFNUM] Item title',
-        '\(([^\)\s]+)\)\s*(.*)' => '(REFNUM) Item title',
         '([^\-\s]+)\s*-\s*(.*)' => 'REFNUM - Item title',
+        '#([^\-\s]+)\s*\-*\s*(.*)' => '#REFNUM Item title',
+        '\[([^\]\s]+)\]\s*\-*\s*(.*)' => '[REFNUM] Item title',
+        '\(([^\)\s]+)\)\s*\-*\s*(.*)' => '(REFNUM) Item title',
     );
     protected $deployment_date_adjustments = array(
-        '0' => 'Same day',
-        '1' => 'Next day',
-        '2' => 'The day after next',
-        //'M' => 'The coming Monday',
+        '+0 day' => 'Same day',
+        '+1 day' => 'Next day',
+        '+2 day' => 'The day after next',
+        'next monday' => 'The coming Monday',
+        'next tuesday' => 'The coming Tuesday',
+        'next wednesday' => 'The coming Wednesday',
+        'next thursday' => 'The coming Thursday',
+        'next friday' => 'The coming Friday',
     );
 
     public function handleAction(Request $request, Project $project,
@@ -60,7 +65,7 @@ class Controller extends PluginController
                 ));
 
                 if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))) {
-                    $nd->updated_by   = $this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga');
+                    $nd->updated_by   = $this->taigaUser();
                     $nd->updated_date = new \DateTime();
                 } else {
                     $nd                       = new Deployment($project);
@@ -71,7 +76,7 @@ class Controller extends PluginController
                 }
 
                 if ($this->app['datastore']->prepareValidateEntity($nd, $parameters->keys(), $parameters)) {
-                    $this->app['datastore']->commit($deployment);
+                    $this->app['datastore']->commit($nd);
                 } else {
                     $errors = $nd->errors;
                 }
@@ -91,23 +96,38 @@ class Controller extends PluginController
             foreach ($deployment->items as $item) {
                 if (isset($item->plugin_data['Taiga']['id']) && $item->plugin_data['Taiga']['id']
                     == $payload['data']['id']) {
-                    $d_item = $item;
+                    $d_item               = $item;
+                    $d_item->updated_by   = $this->taigaUser();
+                    $d_item->updated_date = new \DateTime();
                     break 2;
                 }
             }
         }
 
-        if ($d_item && $payload['action'] == 'delete' && $pluginCore->getOptions('allow_delete_item')) {
-            $this->app['datastore']->deleteEntity($d_item);
-            $this->app['datastore']->commit();
-            return new JsonResponse(array(
-                'status' => 'success',
-            ));
+        if ($d_item && ($payload['action'] == 'delete' || empty($payload['data']['milestone']))) {
+            if ($pluginCore->getOptions('allow_delete_item') && (
+                !$pluginCore->getOptions('delete_fresh_item_only') || $d_item->status
+                == 'Documentation')) {
+                $this->app['datastore']->deleteEntity($d_item);
+                $this->app['datastore']->commit();
+                return new JsonResponse(array(
+                    'status' => 'success',
+                    'message' => 'item deleted',
+                ));
+            } else {
+                return new JsonResponse(array(
+                    'status' => 'failed',
+                    'message' => 'item deletion disabled',
+                    ), 405);
+            }
         }
 
         if (empty($payload['data']['milestone'])) {
             // do not process user story without milestone
-            return;
+            return new JsonResponse(array(
+                'status' => 'failed',
+                'message' => 'milestone not defined',
+                ), 400);
         }
         if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id']))) {
             // do not process the milestone was not integrated into Renogen
@@ -116,15 +136,13 @@ class Controller extends PluginController
 
         $parameters = new ParameterBag();
         if (!$d_item) {
-            $d_item               = new \Renogen\Entity\Item($d_deployment);
+            $d_item               = new Item($d_deployment);
             $d_item->created_by   = $this->taigaUser();
             $d_item->created_date = new \DateTime();
             $parameters->set('category', 'N/A');
             $parameters->set('modules', array('N/A'));
         } else {
-            $d_item->deployment   = $d_deployment;
-            $d_item->updated_by   = $this->taigaUser();
-            $d_item->updated_date = new \DateTime();
+            $d_item->deployment = $d_deployment;
         }
 
         $d_item->plugin_data['Taiga'] = array(
@@ -209,7 +227,15 @@ class Controller extends PluginController
     protected function makeDeploymentDate(PluginCore &$pluginCore, $string)
     {
         $execute_date = DateTime::createFromFormat('Y-m-d', $string, new DateTimeZone('UTC'));
-        $matches      = null;
+
+        $adjust_date = $pluginCore->getOptions('deployment_date_adjust');
+        if (intval($adjust_date)) {
+            $execute_date->modify("+{$adjust_date} days");
+        } else {
+            $execute_date->modify($adjust_date);
+        }
+
+        $matches = null;
         if (preg_match("/^(\\d+):(\\d+) (\\w+)$/", $pluginCore->getOptions('deployment_time'), $matches)) {
             if ($matches[3] == 'PM' && $matches[1] < 12) {
                 $matches[1] += 12;
@@ -221,10 +247,6 @@ class Controller extends PluginController
             $execute_date->setTime(0, 0, 0);
         }
 
-        $adjust_date = $pluginCore->getOptions('deployment_date_adjust');
-        if (intval($adjust_date)) {
-            $execute_date->add(new DateInterval("P{$adjust_date}D"));
-        }
         return $execute_date;
     }
 
