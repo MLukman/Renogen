@@ -10,9 +10,10 @@ class Core extends \Renogen\Plugin\PluginCore
         'group_name' => null,
         'template_deployment_created' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has been created for <b>{datetime}</b> {bywho}',
         'template_deployment_date_changed' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has changed date from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_created' => '&#x1F4E6; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
-        'template_item_status_changed' => '&#x1F4E6; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_deleted' => '&#x1F4E6; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
+        'template_item_created' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
+        'template_item_status_changed' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
+        'template_item_moved' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has moved from <b>{old}</b> to <b>{new}</b> {bywho}',
+        'template_item_deleted' => '&#x1F4CC; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
     );
 
     static public function getIcon()
@@ -116,6 +117,19 @@ class Core extends \Renogen\Plugin\PluginCore
         $message = str_replace('{url}', $this->escape($this->app->url('item_view', $this->app->entityParams($item))), $message);
         $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
         $message = str_replace('{deployment}', $this->escape($item->deployment->title), $message);
+        $this->sendMessage($message);
+    }
+
+    public function onItemMoved(\Renogen\Entity\Item $item,
+                                \Renogen\Entity\Deployment $old_deployment)
+    {
+        $message = $this->options['template_item_moved'];
+        $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
+        $message = str_replace('{url}', $this->escape($this->app->url('item_view', $this->app->entityParams($item))), $message);
+        $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
+        $message = str_replace('{old}', $this->escape($old_deployment->title), $message);
+        $message = str_replace('{new}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
         $this->sendMessage($message);
     }
 

@@ -73,6 +73,9 @@ class Application extends \Silex\Application
         $app->register(new ServiceControllerServiceProvider());
         $app->register(new SessionServiceProvider());
 
+        /* Trust proxy within subnet mask 255.0.0.0 */
+        Request::setTrustedProxies(array($_SERVER['SERVER_ADDR'].'/8'));
+
         /* Doctrine */
         $app['db'] = $app->share(function () {
             return DriverManager::getConnection(array(

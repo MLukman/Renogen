@@ -25,6 +25,9 @@ abstract class PluginCore
     abstract public function onItemStatusUpdated(\Renogen\Entity\Item $item,
                                                  $old_status = null);
 
+    abstract public function onItemMoved(\Renogen\Entity\Item $item,
+                                         \Renogen\Entity\Deployment $old_deployment);
+
     abstract public function onItemDeleted(\Renogen\Entity\Item $item);
 
     public function getOptions($key = null)

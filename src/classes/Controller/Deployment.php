@@ -88,8 +88,6 @@ class Deployment extends RenoController
         }
         $context['deployment'] = $deployment;
         $context['project']    = $deployment->project;
-        $this->addCSS("ui/semantic2/library/calendar.css");
-        $this->addJS("ui/semantic2/library/calendar.js");
         return $this->render('deployment_form', $context);
     }
 

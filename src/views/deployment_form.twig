@@ -19,7 +19,7 @@
         <div class="ui form">
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Deployment Date</label>
-                {{ m.dateField('execute_date','execute_date',(deployment.execute_date|default(false) ? deployment.execute_date|date('d/m/Y h:i A') : null),'Deployment date', true) }}
+                {{ m.dateField('execute_date','execute_date',(deployment.execute_date|default(false) ? deployment.execute_date|date('d/m/Y h:i A') : null),'Deployment date', 'datetime') }}
                 {{ m.fieldError(errors|default([]), 'execute_date') }}
             </div>
             <div class="ui required field basic segment">

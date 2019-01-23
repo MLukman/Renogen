@@ -45,6 +45,11 @@
                 <input type="text" name="template_item_status_changed" value="{{core.options.template_item_status_changed}}" />
             </div>
             <div class="ui required field grey basic segment">
+                <label class="ui top attached large label">Message Template: Item Moved Between Deployments</label>
+                <p>Available variables: <code>{project} {title} {url} {old} {new} {bywho}</code></p>
+                <input type="text" name="template_item_moved" value="{{core.options.template_item_moved}}" />
+            </div>
+            <div class="ui required field grey basic segment">
                 <label class="ui top attached large label">Message Template: Item Deleted</label>
                 <p>Available variables: <code>{project} {deployment} {title} {bywho}</code></p>
                 <input type="text" name="template_item_deleted" value="{{core.options.template_item_deleted}}" />

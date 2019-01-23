@@ -10,6 +10,10 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\PostLoad;
+use Doctrine\ORM\Mapping\PostPersist;
+use Doctrine\ORM\Mapping\PostRemove;
+use Doctrine\ORM\Mapping\PostUpdate;
 use Doctrine\ORM\Query\Expr\OrderBy;
 use Renogen\Base\ApproveableEntity;
 use Securilex\Authorization\SecuredAccessInterface;
@@ -250,10 +254,23 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     }
 
     /**
+     * @PostLoad
+     */
+    public function onLoad()
+    {
+        $this->old_values['deployment'] = $this->deployment;
+    }
+
+    /**
      * @PostUpdate
      */
     public function onUpdated()
     {
+        if ($this->old_values['deployment']->id != $this->deployment->id) {
+            foreach ($this->deployment->project->plugins as $plugin) {
+                $plugin->instance()->onItemMoved($this, $this->old_values['deployment']);
+            }
+        }
         if (isset($this->old_values['status']) && $this->status != $this->old_values['status']) {
             foreach ($this->deployment->project->plugins as $plugin) {
                 $plugin->instance()->onItemStatusUpdated($this, $this->old_values['status']);

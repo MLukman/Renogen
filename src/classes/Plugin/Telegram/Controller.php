@@ -64,7 +64,8 @@ class Controller extends \Renogen\Plugin\PluginController
                             ? $group_names[$group_id] : null,
                     );
                     foreach (array('template_deployment_created', 'template_deployment_date_changed',
-                    'template_item_created', 'template_item_status_changed', 'template_item_deleted') as $template) {
+                    'template_item_created', 'template_item_status_changed', 'template_item_moved',
+                    'template_item_deleted') as $template) {
                         if ($request->request->get($template)) {
                             $noptions[$template] = $request->request->get($template);
                         }

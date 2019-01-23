@@ -17,6 +17,17 @@ use function random_bytes;
 
 class Controller extends PluginController
 {
+    protected $extract_refnum_patterns     = array(
+        '\[([^\]\s]+)\]\s*(.*)' => '[REFNUM] Item title',
+        '\(([^\)\s]+)\)\s*(.*)' => '(REFNUM) Item title',
+        '([^\-\s]+)\s*-\s*(.*)' => 'REFNUM - Item title',
+    );
+    protected $deployment_date_adjustments = array(
+        '0' => 'Same day',
+        '1' => 'Next day',
+        '2' => 'The day after next',
+        //'M' => 'The coming Monday',
+    );
 
     public function handleAction(Request $request, Project $project,
                                  PluginCore &$pluginCore, $action)
@@ -40,34 +51,26 @@ class Controller extends PluginController
                                                PluginCore &$pluginCore, $payload)
     {
         $errors = null;
-        $fields = array('title', 'execute_date');
         switch ($payload['action']) {
             case 'create':
-                $nd                       = new Deployment($project);
-                $nd->title                = $payload['data']['name'];
-                $nd->execute_date         = $this->makeDeploymentDate($payload['data']['estimated_finish']);
-                $nd->plugin_data['Taiga'] = array(
-                    'id' => $payload['data']['id'],
-                );
-                $nd->created_by           = $this->taigaUser();
-                if ($nd->validate($this->app['em'])) {
-                    $this->app['datastore']->commit($nd);
-                } else {
-                    $errors = $nd->errors;
-                }
-                break;
-
             case 'change':
-                if (!($deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))) {
-                    break;
+                $parameters = new ParameterBag(array(
+                    'title' => $payload['data']['name'],
+                    'execute_date' => $this->makeDeploymentDate($pluginCore, $payload['data']['estimated_finish']),
+                ));
+
+                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))) {
+                    $nd->updated_by   = $this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga');
+                    $nd->updated_date = new \DateTime();
+                } else {
+                    $nd                       = new Deployment($project);
+                    $nd->created_by           = $this->taigaUser();
+                    $nd->plugin_data['Taiga'] = array(
+                        'id' => $payload['data']['id'],
+                    );
                 }
-                $parameters = new ParameterBag(array('title' => $payload['data']['name']));
-                if (isset($payload['change']['diff']['estimated_date'])) {
-                    $parameters->set('execute_date', $this->makeDeploymentDate($payload['data']['estimated_finish']));
-                }
-                if ($this->app['datastore']->prepareValidateEntity($deployment, $fields, $parameters)) {
-                    $deployment->updated_by   = $this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga');
-                    $deployment->updated_date = new \DateTime();
+
+                if ($this->app['datastore']->prepareValidateEntity($nd, $parameters->keys(), $parameters)) {
                     $this->app['datastore']->commit($deployment);
                 } else {
                     $errors = $nd->errors;
@@ -111,11 +114,7 @@ class Controller extends PluginController
             return;
         }
 
-        $errors     = null;
-        $parameters = new ParameterBag(array(
-            'title' => $payload['data']['subject'],
-        ));
-
+        $parameters = new ParameterBag();
         if (!$d_item) {
             $d_item               = new \Renogen\Entity\Item($d_deployment);
             $d_item->created_by   = $this->taigaUser();
@@ -131,14 +130,33 @@ class Controller extends PluginController
         $d_item->plugin_data['Taiga'] = array(
             'id' => $payload['data']['id'],
         );
+
+        $title   = $payload['data']['subject'];
+        $matches = null;
+        if (($extract = $pluginCore->getOptions('extract_refnum_from_subject')) && preg_match("/^$extract$/", $title, $matches)) {
+            $parameters->set('refnum', $matches[1]);
+            $parameters->set('title', $matches[2]);
+        } else {
+            $parameters->set('title', $title);
+            if (empty($d_item->refnum) && ($prefix = $pluginCore->getOptions('auto_refnum_from_id_prefix'))) {
+                $id     = $payload['data']['id'];
+                $lpad   = intval($pluginCore->getOptions('auto_refnum_from_id_ldap'));
+                $refnum = (strlen($id) >= $lpad ? $id : str_repeat('0', $lpad - strlen($id)).$id);
+                $parameters->set('refnum', $prefix.$refnum);
+            }
+        }
+
+        if ($payload['data']['description']) {
+            $parameters->set('description', $payload['data']['description']);
+        }
+
         if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
             $this->app['datastore']->commit($d_item);
-        } else {
-            $errors = $d_item->errors;
         }
+
         return new JsonResponse(array(
             'status' => empty($errors) ? 'success' : 'error',
-            'errors' => $errors,
+            'errors' => $d_item->errors,
         ));
     }
 
@@ -155,12 +173,17 @@ class Controller extends PluginController
             $this->app['datastore']->commit($taiga);
         }
         if ($request->request->get('_action') == 'Save') {
-            $pluginCore->setOptions(array(
-                'allow_delete_item' => $request->request->get('allow_delete_item', 0),
-            ));
+            $options = $pluginCore->getOptions();
+            foreach ($options as $k => $v) {
+                $options[$k] = $request->request->get($k, $v);
+            }
+            $pluginCore->setOptions($options);
         }
         $this->savePlugin();
-        return $this->render('configure');
+        return $this->render('configure', array(
+                'extract_refnum_patterns' => $this->extract_refnum_patterns,
+                'deployment_date_adjustments' => $this->deployment_date_adjustments,
+        ));
     }
 
     public static function availableActions()
@@ -183,11 +206,25 @@ class Controller extends PluginController
         return null;
     }
 
-    protected function makeDeploymentDate($string)
+    protected function makeDeploymentDate(PluginCore &$pluginCore, $string)
     {
         $execute_date = DateTime::createFromFormat('Y-m-d', $string, new DateTimeZone('UTC'));
-        $execute_date->setTime(0, 0, 0);
-        $execute_date->add(new DateInterval('P1D'));
+        $matches      = null;
+        if (preg_match("/^(\\d+):(\\d+) (\\w+)$/", $pluginCore->getOptions('deployment_time'), $matches)) {
+            if ($matches[3] == 'PM' && $matches[1] < 12) {
+                $matches[1] += 12;
+            } elseif (($matches[3] == 'AM' && $matches[1] == 12)) {
+                $matches[1] = 0;
+            }
+            $execute_date->setTime($matches[1], $matches[2], 0);
+        } else {
+            $execute_date->setTime(0, 0, 0);
+        }
+
+        $adjust_date = $pluginCore->getOptions('deployment_date_adjust');
+        if (intval($adjust_date)) {
+            $execute_date->add(new DateInterval("P{$adjust_date}D"));
+        }
         return $execute_date;
     }
 
