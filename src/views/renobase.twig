@@ -133,19 +133,20 @@
     {% endif %}
 {% endmacro %}
 
-{% macro showStatus(runitem) %}
-    <span class="ui tag label {% if runitem.status == 'Failed' %}red{% else %}green{% endif %}">{{runitem.status}}</span>
+{% macro runItemStatusControl(runitem) %}
     {% if runitem.status == 'New' and app.securilex.isGranted(['execute','approval'],runitem.deployment.project) %}
-        <div style="margin:2pt">
-            <a class="ui button no-print" href="{{app.entity_path('runitem_completed',runitem)}}" onclick="return confirm('Completed?')">
+        <div class="ui buttons">
+            <a class="ui positive button" href="{{app.entity_path('runitem_completed',runitem)}}" onclick="return confirm('Completed?')">
                 <i class="ui checkmark icon"></i>Completed
             </a>
-        </div>
-        <div style="margin:2pt">
-            <a class="ui button no-print" href="{{app.entity_path('runitem_failed',runitem)}}" onclick="return confirm('Failed?')">
+            <div class="or"></div>
+            <a class="ui negative button" href="{{app.entity_path('runitem_failed',runitem)}}" onclick="return confirm('Failed?')">
                 <i class="ui x icon"></i>Failed
             </a>
         </div>
+    {% else %}
+        <span class="ui horizontal label {% if runitem.status == 'Failed' %}red{% elseif runitem.status == 'Completed' %}green{% endif %}">{{runitem.status}}</span>
+        <small>by {{runitem.updated_by.shortname}}</small>
     {% endif %}
 {% endmacro %}
 

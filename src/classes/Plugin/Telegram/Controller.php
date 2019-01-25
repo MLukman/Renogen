@@ -55,7 +55,7 @@ class Controller extends \Renogen\Plugin\PluginController
                 $group_names = $request->request->get('group_name');
                 if (!$request->request->get('bot_token')) {
                     $this->deletePlugin();
-                    return $this->app->redirect();
+                    return $this->app->params_redirect();
                 } else if ($token) {
                     $noptions = array(
                         'bot_token' => $token,
@@ -72,7 +72,7 @@ class Controller extends \Renogen\Plugin\PluginController
                     }
                     $pluginCore->setOptions($noptions);
                     $this->savePlugin();
-                    return $this->app->redirect();
+                    return $this->app->params_redirect();
                 }
                 break;
         }

@@ -393,8 +393,8 @@ class Application extends \Silex\Application
 
     public function logo()
     {
-        return null;
-        //return $this['request']->getBaseUrl().'/ui/logo.png';
+        //return null;
+        return $this['request']->getBaseUrl().'/ui/logo.png';
     }
 
     /**
@@ -575,7 +575,7 @@ class Application extends \Silex\Application
         return $this->path($path, $this->entityParams($entity) + $extras);
     }
 
-    public function redirect($path = null, Array $params = array(),
+    public function params_redirect($path = null, Array $params = array(),
                              $anchor = null)
     {
         return new RedirectResponse($path ? $this->path($path, $params).
@@ -584,6 +584,6 @@ class Application extends \Silex\Application
 
     public function entity_redirect($path, Base\Entity $entity, $anchor = null)
     {
-        return $this->redirect($path, $this->entityParams($entity), $anchor);
+        return $this->params_redirect($path, $this->entityParams($entity), $anchor);
     }
 }

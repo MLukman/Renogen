@@ -76,7 +76,7 @@ class Project extends RenoController
                 $this->app['datastore']->deleteEntity($project);
                 $this->app['datastore']->commit();
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
-                return $this->app->redirect('home');
+                return $this->app->params_redirect('home');
             }
             if (!$project) {
                 $project     = new \Renogen\Entity\Project();

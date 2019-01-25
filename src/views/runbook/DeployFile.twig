@@ -2,8 +2,8 @@
     <thead>
         <tr>
             <th>#</th>
-            <th class="four wide">Nodes</th>
-            <th class="four wide">File</th>
+            <th>Nodes</th>
+            <th>File</th>
             <th>Instruction</th>
             <th>Status</th>
         </tr>
@@ -20,11 +20,11 @@
                 <td class="top aligned">
                     {{ r.prettyDisplay(row.params.File)}}
                 </td>
-                <td class="top aligned">
+                <td class="top aligned" style="max-width: 480px; overflow-x: auto;">
                     {{ r.prettyDisplay(row.params.Instruction) }}
                 </td>
                 <td class="top aligned collapsing">
-                    {{ r.showStatus(row.runitem) }}
+                    {{ r.runItemStatusControl(row.runitem) }}
                 </td>
             </tr>
         {% endfor %}

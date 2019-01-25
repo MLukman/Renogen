@@ -180,14 +180,14 @@
     <div id="topbar" class="no-print">
         <div id="topmenu" class="ui stackable menu inverted purple">
 
-            <div class="ui title item">
-                <a style="padding-right: 30pt" href="{{app.path('home')}}">
+            <div class="ui title item" style="padding:8px">
+                <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
                     {% block menutitle %}
                         {% set logo = app.logo %}
                         {% if logo %}
                             <img src="{{logo}}" />
                         {% else %}
-                            <h3>
+                            <h3 style="padding: 8px;">
                                 {% set icon = app.icon %}
                                 {% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}
                                 {{app.title}}

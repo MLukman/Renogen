@@ -34,6 +34,41 @@ class Controller extends PluginController
         'next friday' => 'The coming Friday',
     );
 
+    public function handleConfigure(Request $request, Project $project,
+                                    PluginCore &$pluginCore)
+    {
+        if (!$this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga')) {
+            $taiga            = new User();
+            $taiga->username  = 'taiga';
+            $taiga->shortname = 'Taiga';
+            $taiga->roles     = array('ROLE_NONE');
+            $taiga->auth      = 'password';
+            $taiga->password  = md5(random_bytes(100));
+            $this->app['datastore']->commit($taiga);
+        }
+        if ($request->request->get('_action') == 'Save') {
+            $options = $pluginCore->getOptions();
+            foreach ($options as $k => $v) {
+                $options[$k] = $request->request->get($k, $v);
+            }
+            $pluginCore->setOptions($options);
+        }
+        $this->savePlugin();
+        return $this->render('configure', array(
+                'extract_refnum_patterns' => $this->extract_refnum_patterns,
+                'deployment_date_adjustments' => $this->deployment_date_adjustments,
+        ));
+    }
+
+    public static function availableActions()
+    {
+        return array(
+            'webhook' => array(
+                'public' => true,
+            ),
+        );
+    }
+
     public function handleAction(Request $request, Project $project,
                                  PluginCore &$pluginCore, $action)
     {
@@ -59,11 +94,6 @@ class Controller extends PluginController
         switch ($payload['action']) {
             case 'create':
             case 'change':
-                $parameters = new ParameterBag(array(
-                    'title' => $payload['data']['name'],
-                    'execute_date' => $this->makeDeploymentDate($pluginCore, $payload['data']['estimated_finish']),
-                ));
-
                 if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))) {
                     $nd->updated_by   = $this->taigaUser();
                     $nd->updated_date = new \DateTime();
@@ -75,17 +105,39 @@ class Controller extends PluginController
                     );
                 }
 
+                $parameters = new ParameterBag(array(
+                    'title' => $payload['data']['name'],
+                    'execute_date' => $this->makeDeploymentDate($pluginCore, $payload['data']['estimated_finish']),
+                ));
                 if ($this->app['datastore']->prepareValidateEntity($nd, $parameters->keys(), $parameters)) {
                     $this->app['datastore']->commit($nd);
                 } else {
                     $errors = $nd->errors;
                 }
-                break;
+                return new JsonResponse(array(
+                    'status' => empty($errors) ? 'success' : 'failed',
+                    'errors' => $errors,
+                ));
+
+            case 'delete':
+                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))
+                    &&
+                    $nd->items->count() == 0) {
+                    $nd->updated_by   = $this->taigaUser();
+                    $nd->updated_date = new \DateTime();
+                    $this->app['datastore']->deleteEntity($nd);
+                    $this->app['datastore']->commit();
+                    return new JsonResponse(array(
+                        'status' => 'success',
+                        'message' => 'deployment deleted',
+                    ));
+                } else {
+                    return new JsonResponse(array(
+                        'status' => 'failed',
+                        'message' => 'deployment not found',
+                        ), 404);
+                }
         }
-        return new JsonResponse(array(
-            'status' => empty($errors) ? 'success' : 'error',
-            'errors' => $errors,
-        ));
     }
 
     protected function handleWebhookItem(Project $project,
@@ -106,8 +158,9 @@ class Controller extends PluginController
 
         if ($d_item && ($payload['action'] == 'delete' || empty($payload['data']['milestone']))) {
             if ($pluginCore->getOptions('allow_delete_item') && (
-                !$pluginCore->getOptions('delete_fresh_item_only') || $d_item->status
-                == 'Documentation')) {
+                !$pluginCore->getOptions('delete_fresh_item_only') || ($d_item->status
+                == 'Documentation' && $d_item->activities->count() == 0 && $d_item->attachments->count()
+                == 0))) {
                 $this->app['datastore']->deleteEntity($d_item);
                 $this->app['datastore']->commit();
                 return new JsonResponse(array(
@@ -145,6 +198,7 @@ class Controller extends PluginController
             $d_item->deployment = $d_deployment;
         }
 
+        // store taiga userstory id
         $d_item->plugin_data['Taiga'] = array(
             'id' => $payload['data']['id'],
         );
@@ -168,6 +222,20 @@ class Controller extends PluginController
             $parameters->set('description', $payload['data']['description']);
         }
 
+        // read category & modules from tags
+        $modules = array();
+        foreach ($payload['data']['tags'] as $tag) {
+            if (in_array($tag, $d_item->deployment->project->categories)) {
+                $parameters->set('category', $tag);
+            }
+            if (in_array($tag, $d_item->deployment->project->modules)) {
+                $modules[] = $tag;
+            }
+        }
+        if (!empty($modules)) {
+            $parameters->set('modules', $modules);
+        }
+
         if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
             $this->app['datastore']->commit($d_item);
         }
@@ -176,41 +244,6 @@ class Controller extends PluginController
             'status' => empty($errors) ? 'success' : 'error',
             'errors' => $d_item->errors,
         ));
-    }
-
-    public function handleConfigure(Request $request, Project $project,
-                                    PluginCore &$pluginCore)
-    {
-        if (!$this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga')) {
-            $taiga            = new User();
-            $taiga->username  = 'taiga';
-            $taiga->shortname = 'Taiga';
-            $taiga->roles     = array('ROLE_NONE');
-            $taiga->auth      = 'password';
-            $taiga->password  = md5(random_bytes(100));
-            $this->app['datastore']->commit($taiga);
-        }
-        if ($request->request->get('_action') == 'Save') {
-            $options = $pluginCore->getOptions();
-            foreach ($options as $k => $v) {
-                $options[$k] = $request->request->get($k, $v);
-            }
-            $pluginCore->setOptions($options);
-        }
-        $this->savePlugin();
-        return $this->render('configure', array(
-                'extract_refnum_patterns' => $this->extract_refnum_patterns,
-                'deployment_date_adjustments' => $this->deployment_date_adjustments,
-        ));
-    }
-
-    public static function availableActions()
-    {
-        return array(
-            'webhook' => array(
-                'public' => true,
-            ),
-        );
     }
 
     protected function findDeploymentWithTaigaId(Project $project, $id)

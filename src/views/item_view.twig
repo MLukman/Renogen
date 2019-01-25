@@ -15,14 +15,6 @@
             }
             $('#change_status_confirmation').modal('show');
         }
-        $(function () {
-            $('#change_status_dropdown').dropdown({
-                action: function (text, value, element) {
-                    changeStatus(value);
-                    $('#change_status_dropdown').dropdown('hide');
-                }
-            });
-        });
     </script>
 {% endblock %}
 
