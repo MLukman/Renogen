@@ -135,7 +135,7 @@ class Controller extends PluginController
                     return new JsonResponse(array(
                         'status' => 'failed',
                         'message' => 'deployment not found',
-                        ), 404);
+                    ));
                 }
         }
     }
@@ -171,7 +171,7 @@ class Controller extends PluginController
                 return new JsonResponse(array(
                     'status' => 'failed',
                     'message' => 'item deletion disabled',
-                    ), 405);
+                ));
             }
         }
 
@@ -180,7 +180,7 @@ class Controller extends PluginController
             return new JsonResponse(array(
                 'status' => 'failed',
                 'message' => 'milestone not defined',
-                ), 400);
+            ));
         }
         if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id']))) {
             // do not process the milestone was not integrated into Renogen
