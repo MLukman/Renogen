@@ -19,8 +19,7 @@ abstract class PluginController extends RenoController
     public function getName()
     {
         $reflection = new ReflectionClass($this);
-        $coreClass  = $reflection->getNamespaceName().'\\Core';
-        return $coreClass::getName();
+        return basename(dirname($reflection->getFileName()));
     }
 
     public function getTitle()

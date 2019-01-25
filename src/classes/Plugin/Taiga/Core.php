@@ -10,7 +10,7 @@ class Core extends \Renogen\Plugin\PluginCore
         'extract_refnum_from_subject' => null,
         'auto_refnum_from_id_prefix' => null,
         'auto_refnum_from_id_lpad' => 1,
-        'deployment_date_adjust' => '+1 day',
+        'deployment_date_adjust' => '+0 day',
         'deployment_time' => '12:00 AM',
     );
 

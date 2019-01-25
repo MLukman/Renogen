@@ -92,9 +92,13 @@ class Deployment extends ApproveableEntity
         return $this->datetimeString(true).' - '.$this->title;
     }
 
-    public function datetimeString($pretty = false)
+    public function datetimeString($pretty = false, \DateTime $ddate = null)
     {
-        return $this->execute_date->format($pretty ? 'd/m/Y h:i A' : 'YmdHi');
+        if (!$ddate) {
+            $ddate = $this->execute_date;
+        }
+        return $ddate->format($pretty ?
+                ($ddate->format('Hi') == '0000' ? 'd/m/Y' : 'd/m/Y h:i A') : 'YmdHi');
     }
 
     public function isActive()

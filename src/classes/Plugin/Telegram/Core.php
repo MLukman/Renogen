@@ -83,7 +83,7 @@ class Core extends \Renogen\Plugin\PluginCore
         $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
         $message = str_replace('{url}', $this->escape($this->app->url('deployment_view', $this->app->entityParams($deployment))), $message);
         $message = str_replace('{title}', $this->escape($deployment->title), $message);
-        $message = str_replace('{datetime}', $this->escape($deployment->execute_date->format('d/m/Y h:i A')), $message);
+        $message = str_replace('{datetime}', $this->escape($deployment->datetimeString(true)), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($deployment->created_by->shortname), $message);
         $this->sendMessage($message);
     }
@@ -95,8 +95,8 @@ class Core extends \Renogen\Plugin\PluginCore
         $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
         $message = str_replace('{url}', $this->escape($this->app->url('deployment_view', $this->app->entityParams($deployment))), $message);
         $message = str_replace('{title}', $this->escape($deployment->title), $message);
-        $message = str_replace('{old}', $this->escape($old_date->format('d/m/Y h:i A')), $message);
-        $message = str_replace('{new}', $this->escape($deployment->execute_date->format('d/m/Y h:i A')), $message);
+        $message = str_replace('{old}', $this->escape($deployment->datetimeString(true, $old_date)), $message);
+        $message = str_replace('{new}', $this->escape($deployment->datetimeString(true)), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($deployment->updated_by->shortname), $message);
         $this->sendMessage($message);
     }
