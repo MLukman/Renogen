@@ -97,8 +97,11 @@ class Deployment extends ApproveableEntity
         if (!$ddate) {
             $ddate = $this->execute_date;
         }
-        return $ddate->format($pretty ?
-                ($ddate->format('Hi') == '0000' ? 'd/m/Y' : 'd/m/Y h:i A') : 'YmdHi');
+        if ($ddate->format('Hi') == '0000') {
+            return $ddate->format($pretty ? 'd/m/Y' : 'Ymd');
+        } else {
+            return $ddate->format($pretty ? 'd/m/Y h:i A' : 'YmdHi');
+        }
     }
 
     public function isActive()

@@ -530,7 +530,7 @@ class Application extends \Silex\Application
             );
         } elseif ($entity instanceof Entity\Deployment) {
             return $this->entityParams($entity->project) + array(
-                'deployment' => $entity->execute_date->format('YmdHi'),
+                'deployment' => $entity->datetimeString(),
             );
         } elseif ($entity instanceof Entity\Item) {
             return $this->entityParams($entity->deployment) + array(

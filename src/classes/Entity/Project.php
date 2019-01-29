@@ -29,7 +29,7 @@ class Project extends Entity
     public $created_date;
 
     /**
-     * @Column(type="string", length=16)
+     * @Column(type="string", length=30)
      */
     public $name;
 
@@ -83,7 +83,7 @@ class Project extends Entity
      * @var array
      */
     protected $validation_rules   = array(
-        'name' => array('required' => 1, 'unique' => true, 'maxlen' => 16,
+        'name' => array('required' => 1, 'unique' => true, 'maxlen' => 30,
             'preg_match' => '/^[0-9a-zA-Z_-]+$/',
             'invalidvalues' => array('login', 'admin')),
         'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),

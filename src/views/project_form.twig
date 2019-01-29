@@ -20,7 +20,7 @@
         <div class="ui form">
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Name</label>
-                <input placeholder="Project name (max 16 alphanumeric and underscore characters only)" type="text" name="name" value="{{project.name|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
+                <input placeholder="Project name (max 30 alphanumeric, dash and underscore characters only)" type="text" name="name" value="{{project.name|default(null)}}" {% if is_existing %}disabled="disabled"{% endif %} />
                 {{ m.fieldError(errors|default([]), 'name') }}
             </div>
             <div class="ui required field basic segment">
