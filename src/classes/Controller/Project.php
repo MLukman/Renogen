@@ -88,6 +88,7 @@ class Project extends RenoController
                     ? explode("\n", str_replace("\r\n", "\n", $categories)) : null);
             $project->modules    = (($modules             = trim($post->get('modules')))
                     ? explode("\n", str_replace("\r\n", "\n", $modules)) : null);
+            $project->private    = $post->get('private', false);
             if ($this->app['datastore']->prepareValidateEntity($project, static::entityFields, $post)) {
                 $this->app['datastore']->commit($project);
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");

@@ -54,6 +54,11 @@ class Project extends Entity
     public $categories = array();
 
     /**
+     * @Column(type="boolean", options={"default":"0"})
+     */
+    public $private = false;
+
+    /**
      * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true)
      * @var ArrayCollection|Deployment[]
      */

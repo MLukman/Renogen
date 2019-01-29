@@ -8,27 +8,29 @@
     <div class="ui three stackable cards secondary segment">
         {% for project in projects %}
             {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
-            <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
-                <div class="content">
-                    <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
-                        <h2><i class="ui cube icon"></i> {{project.title}}</h2>
-                    </div>
-                    {% if project.description %}
-                        <div class="ui description">
-                            {{project.description}}
+            {% if has_access or not project.private %}
+                <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
+                    <div class="content">
+                        <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
+                            <h2><i class="ui cube icon"></i> {{project.title}}</h2>
                         </div>
-                    {% endif %}
-                </div>
-                <div class="extra content">
-                    <div class="ui meta">
-                        {% if has_access %}
-                            {{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
-                        {% else %}
-                            You have no access to this project
+                        {% if project.description %}
+                            <div class="ui description">
+                                {{project.description}}
+                            </div>
                         {% endif %}
                     </div>
-                </div>
-            </a>
+                    <div class="extra content">
+                        <div class="ui meta">
+                            {% if has_access %}
+                                {{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
+                            {% else %}
+                                You have no access to this project
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endif %}
         {% endfor %}
         {% if app.securilex.isGranted('prefix', 'project_create') %}
             <a class="ui card" href="{{app.path('project_create')}}">
