@@ -95,11 +95,11 @@
 {% macro arrayTable(arr,level) %}
     {% if arr is iterable %}
         {% import _self as r %}	
-        <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table" style="margin:0; table-layout: fixed;">
+        <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
             {% for key,val in arr %}
                 <tr>
                     {% if not (key matches '/^[0-9]+$/') %}
-                        <td class="top aligned" style="overflow:auto">
+                        <td class="top aligned collapsing" style="overflow:auto">
                             {% if level is not defined or level == 0 %}
                                 <strong>{{key}}</strong>
                             {% else %}
@@ -107,7 +107,7 @@
                             {% endif %}
                         </td>
                     {% endif %}
-                    <td class="ui top aligned" style="overflow:auto" colspan="2">
+                    <td class="ui top aligned" style="overflow:auto">
                         {{r.prettyDisplay(val,level|default(0)+1)}}
                     </td>
                 </tr>
@@ -136,13 +136,13 @@
 {% macro runItemStatusControl(runitem) %}
     {% if runitem.status == 'New' and app.securilex.isGranted(['execute','approval'],runitem.deployment.project) %}
         <div class="ui buttons">
-            <a class="ui positive button" href="{{app.entity_path('runitem_completed',runitem)}}" onclick="return confirm('Completed?')">
+            <div class="ui positive button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, 'Completed')">
                 <i class="ui checkmark icon"></i>Completed
-            </a>
+            </div>
             <div class="or"></div>
-            <a class="ui negative button" href="{{app.entity_path('runitem_failed',runitem)}}" onclick="return confirm('Failed?')">
+            <div class="ui negative button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, 'Failed', true)">
                 <i class="ui x icon"></i>Failed
-            </a>
+            </div>
         </div>
     {% else %}
         <span class="ui horizontal label {% if runitem.status == 'Failed' %}red{% elseif runitem.status == 'Completed' %}green{% endif %}">{{runitem.status}}</span>

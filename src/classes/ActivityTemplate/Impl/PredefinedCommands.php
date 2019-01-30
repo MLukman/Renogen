@@ -30,7 +30,7 @@ class PredefinedCommands extends BaseClass
     {
         return array(
             "Nodes" => $activity->parameters['nodes'],
-            "Run as" => htmlentities($activity->parameters['runas']),
+            "Run as" => $activity->parameters['runas'],
             "Commands" => '<pre>'.htmlentities($this->prepareCommands($activity)).'</pre>',
         );
     }

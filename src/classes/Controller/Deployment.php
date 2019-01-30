@@ -76,7 +76,6 @@ class Deployment extends RenoController
                 }
             }
 
-            $old_date = $deployment->execute_date;
             if ($this->app['datastore']->prepareValidateEntity($deployment, static::entityFields, $post)) {
                 $is_new = ($deployment->id == null);
                 $this->app['datastore']->commit($deployment);

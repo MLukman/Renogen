@@ -3,6 +3,7 @@
 namespace Renogen;
 
 use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
 use Renogen\Base\Entity;
 use Renogen\Entity\Activity;
 use Renogen\Entity\Attachment;
@@ -11,28 +12,36 @@ use Renogen\Entity\FileLink;
 use Renogen\Entity\FileStore;
 use Renogen\Entity\Item;
 use Renogen\Entity\Project;
+use Renogen\Entity\Template;
+use Renogen\Entity\User;
 use Renogen\Exception\NoResultException;
+use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use Twig\Template;
 
 class DataStore implements ServiceProviderInterface
 {
     /** @var Application */
     protected $app;
 
-    public function boot(\Silex\Application $app)
+    public function boot(Application $app)
     {
 
     }
 
-    public function register(\Silex\Application $app)
+    public function register(Application $app)
     {
         $this->app              = $app;
         $this->app['datastore'] = $this;
     }
 
+    /**
+     *
+     * @param type $entity
+     * @param type $id_or_criteria
+     * @return Entity
+     */
     public function queryOne($entity, $id_or_criteria)
     {
         if (empty($id_or_criteria)) {
@@ -45,6 +54,13 @@ class DataStore implements ServiceProviderInterface
             $repo->find($id_or_criteria));
     }
 
+    /**
+     *
+     * @param string $entity
+     * @param array $criteria
+     * @param array $sort
+     * @return ArrayCollection
+     */
     public function queryMany($entity, Array $criteria = array(),
                               Array $sort = array())
     {
@@ -152,21 +168,47 @@ class DataStore implements ServiceProviderInterface
 
     /**
      *
-     * @param type $project
-     * @param type $template
+     * @param Template|string $template
+     * @param Project|string $project
      * @return Template
      * @throws NoResultException
      */
-    public function fetchTemplate($project, $template)
+    public function fetchTemplate($template, $project = null)
     {
         if (!($template instanceof Template)) {
-            $id          = $template;
-            $project_obj = $this->fetchProject($project);
-            if (!($template    = $project_obj->templates->get($id))) {
+            $name     = $template;
+            $template = $this->queryOne('\Renogen\Entity\Template', $template);
+            if (!$template || ($project != null && $template->project != $this->fetchProject($project))) {
                 throw new NoResultException("There is not such template with id '$name'");
             }
         }
         return $template;
+    }
+
+    /**
+     *
+     * @param User $user
+     * @param type $roles
+     * @param Project $exclude
+     * @return ArrayCollection|Project[]
+     */
+    public function getProjectsForUserAndRole(User $user, $roles,
+                                              Project $exclude = null)
+    {
+        $projects = new ArrayCollection();
+        if (!is_array($roles)) {
+            $roles = array($roles);
+        }
+        foreach ($roles as $role) {
+            foreach ($this->queryMany('\Renogen\Entity\UserProject', array(
+                'user' => $user,
+                'role' => $role)) as $up) {
+                if ($up->project != $exclude) {
+                    $projects->add($up->project);
+                }
+            }
+        }
+        return $projects;
     }
 
     /**
@@ -196,6 +238,13 @@ class DataStore implements ServiceProviderInterface
         $this->app['em']->detach($entity);
     }
 
+    /**
+     *
+     * @param Entity $entity
+     * @param array $fields
+     * @param ParameterBag $data
+     * @return boolean
+     */
     public function prepareValidateEntity(Entity &$entity, Array $fields,
                                           ParameterBag $data)
     {
@@ -236,7 +285,7 @@ class DataStore implements ServiceProviderInterface
             if (!$filestore) {
                 $filestore            = new FileStore();
                 $filestore->id        = $sha1;
-                $filestore->data      = fopen($file->getRealPath(),'rb');
+                $filestore->data      = fopen($file->getRealPath(), 'rb');
                 $filestore->filesize  = $file->getClientSize();
                 $filestore->mime_type = $file->getMimeType();
             }

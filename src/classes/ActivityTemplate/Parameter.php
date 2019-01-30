@@ -4,6 +4,8 @@ namespace Renogen\ActivityTemplate;
 
 use Renogen\Application;
 use Renogen\Base\Actionable;
+use Renogen\Entity\FileLink;
+use Renogen\Entity\RunItemFile;
 use Symfony\Component\HttpFoundation\Request;
 
 class Parameter
@@ -325,6 +327,12 @@ class Parameter
                                         array &$input, $key)
     {
         // nothing to do
+    }
+
+    public function getDownloadLink(FileLink $filelink)
+    {
+        return $this->app->entity_path($filelink instanceof RunItemFile ?
+                'runitem_file_download' : 'activity_file_download', $filelink);
     }
 
     public function getTwigForTemplateForm()

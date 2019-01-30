@@ -31,7 +31,15 @@ class Template extends RenoController
             $this->addEntityCrumb($project_obj);
             //$this->addCrumb('Activity templates', $this->app->entity_path('template_list', $project_obj), 'clipboard');
             $this->addCreateCrumb('Create activity template', $this->app->entity_path('template_create', $project_obj));
-            return $this->edit_or_create($request, new \Renogen\Entity\Template($project_obj), $request->request);
+            $template    = null;
+            if (($copyfrom    = $request->query->get('copy')) && ($copytmpl    = $this->app['datastore']->fetchTemplate($copyfrom))) {
+                $template          = clone $copytmpl;
+                $template->id      = null;
+                $template->project = $project_obj;
+            } else {
+                $template = new \Renogen\Entity\Template($project_obj);
+            }
+            return $this->edit_or_create($request, $template, $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -40,7 +48,7 @@ class Template extends RenoController
     public function edit(Request $request, $project, $template)
     {
         try {
-            $template_obj = $this->app['datastore']->fetchTemplate($project, $template);
+            $template_obj = $this->app['datastore']->fetchTemplate($template, $project);
             $this->addEntityCrumb($template_obj);
             return $this->edit_or_create($request, $template_obj, $request->request);
         } catch (NoResultException $ex) {

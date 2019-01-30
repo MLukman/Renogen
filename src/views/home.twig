@@ -1,8 +1,7 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-    <h1 class="ui header">Welcome to Release Note Generator (Renogen)
-    </h1>
+    <h2>Renogen is a release management approval &amp; tracking platform</h2>
     <h3>Please select a project below <i class="ui level down icon"></i></h3>
     <p>&nbsp;</p>
     <div class="ui three stackable cards secondary segment">
@@ -10,9 +9,21 @@
             {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
             {% if has_access or not project.private %}
                 <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
-                    <div class="content">
+                    <div class="ui content">
                         <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
-                            <h2><i class="ui cube icon"></i> {{project.title}}</h2>
+                            <h2>
+                                <i class="ui cube icon"></i> 
+                                {{project.title}}
+                                {% if project.private %}
+                                    <div class="ui right corner label">
+                                        <i class="ui lock icon" title="Private project"></i>
+                                    </div>
+                                {% elseif not has_access %}
+                                    <div class="ui right corner label">
+                                        <i class="ui eye slash icon" title="No access"></i>
+                                    </div>
+                                {% endif %}
+                            </h2>
                         </div>
                         {% if project.description %}
                             <div class="ui description">
@@ -35,7 +46,7 @@
         {% if app.securilex.isGranted('prefix', 'project_create') %}
             <a class="ui card" href="{{app.path('project_create')}}">
                 <div class="content">
-                    <div class="ui purple header">
+                    <div class="ui red header">
                         <h2>
                             <i class="ui plus icon"></i>Create new project
                         </h2>

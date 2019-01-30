@@ -48,38 +48,6 @@ class RundeckJob extends BaseClass
         return $describe;
     }
 
-    protected function getOptions(Actionable $activity, $useLabel = false)
-    {
-        $options  = array();
-        $optParam = $this->getParameter('options');
-        $data     = $optParam->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'options', $activity);
-        foreach ($activity->template->parameters['options'] as $p) {
-            if ($useLabel) {
-                $d = $p['title'];
-            } else {
-                $d = $p['id'];
-            }
-
-            $options[$d] = null;
-            if (isset($data[$p['id']])) {
-                if ($p['type'] == 'file') {
-                    $file = $this->app['datastore']->queryOne($activity->fileClass, array(
-                        "{$activity->actionableType}" => $activity,
-                        'classifier' => 'options.'.$p['id'],
-                    ));
-                    if ($file) {
-                        $options[$d] = '<a href="'.htmlentities($this->getDownloadLink($file)).'">'.htmlentities($file->filename).'</a>';
-                    }
-                } elseif ($useLabel && $p['type'] == 'password') {
-                    $options[$d] = '******';
-                } else {
-                    $options[$d] = $data[$p['id']];
-                }
-            }
-        }
-        return $options;
-    }
-
     public function classTitle()
     {
         return '[RunDeck] Execute job';

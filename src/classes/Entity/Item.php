@@ -182,7 +182,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
         }
     }
 
-    public function changeStatus($status)
+    public function changeStatus($status, $remark = null)
     {
         $project         = $this->deployment->project;
         $old_status_real = $this->status();
@@ -200,9 +200,19 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
         if (static::compareStatuses($project, $status, 'Go No Go') >= 0) {
             parent::unapprove();
         }
+
+        $old_status   = $this->status;
         $this->storeOldValues(array('status'));
         $this->status = $status;
-        $this->status_logs->add(new ItemStatusLog($this, $this->status));
+        $status_log   = new ItemStatusLog($this, $this->status);
+        if (!empty($remark)) {
+            $comment            = new ItemComment($this);
+            $comment->event     = "$old_status > $this->status";
+            $comment->text      = $remark;
+            $this->comments->add($comment);
+            $status_log->remark = $remark;
+        }
+        $this->status_logs->add($status_log);
         return static::compareStatuses($project, $old_status_real, $status);
     }
 

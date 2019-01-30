@@ -14,18 +14,26 @@
                 $('#changeStatusRemarkRequired').val(0);
             }
             $('#change_status_confirmation').modal('show');
+            validateRemark();
         }
+
+        function validateRemark() {
+            if ($('#changeStatusRemarkRequired').val() == 1 && $('#changeStatusRemarkTextArea').val().trim() == '') {
+                $('#change_status_button').addClass('disabled');
+            } else {
+                $('#change_status_button').removeClass('disabled');
+            }
+        }
+
+        $(function () {
+            $('#changeStatusRemarkTextArea').on('input propertychange', validateRemark);
+            $('.menu .item').tab();
+        });
     </script>
 {% endblock %}
 
 {% block content %}
-    {% set is_acl_approval = app.securilex.isGranted('approval',item.deployment.project) %}
-    {% set is_acl_review = app.securilex.isGranted('review',item.deployment.project) %}
-    {% set is_acl_entry = app.securilex.isGranted(['entry','review'],item.deployment.project) %}
-    {% set is_acl_execute = app.securilex.isGranted(['execute','entry','review','approval'],item.deployment.project) %}
-    {% set editable = app.securilex.isGranted(['entry', 'approval'],item.deployment.project) and item.compareCurrentStatusTo('Go No Go') > 0 %}
-
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(item.deployment.project, true)}} &raquo;</span>
             <span>{{r.crumb_deployment(item.deployment, true)}} &raquo;</span>
@@ -33,24 +41,23 @@
         <span>
             <i class="ui idea icon"></i>{{item.displayTitle}}
         </span>
-        <div>
-            {% if editable %}
-                <a class="ui right floated button no-print" href="{{app.entity_path('item_edit',item)}}"><i class="ui pencil icon"></i>Edit</a>
-            {% endif %}
-            <div class="ui labels">
-                {{ r.itemCategoryLabel(item) }}
-                {{ r.itemModulesLabel(item) }}
-            </div>
-        </div>
-        <div style="clear:both"></div>
     </h1>
 
     {% if item.description %}
-        <div class="ui info message">{{item.description|nl2br}}</div>
+        <p>{{item.description|nl2br}}</p>
     {% endif %}
+    <div>
+        {% if editable %}
+            <a class="ui right floated button no-print" href="{{app.entity_path('item_edit',item)}}"><i class="ui pencil icon"></i>Edit</a>
+        {% endif %}
+        <div class="ui labels">
+            {{ r.itemCategoryLabel(item) }}
+            {{ r.itemModulesLabel(item) }}
+        </div>
+        <div class="ui divider" style="clear:both"></div>
+    </div>
 
     <div class="ui mobile stackable grid">
-
         <div class="four wide column">
             <h2 class="ui top attached block header">
                 Status: <span style="white-space: nowrap"><i class="ui {{ item.statusIcon() }} icon"></i>{{ item.status }}</span>
@@ -62,18 +69,22 @@
                 </div>
 
                 <div class="ui bottom attached tab segment active" data-tab="status-progress">
-                    <div class="ui stackable ordered small vertical fluid steps">
+                    <div class="ui stackable small vertical fluid steps">
                         {% set transitions = item.getAllowedTransitions() %}
                         {% for s in item.deployment.project.item_statuses|keys %}
                             {% set prog = item.compareCurrentStatusTo(s) %}
+                            {% set status_info = item.deployment.project.item_statuses[s] %}
                             <div class="{% if prog < 0 or item.status == 'Completed' %}completed{% endif %} {% if prog == 0 %}active{% endif %} step">
+                                <i class="ui {{status_info.stepicon}} icon"></i>
                                 <div class="content">
                                     <div class="title" {% if prog < 0 %}style="text-decoration: line-through"{% endif %}>{{s}}</div>
-                                    {% for ts,tc in transitions[s]|default([]) %}
-                                        <div class="ui {{tc.type}} button" onclick="changeStatus({{tc.status|json_encode|e('html_attr')}}, {{tc.remark ? 1:0}})">
-                                            {{ts}}
-                                        </div>
-                                    {% endfor %}
+                                    <div class="description">
+                                        {% for ts,tc in transitions[s]|default([]) %}
+                                            <div class="ui {{tc.type}} mini button" onclick="changeStatus({{tc.status|json_encode|e('html_attr')}}, {{tc.remark ? 1:0}})">
+                                                {{ts}}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -113,18 +124,19 @@
                 </span>
                 {% if editable %}
                     <a class="ui right floated primary button no-print" href="{{app.entity_path('activity_create',item)}}">
-                        <i class="ui plus icon"></i>Add activity
+                        <i class="ui plus icon"></i>Add
                     </a>
                 {% endif %}
                 <div style="clear:both"></div>
             </h2>
 
-            <table class="ui celled striped table">
+            <table class="ui celled striped table" style="table-layout: fixed">
                 <thead>
                     <tr>
                         <th class="ui collapsing">#</th>
-                        <th>Template</th>
-                        <th colspan="2">Description</th>
+                        <th style="width:25%">Template</th>
+                        <th>Description</th>
+                        <th style="width:8em"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,10 +152,8 @@
                                 {% endif %}
                                 {{activity.template.title}}
                             </td>
-                            <td class="ui top aligned" style="position:relative;">
-                                <div style="overflow: auto; max-height: 400px; max-width: inherit">
-                                    {{ r.arrayTable(description) }}
-                                </div>
+                            <td class="ui top aligned" style="position:relative; overflow: auto; max-height: 400px; max-width: inherit;">
+                                {{ r.arrayTable(description) }}
                             </td>
                             <td class="ui top aligned collapsing no-print">
                                 <div>{{activity.runitem.status|default('New')}}</div>
@@ -168,7 +178,7 @@
                 </span>
                 {% if editable %}
                     <a class="ui right floated primary button no-print" href="{{app.entity_path('attachment_create',item)}}">
-                        <i class="ui plus icon"></i>Add attachment
+                        <i class="ui plus icon"></i>Add
                     </a>
                 {% endif %}
                 <div style="clear:both"></div>
@@ -260,7 +270,7 @@
                     {% else %}
                         <em>No comments yet</em>
                     {% endfor %}
-                    {% if is_acl_execute %}
+                    {% if commentable %}
                         <form class="ui center aligned form basic segment no-print" method="POST" action="{{app.entity_path('item_comment_add',item)}}">
                             <h4 class="ui horizontal divider header">
                                 Add comment
@@ -279,24 +289,18 @@
     <br />
     {{ r.timestamps(item) }}
 
-    <script>
-        $(function () {
-            $('.menu .item').tab();
-        });
-    </script>
-
     <div id="change_status_confirmation" class="ui modal">
         <i class="close icon"></i>
         <div class="header">
             Change Status to <span id="change_status_next">next</span>
         </div>
-        <form class="ui form basic segment" method="POST" action="{{app.entity_path('item_change_status',item)}}">
+        <form class="ui form basic segment" method="POST" action="{{app.entity_path('item_change_status',item)}}" onsubmit="showOverlay('Updating ...');">
             <div id="changeStatusRemarkField" class="ui field content">
                 <label>Remark</label>
-                <textarea placeholder="Please enter a remark" name="remark"></textarea>
+                <textarea id="changeStatusRemarkTextArea" placeholder="Please enter a remark" name="remark"></textarea>
             </div>
             <div class="actions">
-                <input class="ui ok primary button" type="submit" value="Change Status" />
+                <input id="change_status_button" class="ui ok primary button" type="submit" value="Change Status" />
                 <div class="ui cancel button">Cancel</div>
                 <input id="changeStatusRemarkRequired" type="hidden" name="remark_required" value="" />
                 <input id="change_status_field" type="hidden" name="new_status" value="" />

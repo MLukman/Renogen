@@ -8,7 +8,24 @@
             <span>{{r.crumb_project(project, true)}} &raquo;</span>
             <span><i class="ui clipboard icon"></i><a href="{{app.entity_path('template_list',project)}}">Activity Templates</a> &raquo;</span>
         </div>
-        <span><i class="ui copy icon"></i>{% if is_existing %}Edit{% else %}Create{% endif %} activity template</span>
+        {% if is_existing %}
+            <span><i class="ui copy icon"></i>Edit activity template</span>
+            {% set other_projects = app['datastore'].getProjectsForUserAndRole(app.userEntity(), 'approval', project) %}
+            {% if other_projects|length > 0 %}
+                <div class="ui right floated dropdown button no-print">
+                    <span class="text">Copy to ...</span>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        {% for p in other_projects %}
+                            <a class="ui item" href="{{app.entity_path('template_create',p)}}?copy={{template.id}}">{{p.title}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <span><i class="ui copy icon"></i>Create activity template</span>
+        {% endif %}
+        <div style="clear:both"></div>
     </h1>
 
     {% if errors|default(false) %}

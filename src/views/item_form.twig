@@ -84,12 +84,10 @@
                                 <option value="{{deployment.id}}">{{deployment.displayTitle()}}</option>
                             {% endif %}
                         {% endfor %}
-                        {% for p in app['datastore'].queryMany('\\Renogen\\Entity\\Project') %}
-                            {% if p != item.deployment.project and p.isUserNameAllowed(app.user().username, 'approval') %}
-                                {% for deployment in p.upcoming() %}
-                                    <option value="{{deployment.id}}">[{{p.title}}] {{deployment.displayTitle()}}</option>
-                                {% endfor %}
-                            {% endif %}
+                        {% for p in app['datastore'].getProjectsForUserAndRole(app.userEntity(), 'approval', item.deployment.project) %}
+                            {% for deployment in p.upcoming() %}
+                                <option value="{{deployment.id}}">[{{p.title}}] {{deployment.displayTitle()}}</option>
+                            {% endfor %}
                         {% endfor %}
                     </select>
                     {{ m.fieldError(errors|default([]), 'deployment') }}

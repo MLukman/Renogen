@@ -4,7 +4,6 @@ namespace Renogen\ActivityTemplate;
 
 use Renogen\Application;
 use Renogen\Base\Actionable;
-use Renogen\Base\RenoController;
 use Renogen\Entity\Activity;
 use Renogen\Entity\FileLink;
 use Renogen\Entity\RunItemFile;

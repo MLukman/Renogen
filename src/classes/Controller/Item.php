@@ -32,11 +32,18 @@ class Item extends RenoController
     public function view(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
+            $item_obj    = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $this->addEntityCrumb($item_obj);
+            $editable    = (
+                $this->app['securilex']->isGranted(['entry', 'approval'], $item_obj->deployment->project)
+                && $item_obj->compareCurrentStatusTo('Go No Go') > 0);
+            $commentable = $this->app['securilex']->isGranted(['execute', 'entry',
+                'review', 'approval'], $item_obj->deployment->project);
             return $this->render('item_view', array(
                     'item' => $item_obj,
                     'project' => $item_obj->deployment->project,
+                    'editable' => $editable,
+                    'commentable' => $commentable,
             ));
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
@@ -71,13 +78,7 @@ class Item extends RenoController
             $this->app->addFlashMessage("Remark is required", "Unable to change status", "error");
         } else {
             $old_status = $item_obj->status;
-            $direction  = $item_obj->changeStatus($new_status);
-            if (!empty($remark)) {
-                $comment        = new ItemComment($item_obj);
-                $comment->event = "$old_status > $new_status";
-                $comment->text  = $remark;
-                $item_obj->comments->add($comment);
-            }
+            $direction  = $item_obj->changeStatus($new_status, $remark);
             if ($item_obj->status == 'Ready For Release' && $direction > 0) {
                 /* @var $activity Activity */
                 foreach ($item_obj->activities as $activity) {
@@ -136,62 +137,6 @@ class Item extends RenoController
             $this->app->addFlashMessage("Item '$item_obj->title' has been changed status to $new_status");
         }
         return $this->app->entity_redirect('item_view', $item_obj);
-    }
-
-    public function action(Request $request, $project, $deployment, $item,
-                           $action)
-    {
-        try {
-            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
-            $actioned = null;
-            switch ($action) {
-                case 'submit':
-                    $this->checkAccess(array('entry', 'approval'), $item_obj);
-                    if (!$item_obj->deployment->isActive() && !$this->app['securilex']->isGranted('approval', $item_obj)) {
-                        $this->app->addFlashMessage("You cannot submit an item for a deployment that was in the past.\nPlease move to another upcoming deployment and submit for approval there.", "Invalid action", "error");
-                        break;
-                    }
-                    $item_obj->submit();
-                    $actioned = 'submitted for approval';
-                    break;
-
-                case 'approve':
-                    $this->checkAccess('approval', $item_obj);
-                    $item_obj->approve();
-                    $actioned = 'approved for deployment';
-                    break;
-
-                case 'unapprove':
-                    $this->checkAccess('approval', $item_obj);
-                    $item_obj->unapprove();
-                    $actioned = 'unapproved';
-                    break;
-
-                case 'reject':
-                    $this->checkAccess('approval', $item_obj);
-                    $remark = trim($request->request->get('remark', '-'));
-
-                    if (empty($remark)) {
-                        $this->app->addFlashMessage("Rejection remark is required", "Unable to reject", "error");
-                        break;
-                    }
-
-                    $item_obj->reject();
-                    $actioned       = 'rejected';
-                    $comment        = new ItemComment($item_obj);
-                    $comment->event = 'Rejected';
-                    $comment->text  = $remark;
-                    $item_obj->comments->add($comment);
-                    break;
-            }
-            if ($actioned) {
-                $this->app['datastore']->commit($item_obj);
-                $this->app->addFlashMessage("Item '$item_obj->title' has been $actioned");
-            }
-            return $this->app->entity_redirect('item_view', $item_obj);
-        } catch (NoResultException $ex) {
-            return $this->errorPage('Object not found', $ex->getMessage());
-        }
     }
 
     protected function edit_or_create(\Renogen\Entity\Item $item,

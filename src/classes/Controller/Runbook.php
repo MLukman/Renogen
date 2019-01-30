@@ -39,48 +39,45 @@ class Runbook extends RenoController
         }
     }
 
-    public function runitem_completed(Request $request, $runitem)
+    public function runitem_update(Request $request, $runitem)
     {
         try {
             if (!($runitem = $this->app['datastore']->queryOne('\Renogen\Entity\RunItem', $runitem))) {
                 throw new NoResultException("No such run item with id '$file'");
             }
-            $runitem->status = 'Completed';
-            $runitem->defaultUpdatedDate();
-            $this->app['datastore']->commit($runitem);
-            foreach ($runitem->deployment->items as $item) {
-                if ($item->status == 'Completed') {
-                    continue;
-                }
-                if ($item->activities->count() == 0) {
-                    continue;
-                }
-                foreach ($item->activities as $activity) {
-                    if ($activity->runitem->status != 'Completed') {
-                        continue 2;
-                    }
-                }
-                $item->changeStatus('Completed');
-                $this->app['datastore']->commit($item);
-            }
-            return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);
-        } catch (NoResultException $ex) {
-            return $this->errorPage('Object not found', $ex->getMessage());
-        }
-    }
+            if (($status = $request->request->get('new_status'))) {
+                $runitem->status = $status;
+                $runitem->defaultUpdatedDate();
+                $this->app['datastore']->commit($runitem);
+                $remark          = $request->request->get('remark');
 
-    public function runitem_failed(Request $request, $runitem)
-    {
-        try {
-            if (!($runitem = $this->app['datastore']->queryOne('\Renogen\Entity\RunItem', $runitem))) {
-                throw new NoResultException("No such run item with id '$file'");
-            }
-            $runitem->status = 'Failed';
-            $runitem->defaultUpdatedDate();
-            $this->app['datastore']->commit($runitem);
-            foreach ($runitem->activities as $activity) {
-                $activity->item->changeStatus('Failed');
-                $this->app['datastore']->commit($activity->item);
+                switch ($status) {
+                    case 'Completed':
+                        foreach ($runitem->activities as $activity) {
+                            if ($activity->item->status == $status) {
+                                continue;
+                            }
+                            foreach ($activity->item->activities as $item_activity) {
+                                if ($item_activity->runitem->status != $status) {
+                                    continue 2;
+                                }
+                            }
+                            $old_status = $activity->item->status;
+                            $activity->item->changeStatus($status, $remark);
+                            $this->app['datastore']->commit($activity->item);
+                        }
+                        break;
+                    case 'Failed':
+                        foreach ($runitem->activities as $activity) {
+                            if ($activity->item->status == $status) {
+                                continue;
+                            }
+                            $old_status = $activity->item->status;
+                            $activity->item->changeStatus($status, $remark);
+                            $this->app['datastore']->commit($activity->item);
+                        }
+                        break;
+                }
             }
             return $this->app->entity_redirect('runbook_view', $runitem->deployment, $runitem->id);
         } catch (NoResultException $ex) {

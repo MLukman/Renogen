@@ -292,9 +292,8 @@ class Application extends \Silex\Application
         $this['runbook.controller'] = $this->share(function() {
             return new Runbook($this);
         });
-        $this->match('/{project}/{deployment}/runbook', 'runbook.controller:view')->bind('runbook_view');
-        $this->match('/{project}/{deployment}/runbook/{runitem}/completed', 'runbook.controller:runitem_completed')->bind('runitem_completed');
-        $this->match('/{project}/{deployment}/runbook/{runitem}/failed', 'runbook.controller:runitem_failed')->bind('runitem_failed');
+        $this->match('/{project}/{deployment}/runbook/', 'runbook.controller:view')->bind('runbook_view');
+        $this->match('/{project}/{deployment}/runbook/{runitem}', 'runbook.controller:runitem_update')->bind('runitem_update');
         $this->match('/{project}/{deployment}/runbook/{runitem}/{file}', 'runbook.controller:download_file')->bind('runitem_file_download');
 
         /* Routes: Item */
@@ -304,10 +303,6 @@ class Application extends \Silex\Application
         $this->match('/{project}/{deployment}/+', 'item.controller:create')->bind('item_create');
         $this->match('/{project}/{deployment}/{item}/', 'item.controller:view')->bind('item_view');
         $this->match('/{project}/{deployment}/{item}/edit', 'item.controller:edit')->bind('item_edit');
-        $this->match('/{project}/{deployment}/{item}/submit', 'item.controller:action')->value('action', 'submit')->bind('item_submit');
-        $this->match('/{project}/{deployment}/{item}/approve', 'item.controller:action')->value('action', 'approve')->bind('item_approve');
-        $this->match('/{project}/{deployment}/{item}/unapprove', 'item.controller:action')->value('action', 'unapprove')->bind('item_unapprove');
-        $this->match('/{project}/{deployment}/{item}/reject', 'item.controller:action')->value('action', 'reject')->bind('item_reject');
         $this->match('/{project}/{deployment}/{item}/changeStatus', 'item.controller:changeStatus')->bind('item_change_status');
 
         /* Routes: Attachment */
@@ -341,6 +336,11 @@ class Application extends \Silex\Application
         return (isset($this['user']) ? $this['user'] : null);
     }
 
+    /**
+     * Get the User entity for the specified username or current logged in user
+     * @param string|null $username
+     * @return User
+     */
     public function userEntity($username = null)
     {
         if (!$username) {
@@ -399,7 +399,7 @@ class Application extends \Silex\Application
 
     /**
      *
-     * @return static
+     * @return Application
      */
     static public function instance()
     {
@@ -476,12 +476,14 @@ class Application extends \Silex\Application
         }
     }
 
+    /**
+     *
+     * @param string $classId
+     * @return Auth\Driver|null
+     */
     public function getAuthDriver($classId)
     {
-        /* @var $em EntityManager */
-        $em   = $this['em'];
-        if (($auth = $em->getRepository('\Renogen\Entity\AuthDriver')->find($classId))) {
-            /* @var $auth AuthDriver */
+        if (($auth = $this['em']->getRepository('\\Renogen\\Entity\\AuthDriver')->find($classId))) {
             $authDriver = new $auth->class($auth->parameters ?: array());
             return $authDriver;
         }
@@ -500,7 +502,7 @@ class Application extends \Silex\Application
 
     /**
      *
-     * @param type $name
+     * @param string|null $name
      * @return BaseClass|array
      */
     public function getActivityTemplateClass($name = null)
@@ -575,8 +577,15 @@ class Application extends \Silex\Application
         return $this->path($path, $this->entityParams($entity) + $extras);
     }
 
+    /**
+     *
+     * @param string|null $path
+     * @param array $params
+     * @param string|null $anchor
+     * @return RedirectResponse
+     */
     public function params_redirect($path = null, Array $params = array(),
-                             $anchor = null)
+                                    $anchor = null)
     {
         return new RedirectResponse($path ? $this->path($path, $params).
             ($anchor ? "#$anchor" : "") : $this['request']->getUri());

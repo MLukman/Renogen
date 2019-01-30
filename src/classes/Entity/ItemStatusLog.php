@@ -24,6 +24,11 @@ class ItemStatusLog extends \Renogen\Base\Entity
      */
     public $status;
 
+    /**
+     * @Column(type="text", nullable=true)
+     */
+    public $remark;
+
     public function __construct(Item $item, $status, User $user = null,
                                 \DateTime $datetime = null)
     {

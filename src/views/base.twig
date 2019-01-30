@@ -115,6 +115,15 @@
                 return cfg;
             }
 
+            function showOverlay(text) {
+                $('#overlayContent').text(text);
+                $('#overlay').dimmer('show');
+            }
+
+            function hideOverlay() {
+                $('#overlay').dimmer('hide');
+            }
+
             $(function () {
                 $('#topfiller').css('height', $('#topbar').outerHeight(true));
                 $(window).resize(function () {
@@ -135,6 +144,10 @@
                 setTimeout(function () {
                     $('.flash.message:not(.error,.persist)').fadeOut(1000);
                 }, 3000);
+
+                $('#overlay').dimmer({
+                    closable: false
+                });
             });
         </script>
         {% for js in extra_js|default([]) %}<script src="{{js}}"></script>{% endfor %}
@@ -183,13 +196,11 @@
             <div class="ui title item" style="padding:8px">
                 <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
                     {% block menutitle %}
-                        {% set logo = app.logo %}
-                        {% if logo %}
-                            <img src="{{logo}}" />
+                        {% if app.logo %}
+                            <img src="{{app.logo}}" />
                         {% else %}
                             <h3 style="padding: 8px;">
-                                {% set icon = app.icon %}
-                                {% if icon %}<i class="ui {{icon}} icon"></i>{% endif %}
+                                {% if app.icon %}<i class="ui {{app.icon}} icon"></i>{% endif %}
                                 {{app.title}}
                             </h3>
                         {% endif %}
@@ -261,6 +272,9 @@
         </div>
     {% endif %}
 
+    <div id="overlay" class="ui page dimmer">
+        <div id="overlayContent" class="content"></div>
+    </div>
 </body>
 </html>
 
