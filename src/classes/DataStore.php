@@ -15,7 +15,6 @@ use Renogen\Entity\Project;
 use Renogen\Entity\Template;
 use Renogen\Entity\User;
 use Renogen\Exception\NoResultException;
-use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\ParameterBag;
@@ -25,12 +24,12 @@ class DataStore implements ServiceProviderInterface
     /** @var Application */
     protected $app;
 
-    public function boot(Application $app)
+    public function boot(\Silex\Application $app)
     {
 
     }
 
-    public function register(Application $app)
+    public function register(\Silex\Application $app)
     {
         $this->app              = $app;
         $this->app['datastore'] = $this;
