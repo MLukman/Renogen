@@ -37,7 +37,7 @@ class FileStore extends Entity
     public $data;
 
     /**
-     * @OneToMany(targetEntity="FileLink", mappedBy="filestore", indexBy="id", orphanRemoval=true, cascade={"persist","remove"})
+     * @OneToMany(targetEntity="FileLink", mappedBy="filestore", indexBy="id", orphanRemoval=true, cascade={"persist","remove"}, fetch="EXTRA_LAZY")
      * @var ArrayCollection|FileLink
      */
     public $links = null;

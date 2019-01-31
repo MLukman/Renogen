@@ -21,7 +21,7 @@ class Activity extends Actionable
     public $item;
 
     /**
-     * @OneToMany(targetEntity="ActivityFile", mappedBy="activity", indexBy="classifier", orphanRemoval=true, cascade={"persist", "remove"})
+     * @OneToMany(targetEntity="ActivityFile", mappedBy="activity", indexBy="classifier", orphanRemoval=true, cascade={"persist", "remove"}, fetch="EXTRA_LAZY")
      * @var ArrayCollection|ActivityFile[]
      */
     public $files = null;

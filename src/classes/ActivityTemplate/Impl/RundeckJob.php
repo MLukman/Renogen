@@ -4,14 +4,14 @@ namespace Renogen\ActivityTemplate\Impl;
 
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
 class RundeckJob extends BaseClass
 {
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         parent::__construct($app);
         $this->addParameter('url', Parameter::Config('Rundeck URL', 'The URL of the Rundeck portal', true));

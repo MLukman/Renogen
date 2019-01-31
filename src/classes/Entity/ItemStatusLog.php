@@ -34,7 +34,7 @@ class ItemStatusLog extends \Renogen\Base\Entity
     {
         $this->item         = $item;
         $this->created_date = $datetime ?: new \DateTime();
-        $this->created_by   = $user ?: \Renogen\Application::instance()->userEntity();
+        $this->created_by   = $user ?: \Renogen\App::instance()->userEntity();
         $this->status       = $status;
     }
 }

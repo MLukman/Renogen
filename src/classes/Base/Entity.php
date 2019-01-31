@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\MappedSuperclass;
 use Doctrine\ORM\Mapping\PrePersist;
 use Doctrine\ORM\Mapping\PreUpdate;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Entity\User;
 use Renogen\Validation\DoctrineValidator;
 use Securilex\Authorization\SecuredAccessInterface;
@@ -108,7 +108,7 @@ class Entity implements SecuredAccessInterface
             $this->created_date = new DateTime();
         }
         if (!$this->created_by) {
-            $this->created_by = Application::instance()->userEntity();
+            $this->created_by = App::instance()->userEntity();
         }
     }
 
@@ -117,7 +117,7 @@ class Entity implements SecuredAccessInterface
      */
     public function defaultUpdatedDate()
     {
-        if (($user = Application::instance()->userEntity())) {
+        if (($user = App::instance()->userEntity())) {
             $this->storeOldValues(array('updated_date', 'updated_by'));
             $this->updated_date = new DateTime();
             $this->updated_by   = $user;

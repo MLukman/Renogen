@@ -64,28 +64,28 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public $description;
 
     /**
-     * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @OrderBy({"stage" = "asc", "priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection|Activity[]
      */
     public $activities = null;
 
     /**
-     * @OneToMany(targetEntity="Attachment", mappedBy="item", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="Attachment", mappedBy="item", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @OrderBy({"created_date" = "asc"})
      * @var ArrayCollection|Attachment[]
      */
     public $attachments = null;
 
     /**
-     * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"})
+     * @OneToMany(targetEntity="ItemComment", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
      * @OrderBy({"created_date" = "asc"})
      * @var ArrayCollection|ItemComment[]
      */
     public $comments = null;
 
     /**
-     * @OneToMany(targetEntity="ItemStatusLog", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"})
+     * @OneToMany(targetEntity="ItemStatusLog", mappedBy="item", indexBy="id", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
      * @OrderBy({"created_date" = "asc"})
      * @var ArrayCollection|ItemStatusLog[]
      */
@@ -301,7 +301,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public function getAllowedTransitions(User $user = null)
     {
         if (!$user) {
-            $user = \Renogen\Application::instance()->userEntity();
+            $user = \Renogen\App::instance()->userEntity();
         }
         $transitions = array();
         foreach ($this->deployment->project->item_statuses as $status => $config) {

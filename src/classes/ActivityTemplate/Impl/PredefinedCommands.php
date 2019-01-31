@@ -4,14 +4,14 @@ namespace Renogen\ActivityTemplate\Impl;
 
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
 class PredefinedCommands extends BaseClass
 {
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         parent::__construct($app);
         $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', true, 'Nodes', 'The list of nodes the file will be deployed at', true));

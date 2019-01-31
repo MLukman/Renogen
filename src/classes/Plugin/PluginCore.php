@@ -9,7 +9,7 @@ abstract class PluginCore
 
     public function __construct(array $options)
     {
-        $this->app = \Renogen\Application::instance();
+        $this->app = \Renogen\App::instance();
         $this->setOptions($options);
     }
 

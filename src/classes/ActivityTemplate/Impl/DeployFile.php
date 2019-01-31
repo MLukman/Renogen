@@ -4,14 +4,14 @@ namespace Renogen\ActivityTemplate\Impl;
 
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
 class DeployFile extends BaseClass
 {
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         parent::__construct($app);
         $this->addParameter('instruction', Parameter::MultiLineText('Instruction', 'The instruction for deployment', true));

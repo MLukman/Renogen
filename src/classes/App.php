@@ -46,7 +46,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * The main Application class for GitSync. This class is the entrypoint for all
  * request handlings within GitSync.
  */
-class Application extends \Silex\Application
+class App extends \Silex\Application
 {
 
     use UrlGeneratorTrait;
@@ -399,7 +399,7 @@ class Application extends \Silex\Application
 
     /**
      *
-     * @return Application
+     * @return App
      */
     static public function instance()
     {

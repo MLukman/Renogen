@@ -51,7 +51,7 @@ abstract class Descriptor implements DescriptorInterface
             case $object instanceof Command:
                 $this->describeCommand($object, $options);
                 break;
-            case $object instanceof Application:
+            case $object instanceof App:
                 $this->describeApplication($object, $options);
                 break;
             default:

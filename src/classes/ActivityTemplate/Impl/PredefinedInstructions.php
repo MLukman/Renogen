@@ -4,14 +4,14 @@ namespace Renogen\ActivityTemplate\Impl;
 
 use Renogen\ActivityTemplate\BaseClass;
 use Renogen\ActivityTemplate\Parameter;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
 class PredefinedInstructions extends BaseClass
 {
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         parent::__construct($app);
         $this->addParameter('instructions', Parameter::MultiLineConfig('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below', true, 'Instructions'));

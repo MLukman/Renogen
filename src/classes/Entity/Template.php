@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Entity;
 
 /**
@@ -82,7 +82,7 @@ class Template extends Entity
 
     public function templateClass()
     {
-        return Application::instance()->getActivityTemplateClass($this->class);
+        return App::instance()->getActivityTemplateClass($this->class);
     }
 
     public function delete($em)

@@ -1,10 +1,10 @@
 <?php
 
-use Renogen\Application;
+use Renogen\App;
 
 include_once __DIR__.'/../vendor/autoload.php';
 const STATUSLOG = '\Renogen\Entity\ItemStatusLog';
-$app = new Application();
+$app = new App();
 
 $ds = $app['datastore'];
 foreach ($ds->queryMany('\Renogen\Entity\FileStore') as $file) {

@@ -2,7 +2,7 @@
 
 namespace Renogen\ActivityTemplate;
 
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Entity\FileLink;
 use Renogen\Entity\RunItemFile;
@@ -24,7 +24,7 @@ class Parameter
         $this->type = $type;
     }
 
-    public function setApplication(Application $app)
+    public function setApplication(App $app)
     {
         $this->app = $app;
     }

@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\ApproveableEntity;
 
 /**
@@ -48,13 +48,13 @@ class Deployment extends ApproveableEntity
     public $execute_date;
 
     /**
-     * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ArrayCollection|Item[]
      */
     public $items = null;
 
     /**
-     * @OneToMany(targetEntity="RunItem", mappedBy="deployment", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="RunItem", mappedBy="deployment", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @OrderBy({"created_date" = "ASC"})
      * @var ArrayCollection|RunItem[]
      */
@@ -160,7 +160,7 @@ class Deployment extends ApproveableEntity
             0 => array(),
             1 => array(),
         );
-        $templates = Application::instance()->getActivityTemplateClass();
+        $templates = App::instance()->getActivityTemplateClass();
         foreach (array_keys($rungroups) as $stage) {
             ksort($activities[$stage]);
             foreach ($activities[$stage] as $acts) {

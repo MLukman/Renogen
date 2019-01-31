@@ -2,7 +2,7 @@
 
 namespace Renogen\ActivityTemplate;
 
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Entity\Activity;
 use Renogen\Entity\FileLink;
@@ -14,7 +14,7 @@ abstract class BaseClass
     protected $app;
     private $_parameters = array();
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         $this->app = $app;
     }

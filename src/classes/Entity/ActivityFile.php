@@ -3,7 +3,7 @@
 namespace Renogen\Entity;
 
 use Doctrine\ORM\Mapping\Entity;
-use Renogen\Application;
+use Renogen\App;
 
 /**
  * @Entity
@@ -18,6 +18,6 @@ class ActivityFile extends FileLink
 
     public function downloadUrl()
     {
-        return Application::instance()->entity_path('activity_file_download', $this);
+        return App::instance()->entity_path('activity_file_download', $this);
     }
 }

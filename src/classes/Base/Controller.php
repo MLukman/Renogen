@@ -3,7 +3,7 @@
 namespace Renogen\Base;
 
 use ReflectionClass;
-use Renogen\Application;
+use Renogen\App;
 
 abstract class Controller
 {
@@ -14,7 +14,7 @@ abstract class Controller
     public $title = null;
 
     /**
-     * @var Application
+     * @var App
      */
     protected $app = null;
 
@@ -27,7 +27,7 @@ abstract class Controller
         'extra_css' => array(),
     );
 
-    public function __construct(Application $app)
+    public function __construct(App $app)
     {
         $this->app                   = $app;
         $this->app['controller']     = $this;

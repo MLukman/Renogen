@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\MappedSuperclass;
-use Renogen\Application;
+use Renogen\App;
 use Renogen\Entity\User;
 
 /**
@@ -58,7 +58,7 @@ class ApproveableEntity extends Entity
     public function submit(User $user = null)
     {
         $this->submitted_date = new DateTime();
-        $this->submitted_by   = $user ?: Application::instance()->userEntity();
+        $this->submitted_by   = $user ?: App::instance()->userEntity();
         $this->rejected_date  = null;
         $this->rejected_by    = null;
     }
@@ -79,7 +79,7 @@ class ApproveableEntity extends Entity
     public function approve(User $user = null)
     {
         $this->approved_date = new DateTime();
-        $this->approved_by   = $user ?: Application::instance()->userEntity();
+        $this->approved_by   = $user ?: App::instance()->userEntity();
     }
 
     /**
@@ -98,7 +98,7 @@ class ApproveableEntity extends Entity
     public function reject(User $user = null)
     {
         $this->rejected_date  = new DateTime();
-        $this->rejected_by    = $user ?: Application::instance()->userEntity();
+        $this->rejected_by    = $user ?: App::instance()->userEntity();
         $this->submitted_date = null;
         $this->submitted_by   = null;
     }

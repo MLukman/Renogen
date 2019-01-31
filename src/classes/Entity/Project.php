@@ -59,7 +59,7 @@ class Project extends Entity
     public $private = false;
 
     /**
-     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true)
+     * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ArrayCollection|Deployment[]
      */
     public $deployments = null;
