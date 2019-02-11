@@ -59,6 +59,7 @@ class App extends \Silex\Application
     protected $_authClassNames  = array();
     protected $security;
     protected $admin_route      = null;
+    protected $username;
 
     public function __construct($values = array())
     {
@@ -250,6 +251,7 @@ class App extends \Silex\Application
         $this->match('/{project}/', 'project.controller:view')->bind('project_view');
         $this->match('/{project}/edit', 'project.controller:edit')->bind('project_edit');
         $this->match('/{project}/past', 'project.controller:past')->bind('project_past');
+        $this->match('/{project}/users/', 'project.controller:users')->bind('project_users');
 
         /* Routes: Plugins */
         $this['plugin.controller'] = $this->share(function() {
@@ -344,13 +346,21 @@ class App extends \Silex\Application
     public function userEntity($username = null)
     {
         if (!$username) {
-            $username = (isset($this['user']) && !empty($this['user']) ? $this['user']->getUsername()
-                    : null);
+            if (!empty($this->username)) {
+                $username = $this->username;
+            } elseif (isset($this['user']) && !empty($this['user'])) {
+                $username = $this['user']->getUsername();
+            }
         }
         if (!$username) {
             return null;
         }
-        return $this['em']->getRepository('\Renogen\Entity\User')->find($username);
+        return $this['datastore']->fetchUser($username);
+    }
+
+    public function setUsername($username)
+    {
+        $this->username = $username;
     }
 
     static public function execute($debug = false)
@@ -420,7 +430,7 @@ class App extends \Silex\Application
         $tool    = new SchemaTool($em);
         $classes = array();
         foreach (glob(__DIR__.'/Entity/*.php') as $entityfn) {
-            $classes[] = $this['em']->getClassMetadata('Renogen\Entity\\'.basename($entityfn, '.php'));
+            $classes[] = $em->getClassMetadata('Renogen\Entity\\'.basename($entityfn, '.php'));
         }
 
         // update once

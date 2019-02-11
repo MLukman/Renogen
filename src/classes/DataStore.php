@@ -87,6 +87,23 @@ class DataStore implements ServiceProviderInterface
 
     /**
      *
+     * @param type $user
+     * @return User
+     * @throws NoResultException
+     */
+    public function fetchUser($user)
+    {
+        if (!($user instanceof Project)) {
+            $name = $user;
+            if (!($user = $this->queryOne('\Renogen\Entity\User', $name))) {
+                throw new NoResultException("There is not such user with username '$name'");
+            }
+        }
+        return $user;
+    }
+
+    /**
+     *
      * @param type $project
      * @param type $deployment
      * @return Deployment
@@ -260,7 +277,11 @@ class DataStore implements ServiceProviderInterface
                 }
                 $entity->$field = (!$field_value ? null : DateTime::createFromFormat('d/m/Y h:i A', $field_value));
             } elseif (substr($field, -3) == '_by') {
-                $entity->$field = $this->queryOne('\Renogen\Entity\User', $field_value);
+                try {
+                    $entity->$field = $this->fetchUser($field_value);
+                } catch (Exception $e) {
+                    $entity->$field = null;
+                }
             } else {
                 $entity->$field = $field_value;
             }

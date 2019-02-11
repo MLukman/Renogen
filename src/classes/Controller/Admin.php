@@ -32,7 +32,7 @@ class Admin extends RenoController
 
     public function user_edit(Request $request, $username)
     {
-        $user = $this->app['datastore']->queryOne('\Renogen\Entity\User', $username);
+        $user = $this->app['datastore']->fetchUser($username);
         $this->addCrumb('Users', $this->app->path('admin_users'), 'users');
         $this->addEditCrumb($this->app->path('admin_user_edit', array('username' => $username)));
         return $this->edit_or_create_user($user, $request->request);

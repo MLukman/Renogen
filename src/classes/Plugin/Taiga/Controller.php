@@ -37,15 +37,6 @@ class Controller extends PluginController
     public function handleConfigure(Request $request, Project $project,
                                     PluginCore &$pluginCore)
     {
-        if (!$this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga')) {
-            $taiga            = new User();
-            $taiga->username  = 'taiga';
-            $taiga->shortname = 'Taiga';
-            $taiga->roles     = array('ROLE_NONE');
-            $taiga->auth      = 'password';
-            $taiga->password  = md5(random_bytes(100));
-            $this->app['datastore']->commit($taiga);
-        }
         if ($request->request->get('_action') == 'Save') {
             $options = $pluginCore->getOptions();
             foreach ($options as $k => $v) {
@@ -75,6 +66,7 @@ class Controller extends PluginController
         switch ($action) {
             case 'webhook':
                 $payload = json_decode($request->getContent(), true);
+                $this->app->setUsername($this->taigaUser()->username);
                 switch ($payload['type']) {
                     case 'milestone':
                         return $this->handleWebhookDeployment($project, $pluginCore, $payload);
@@ -285,6 +277,17 @@ class Controller extends PluginController
 
     protected function taigaUser()
     {
-        return $this->app['datastore']->queryOne('\\Renogen\\Entity\\User', 'taiga');
+        try {
+            return $this->app['datastore']->fetchUser('taiga');
+        } catch (Exception $ex) {
+            $taiga            = new User();
+            $taiga->username  = 'taiga';
+            $taiga->shortname = 'Taiga';
+            $taiga->roles     = array('ROLE_NONE');
+            $taiga->auth      = 'password';
+            $taiga->password  = md5(random_bytes(100));
+            $this->app['datastore']->commit($taiga);
+            return $taiga;
+        }
     }
 }

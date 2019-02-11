@@ -3,6 +3,8 @@
 namespace Renogen\Controller;
 
 use Renogen\Base\RenoController;
+use Renogen\Entity\UserProject;
+use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -19,56 +21,90 @@ class Project extends RenoController
 
     public function view(Request $request, $project)
     {
-        if (!($project instanceof \Renogen\Entity\Project)) {
-            $name    = $project;
-            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
-                'name' => $name)))) {
-                return $this->errorPage('Project not found', "There is not such project with name '$name'");
-            }
+        try {
+            $project = $this->app['datastore']->fetchProject($project);
+            $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
+            $this->addEntityCrumb($project);
+            return $this->render('project_view', array(
+                    'project' => $project
+            ));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Project not found', $ex->getMessage());
         }
-        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
-        $this->addEntityCrumb($project);
-        return $this->render('project_view', array(
-                'project' => $project
-        ));
     }
 
     public function past(Request $request, $project)
     {
-        if (!($project instanceof \Renogen\Entity\Project)) {
-            $name    = $project;
-            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
-                'name' => $name)))) {
-                return $this->errorPage('Project not found', "There is not such project with name '$name'");
-            }
+        try {
+            $project = $this->app['datastore']->fetchProject($project);
+            $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
+            $this->addEntityCrumb($project);
+            $this->addCrumb('Past deployments', $this->app->entity_path('project_past', $project), 'clock');
+            return $this->render('project_past', array(
+                    'project' => $project
+            ));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Project not found', $ex->getMessage());
         }
-        $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
-        $this->addEntityCrumb($project);
-        $this->addCrumb('Past deployments', $this->app->entity_path('project_past', $project), 'clock');
-        return $this->render('project_past', array(
-                'project' => $project
-        ));
+    }
+
+    public function users(Request $request, $project)
+    {
+        try {
+            $project = $this->app['datastore']->fetchProject($project);
+            $this->checkAccess(array('approval'), $project);
+
+            if ($request->request->get('_action')) {
+                foreach ($request->request->get('role', array()) as $username => $role) {
+                    try {
+                        $project_role = $project->userProjects->containsKey($username)
+                                ? $project->userProjects->get($username) : null;
+                        if ($role) {
+                            if (!$project_role) {
+                                $project_role = new UserProject($project, $this->app['datastore']->fetchUser($username));
+                            }
+                            $project_role->role = $role;
+                            $this->app['datastore']->commit($project_role);
+                        } else {
+                            if ($project_role) {
+                                $this->app['datastore']->deleteEntity($project_role);
+                            }
+                        }
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                }
+                return $this->app->entity_redirect('project_users', $project);
+            }
+
+            $this->addEntityCrumb($project);
+            $this->addCrumb('Users', $this->app->entity_path('project_users', $project), 'users');
+            return $this->render('project_users', array(
+                    'project' => $project,
+                    'users' => $this->app['datastore']->queryMany('\Renogen\Entity\User'),
+            ));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Project not found', $ex->getMessage());
+        }
     }
 
     public function edit(Request $request, $project)
     {
-        if (!($project instanceof \Renogen\Entity\Project)) {
-            $name    = $project;
-            if (!($project = $this->app['datastore']->queryOne('\Renogen\Entity\Project', array(
-                'name' => $name)))) {
-                return $this->errorPage('Project not found', "There is not such project with name '$name'");
+        try {
+            $project = $this->app['datastore']->fetchProject($project);
+            if (!$this->app['securilex']->isGranted('ROLE_ADMIN') && !$this->app['securilex']->isGranted('approval', $project)) {
+                throw new AccessDeniedException();
             }
+            $this->addEntityCrumb($project);
+            $this->addEditCrumb($this->app->entity_path('project_edit', $project));
+            return $this->edit_or_create($request->request, $project);
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Project not found', $ex->getMessage());
         }
-        if (!$this->app['securilex']->isGranted('ROLE_ADMIN') && !$this->app['securilex']->isGranted('approval', $project)) {
-            throw new AccessDeniedException();
-        }
-        $this->addEntityCrumb($project);
-        $this->addEditCrumb($this->app->entity_path('project_edit', $project));
-        return $this->edit_or_create($request->request, $project);
     }
 
     protected function edit_or_create(ParameterBag $post,
-                                      \Renogen\Entity\Project $project = null)
+                                      Project $project = null)
     {
         $context = array();
         if ($post->count() > 0) {
@@ -80,7 +116,7 @@ class Project extends RenoController
             }
             if (!$project) {
                 $project     = new \Renogen\Entity\Project();
-                $nuser       = new \Renogen\Entity\UserProject($project, $this->app->userEntity());
+                $nuser       = new UserProject($project, $this->app->userEntity());
                 $nuser->role = 'approval';
                 $project->userProjects->add($nuser);
             }
