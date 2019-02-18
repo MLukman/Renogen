@@ -28,7 +28,7 @@
                     <td class="ui center aligned"><div class="ui label">{{user.auth}}</div></td>
                     <td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
                     <td>
-                        {% for userProject in user.userProjects %}
+                        {% for userProject in user.userProjects.toArray()|psort('project.title') %}
                             <div>{{userProject.project.title}} = {{userProject.role}}</div>
                         {% else %}
                             N/A

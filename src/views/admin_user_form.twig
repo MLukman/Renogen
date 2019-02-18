@@ -68,7 +68,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for project in projects %}
+                        {% for project in projects|psort('title') %}
                             {% set user_role = project.userProjects[user.username].role|default('none') %}
                             <tr>
                                 <td>{{project.title}}</td>

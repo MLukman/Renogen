@@ -13,6 +13,7 @@ class Plugin extends RenoController
     {
         try {
             $project_obj = $this->app['datastore']->fetchProject($project);
+            $this->checkAccess(array('approval', 'ROLE_ADMIN'), $project_obj);
             $this->addEntityCrumb($project_obj);
             $this->addCrumb('Plugins', $this->app->entity_path('plugin_index', $project_obj), 'plug');
 
@@ -30,42 +31,6 @@ class Plugin extends RenoController
                     'project' => $project_obj,
                     'pluginClasses' => $plugins,
             ));
-        } catch (NoResultException $ex) {
-            return $this->errorPage('Object not found', $ex->getMessage());
-        }
-    }
-
-    public function view(Request $request, $project, $plugin)
-    {
-        try {
-            $project_obj = $this->app['datastore']->fetchProject($project);
-            $plugin_obj  = $this->app['datastore']->queryOne('\Renogen\Entity\Plugin', array(
-                'project' => $project,
-                'name' => $plugin,
-            ));
-
-            $context = array(
-                'project' => $project_obj,
-                'plugin' => array(
-                    'name' => null,
-                    'title' => null,
-                ),
-            );
-
-            $plugin_instance = null;
-            if ($plugin_obj) {
-                $plugin_instance = $plugin_obj->instance();
-            }
-
-            if (empty($context['plugin']['name'])) {
-                throw new NoResultException("No such plugin '$plugin'");
-            }
-
-            $this->addEntityCrumb($project_obj);
-            $this->addCrumb('Plugins', $this->app->entity_path('plugin_index', $project_obj), 'plug');
-            $this->addCrumb($context['plugin']['title'], $this->app->entity_path('plugin_view', $project_obj, array(
-                    'plugin' => $context['plugin']['name'])), 'plug');
-            return $this->render('plugin_view', $context);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }

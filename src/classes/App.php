@@ -122,6 +122,7 @@ class App extends \Silex\Application
             'twig.path' => realpath(__DIR__."/../views"),
         ));
         $app['twig']->addExtension(new TwigInstanceOf());
+        $app['twig']->addExtension(new TwigSortByProperty());
         // for plugins
         $app['twig.loader.filesystem']->addPath(realpath(__DIR__."/Plugin"), 'plugin');
 

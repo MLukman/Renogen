@@ -223,15 +223,12 @@
                             <div class="menu">
                                 {% block usermenu %}
                                 {% endblock %}
-                                <a class="item" href="{{app.securilex.getLogoutPath()}}">
-                                    <i class="ui sign out icon"></i>Logout
-                                </a>
+                                {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
                                 {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
                                     <div class="ui divider"></div>
-                                    {{ m.topmenu_dropdown_begin('Settings', 'setting') }}
+                                    <div class="ui header">Administrations</div>
                                     {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
                                     {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
-                                    {{ m.topmenu_dropdown_end() }}
                                 {% endif %}
                             </div>
                         </div>

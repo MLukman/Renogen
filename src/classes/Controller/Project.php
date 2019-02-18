@@ -52,7 +52,7 @@ class Project extends RenoController
     {
         try {
             $project = $this->app['datastore']->fetchProject($project);
-            $this->checkAccess(array('approval'), $project);
+            $this->checkAccess(array('approval', 'ROLE_ADMIN'), $project);
 
             if ($request->request->get('_action')) {
                 foreach ($request->request->get('role', array()) as $username => $role) {
@@ -104,7 +104,7 @@ class Project extends RenoController
     }
 
     protected function edit_or_create(ParameterBag $post,
-                                      Project $project = null)
+                                      \Renogen\Entity\Project $project = null)
     {
         $context = array();
         if ($post->count() > 0) {

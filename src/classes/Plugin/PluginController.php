@@ -37,7 +37,7 @@ abstract class PluginController extends RenoController
                 $pclass           = "\\Renogen\\Plugin\\$pname\\Core";
                 $this->pluginCore = new $pclass(array());
             }
-
+            $this->checkAccess(array('approval', 'ROLE_ADMIN'), $this->project);
             $this->addEntityCrumb($this->project);
             $this->addCrumb($this->getName(), $this->app->path("plugin_{$pname}_configure", array(
                     'project' => $project)), $this->pluginCore->getIcon());
