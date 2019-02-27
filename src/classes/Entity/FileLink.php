@@ -108,7 +108,7 @@ abstract class FileLink extends Entity
     {
         return new Response(stream_get_contents($this->filestore->data), 200, array(
             'Content-type' => $this->filestore->mime_type,
-            'Content-Disposition' => "attachment; filename='{$this->filename}'",
+            'Content-Disposition' => "inline; filename=\"{$this->filename}\"",
         ));
     }
 }

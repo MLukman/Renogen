@@ -98,35 +98,35 @@ class Project extends Entity
     protected $validation_default = array('trim' => 1);
     public $item_statuses         = array(
         'Documentation' => array(
-            'icon' => 'warning',
+            'icon' => 'edit',
             'stepicon' => 'edit',
             'proceedaction' => 'Submit For Review',
             'rejectaction' => false,
             'role' => ['entry', 'approval'],
         ),
         'Test Review' => array(
-            'icon' => 'help',
+            'icon' => 'clipboard check',
             'stepicon' => 'clipboard check',
             'proceedaction' => 'Verified',
             'rejectaction' => 'Rejected',
             'role' => ['review', 'approval'],
         ),
         'Go No Go' => array(
-            'icon' => 'help',
+            'icon' => 'thumbs up',
             'stepicon' => 'thumbs up',
             'proceedaction' => 'Approved',
             'rejectaction' => 'Rejected',
             'role' => 'approval',
         ),
         'Ready For Release' => array(
-            'icon' => 'check',
+            'icon' => 'cloud upload',
             'stepicon' => 'cloud upload',
             'proceedaction' => 'Completed',
             'rejectaction' => 'Failed',
             'role' => ['execute', 'approval'],
         ),
         'Completed' => array(
-            'icon' => 'check',
+            'icon' => 'flag checkered',
             'stepicon' => 'flag checkered',
             'proceedaction' => false,
             'rejectaction' => false,

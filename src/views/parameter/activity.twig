@@ -47,5 +47,5 @@
         <p><em>-- Not required --</em></p>
     {% endif %}
 {% elseif parameter.type in ['config', 'multilineconfig'] %}
-    <pre>{{template.parameters[param]|default(null)}}</pre>
+    {{r.prettyDisplay(parameter.displayTemplateParameter(template, param))}}
 {% endif %}

@@ -27,9 +27,9 @@
                     case 19:
                         var reggie = /^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2}) (\w{2})/;
                         dateArray = reggie.exec(text);
-                        if (dateArray[6] == 'PM') {
+                        if (dateArray[4] != 12 && dateArray[6] == 'PM') {
                             dateArray[4] = parseInt(dateArray[4]) + 12 + "";
-                        } else if (dateArray[4] == 12) {
+                        } else if (dateArray[4] == 12 && dateArray[6] == "AM") {
                             dateArray[4] = "00";
                         }
                         break;
@@ -89,7 +89,9 @@
                                 return '';
                             var hour = date.getHours();
                             var ampm = '';
-                            if (hour > 12) {
+                            if (hour == 12) {
+                                ampm = 'PM';
+                            } else if (hour > 12) {
                                 hour -= 12;
                                 ampm = 'PM';
                             } else {

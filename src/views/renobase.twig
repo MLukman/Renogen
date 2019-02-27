@@ -69,6 +69,18 @@
     {% endif %}
 {% endmacro %}
 
+{% macro fieldError(errors, fieldname, pointing) %}
+    {% if errors[fieldname] is defined %}
+        {% if errors[fieldname] is iterable %}
+            {% for error in errors[fieldname] %}
+                <div class="ui negative red label {{pointing}} pointing">{{error}}</div>
+            {% endfor %}
+        {% else %}
+            <div class="ui negative red label {{pointing}} pointing">{{errors[fieldname]}}</div>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
 {% macro itemDetailsLabel(item) %}
     <span class="ui label">
         <i class="ui tag icon"></i>{{item.category}}

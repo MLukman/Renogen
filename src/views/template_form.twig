@@ -16,7 +16,7 @@
                     <span class="text">Copy to ...</span>
                     <i class="dropdown icon"></i>
                     <div class="menu">
-                        {% for p in other_projects %}
+                        {% for p in other_projects.toArray()|psort('title') %}
                             <a class="ui item" href="{{app.entity_path('template_create',p)}}?copy={{template.id}}">{{p.title}}</a>
                         {% endfor %}
                     </div>

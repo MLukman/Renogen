@@ -70,6 +70,7 @@
 
 {% macro activityConfigForm(template, activity, errors) %}
     {% import "base.twig" as m %}
+    {% import "renobase.twig" as r %}
     <div class="ui field basic segment required">
         <label class="ui top attached large label">Stage</label>
         {% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}

@@ -131,14 +131,16 @@
             </h2>
 
             <table class="ui celled striped table" style="table-layout: fixed">
-                <thead>
-                    <tr>
-                        <th class="ui collapsing">#</th>
-                        <th style="width:25%">Template</th>
-                        <th>Description</th>
-                        <th style="width:8em"></th>
-                    </tr>
-                </thead>
+                {% if item.activities|length > 0 %}
+                    <thead>
+                        <tr>
+                            <th class="ui collapsing">#</th>
+                            <th style="width:25%">Template</th>
+                            <th>Description</th>
+                            <th style="width:8em"></th>
+                        </tr>
+                    </thead>
+                {% endif %}
                 <tbody>
                     {% for activity in item.activities %}
                         {% set description = activity.template.templateClass().describeActivityAsArray(activity) %}
@@ -166,7 +168,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="1000" class="center aligned">No activity has been defined</td>
+                            <td class="center aligned">No activity has been defined</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -185,17 +187,19 @@
             </h2>
 
             <table class="ui celled striped table">
-                <thead>
-                    <tr>
-                        <th class="ui collapsing">#</th>
-                        <th>File Name &amp; Type</th>
-                        <th>Description</th>
-                        <th class="ui collapsing">File Size</th>
-                            {% if editable %}
-                            <th class="ui collapsing no-print">Action</th>
-                            {% endif %}
-                    </tr>
-                </thead>
+                {% if item.attachments|length > 0 %}
+                    <thead>
+                        <tr>
+                            <th class="ui collapsing">#</th>
+                            <th>File Name &amp; Type</th>
+                            <th>Description</th>
+                            <th class="ui collapsing">File Size</th>
+                                {% if editable %}
+                                <th class="ui collapsing no-print">Action</th>
+                                {% endif %}
+                        </tr>
+                    </thead>
+                {% endif %}
                 <tbody>
                     {% for attachment in item.attachments %}
                         <tr>
@@ -220,7 +224,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="1000" class="center aligned">No attachment has been uploaded</td>
+                            <td class="center aligned">No attachment has been uploaded</td>
                         </tr>
                     {% endfor %}
                 </tbody>

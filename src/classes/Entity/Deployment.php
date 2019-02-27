@@ -106,7 +106,7 @@ class Deployment extends ApproveableEntity
 
     public function isActive()
     {
-        return (date_create()->setTime(0, 0, 0) < $this->execute_date);
+        return ($this->execute_date >= date_create()->setTime(0, 0, 0));
     }
 
     /**

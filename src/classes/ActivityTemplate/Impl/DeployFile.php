@@ -42,7 +42,9 @@ class DeployFile extends BaseClass
         $groups = array();
         foreach ($activities_by_template as $template_id => $activities) {
             $group = new Group($templates[$template_id]->title);
-            $group->setInstruction("Manually deploy file as per instruction:");
+            if (!empty($templates[$template_id]->description)) {
+                $group->setInstruction($templates[$template_id]->description);
+            }
             $group->setTemplate('runbook/DeployFile.twig');
             foreach ($activities as $activity) {
                 $output    = $this->describeActivityAsArray($activity);

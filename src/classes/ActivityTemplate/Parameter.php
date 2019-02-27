@@ -17,11 +17,13 @@ class Parameter
     public $activityLabel;
     public $activityDescription;
     public $activityRequired;
+    public $markdown = false;
     protected $app;
 
     protected function __construct($type)
     {
         $this->type = $type;
+        \Parsedown::instance()->setSafeMode(true);
     }
 
     public function setApplication(App $app)
@@ -319,8 +321,26 @@ class Parameter
 
     public function displayActivityParameter(Actionable $activity, $key)
     {
-        return (isset($activity->parameters[$key]) ? $activity->parameters[$key]
+        $param = (isset($activity->parameters[$key]) ? $activity->parameters[$key]
                 : null);
+
+        if ($this->markdown) {
+            $param = \Parsedown::instance()->parse($param);
+        }
+
+        return $param;
+    }
+
+    public function displayTemplateParameter(\Renogen\Entity\Template $template, $key)
+    {
+        $param = (isset($template->parameters[$key]) ? $template->parameters[$key]
+                : null);
+
+        if ($this->markdown) {
+            $param = \Parsedown::instance()->parse($param);
+        }
+
+        return $param;
     }
 
     public function handleActivityFiles(Request $request, Actionable $activity,

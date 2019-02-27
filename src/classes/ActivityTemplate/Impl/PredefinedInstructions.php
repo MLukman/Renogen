@@ -14,7 +14,9 @@ class PredefinedInstructions extends BaseClass
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->addParameter('instructions', Parameter::MultiLineConfig('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below', true, 'Instructions'));
+        $param_instructions = Parameter::MultiLineConfig('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below. You can use markdown syntax to format this instructions text.', true, 'Instructions');
+        $param_instructions->markdown = true;
+        $this->addParameter('instructions', $param_instructions);
         $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
     }
 
@@ -26,7 +28,7 @@ class PredefinedInstructions extends BaseClass
     public function describeActivityAsArray(Actionable $activity)
     {
         return array(
-            "Instructions" => '<pre>'.htmlentities($activity->template->parameters['instructions']).'</pre>',
+            "Instructions" => $this->getParameter('instructions')->displayTemplateParameter($activity->template, 'instructions'),
             "Details" => $this->getParameter('details')->displayActivityParameter($activity, 'details'),
         );
     }
