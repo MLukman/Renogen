@@ -1,0 +1,29 @@
+<table class="ui striped very compact table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Nodes</th>
+            <th>Instruction</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+            <tr>
+                <td class="top aligned collapsing">
+                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
+                </td>
+                <td class="top aligned">
+                    {{ r.prettyDisplay(row.params.Nodes) }}
+                </td>
+                <td class="top aligned" style="max-width: 480px; overflow-x: auto;">
+                    {{ r.prettyDisplay(row.params.Instruction) }}
+                </td>
+                <td class="top aligned collapsing">
+                    {{ r.runItemStatusControl(row.runitem) }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+

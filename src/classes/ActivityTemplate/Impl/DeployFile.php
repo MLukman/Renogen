@@ -14,7 +14,7 @@ class DeployFile extends BaseClass
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->addParameter('instruction', Parameter::MultiLineText('Instruction', 'The instruction for deployment', true));
+        $this->addParameter('instruction', Parameter\Markdown::create('Instruction', 'The instruction for deployment', true));
         $this->addParameter('file', Parameter\File::create('File', 'File to be deployed', true));
         $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', true, 'Nodes', 'The list of nodes the file will be deployed at', true));
     }

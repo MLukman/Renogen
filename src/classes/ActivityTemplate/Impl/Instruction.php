@@ -8,27 +8,19 @@ use Renogen\App;
 use Renogen\Base\Actionable;
 use Renogen\Runbook\Group;
 
-class PredefinedInstructions extends BaseClass
+class Instruction extends BaseClass
 {
 
     public function __construct(App $app)
     {
         parent::__construct($app);
-        $this->addParameter('instructions', Parameter\Markdown::createForTemplateOnly('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below. You can use markdown syntax to format this instructions text.', true));
-        $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
+        $this->addParameter('instruction', Parameter\Markdown::createWithDefault('Default Instruction', 'Optional default instruction to be prepopulated when creating new activity', false, 'Instruction', 'The instruction for deployment. Markdown format is supported.', true));
+        $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', true, 'Nodes', 'The list of nodes the file will be deployed at', true));
     }
 
     public function classTitle()
     {
-        return 'Perform predefined instructions with additional configurations';
-    }
-
-    public function describeActivityAsArray(Actionable $activity)
-    {
-        return array(
-            "Instructions" => $this->getParameter('instructions')->displayTemplateParameter($activity->template, 'instructions'),
-            "Details" => $this->getParameter('details')->displayActivityParameter($activity, 'details'),
-        );
+        return 'Execute as per instruction';
     }
 
     public function convertActivitiesToRunbookGroups(array $activities)
@@ -49,9 +41,14 @@ class PredefinedInstructions extends BaseClass
         $groups = array();
         foreach ($activities_by_template as $template_id => $activities) {
             $group = new Group($templates[$template_id]->title);
-            $group->setTemplate('runbook/PredefinedInstructions.twig');
+            if (!empty($templates[$template_id]->description)) {
+                $group->setInstruction($templates[$template_id]->description);
+            }
+            $group->setTemplate('runbook/Instruction.twig');
             foreach ($activities as $activity) {
-                $group->addRow($activity, $this->describeActivityAsArray($activity));
+                $output    = $this->describeActivityAsArray($activity);
+                $signature = json_encode($output);
+                $group->addRow($activity, $output);
             }
             $groups[] = $group;
         }
