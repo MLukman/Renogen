@@ -2,7 +2,7 @@
 
 namespace Renogen\ActivityTemplate\Parameter;
 
-use Parsedown;
+use ParsedownExtraPlugin;
 use Renogen\ActivityTemplate\Parameter;
 use Renogen\Base\Actionable;
 use Renogen\Entity\Template;
@@ -12,10 +12,12 @@ class Markdown extends Parameter
     public $for_template = false;
     public $for_activity = false;
 
-    protected function __construct($type)
+    static public function parse($raw)
     {
-        parent::__construct($type);
-        Parsedown::instance()->setSafeMode(true);
+        $parser              = new ParsedownExtraPlugin();
+        $parser->setSafeMode(true);
+        $parser->table_class = 'ui celled table';
+        return $parser->text($raw);
     }
 
     static public function create($activityLabel, $activityDescription,
@@ -54,7 +56,7 @@ class Markdown extends Parameter
         $param = (isset($activity->parameters[$key]) ? $activity->parameters[$key]
                 : null);
 
-        return Parsedown::instance()->parse($param);
+        return static::parse($param);
     }
 
     public function displayTemplateParameter(Template $template, $key)
@@ -62,7 +64,7 @@ class Markdown extends Parameter
         $param = (isset($template->parameters[$key]) ? $template->parameters[$key]
                 : null);
 
-        return Parsedown::instance()->parse($param);
+        return static::parse($param);
     }
 
     public function getTwigForTemplateForm()

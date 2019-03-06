@@ -50,7 +50,7 @@ class Template extends RenoController
     public function edit(Request $request, $project, $template)
     {
         try {
-            $project_obj = $this->app['datastore']->fetchProject($project);
+            $project_obj  = $this->app['datastore']->fetchProject($project);
             $this->checkAccess(array('approval', 'ROLE_ADMIN'), $project_obj);
             $template_obj = $this->app['datastore']->fetchTemplate($template, $project_obj);
             $this->addEntityCrumb($template_obj);
@@ -80,13 +80,15 @@ class Template extends RenoController
                 case 'Delete':
                     $this->app['datastore']->deleteEntity($template);
                     // Adjust priority of the other templates
-                    $qb = $this->app['em']->createQueryBuilder()
+                    $qb   = $this->app['em']->createQueryBuilder()
                         ->select('e')
                         ->from('\Renogen\Entity\Template', 'e')
                         ->where('e.priority > :from')
-                        ->setParameter('from', $template->priority);
+                        ->setParameter('from', $template->priority)
+                        ->orderBy('e.priority', 'ASC');
+                    $prio = 0;
                     foreach ($qb->getQuery()->getResult() as $atemplate) {
-                        $atemplate->priority--;
+                        $atemplate->priority = ++$prio;
                     }
                     $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Template '$template->title' has been deleted");
@@ -135,15 +137,19 @@ class Template extends RenoController
                         ->andWhere('e.priority <= :to');
                     if ($oldpriority > $template->priority) {
                         $qb->setParameter('from', $template->priority)
-                            ->setParameter('to', $oldpriority - 1);
+                            ->setParameter('to', $oldpriority - 1)
+                            ->orderBy('e.priority', 'ASC');
+                        $prio = $template->priority;
                         foreach ($qb->getQuery()->getResult() as $atemplate) {
-                            $atemplate->priority++;
+                            $atemplate->priority = ++$prio;
                         }
                     } else {
                         $qb->setParameter('from', $oldpriority + 1)
-                            ->setParameter('to', $template->priority);
+                            ->setParameter('to', $template->priority)
+                            ->orderBy('e.priority', 'DESC');
+                        $prio = $template->priority;
                         foreach ($qb->getQuery()->getResult() as $atemplate) {
-                            $atemplate->priority--;
+                            $atemplate->priority = --$prio;
                         }
                     }
                     $this->app['datastore']->commit();

@@ -1,11 +1,11 @@
 <textarea id="template-parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.templateDescription}}">{{template.parameters[param]|default(null)}}</textarea>
-{{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
+<p>Note: you can use <a href="https://commonmark.org/help/" target="_blank">markdown syntax</a> to format the input</p>
 <div class="ui top attached block header">Preview</div>
 <div id="markdown-preview-template-{{param}}" class="ui attached segment"></div>
 <script>
     $(function () {
         $("#template-parameters-{{param}}").on('input propertychange', function () {
-            $('#markdown-preview-template-{{param}}').html(new showdown.Converter().makeHtml($(this).val()));
+            $('#markdown-preview-template-{{param}}').load({{app.path('ajax_markdown')|json_encode|raw}}, {'code': $(this).val()});
         });
         $("#template-parameters-{{param}}").trigger('propertychange');
     });

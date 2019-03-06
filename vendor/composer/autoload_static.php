@@ -211,6 +211,14 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
             array (
                 0 => __DIR__ . '/..' . '/pimple/pimple/lib',
             ),
+            'ParsedownExtraPlugin' => 
+            array (
+                0 => __DIR__ . '/..' . '/laravelfy/parsedown-extra-plugin',
+            ),
+            'ParsedownExtra' => 
+            array (
+                0 => __DIR__ . '/..' . '/erusev/parsedown-extra',
+            ),
             'Parsedown' => 
             array (
                 0 => __DIR__ . '/..' . '/erusev/parsedown',

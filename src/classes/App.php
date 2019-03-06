@@ -244,6 +244,12 @@ class App extends \Silex\Application
         $this->match('/!/auth/', 'admin.controller:auth')->bind('admin_auth');
         $this->match('/!/auth/{driver}', 'admin.controller:auth_edit')->bind('admin_auth_edit');
 
+        /* Routes: Ajax helper */
+        $this['ajax.controller'] = $this->share(function() {
+            return new Controller\Ajax($this);
+        });
+        $this->match('/$/markdown', 'ajax.controller:markdown')->bind('ajax_markdown');
+
         /* Routes: Project */
         $this['project.controller'] = $this->share(function() {
             return new Project($this);

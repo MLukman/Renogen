@@ -1,12 +1,13 @@
 {% if parameter.for_activity %}
     <textarea id="parameters-{{param}}" name="parameters[{{param}}]" placeholder="{{parameter.activityDescription}}">{{paramval|default(template.parameters[param]|default(null))}}</textarea>
     {{ m.fieldError(errors|default([]), 'parameters.' ~ param) }}
+    <p>Note: you can use <a href="https://commonmark.org/help/" target="_blank">markdown syntax</a> to format the input</p>
     <div class="ui top attached block header">Preview</div>
     <div id="markdown-preview-{{param}}" class="ui attached segment"></div>
     <script>
         $(function () {
             $("#parameters-{{param}}").on('input propertychange', function () {
-                $('#markdown-preview-{{param}}').html(new showdown.Converter().makeHtml($(this).val()));
+                $('#markdown-preview-{{param}}').load({{app.path('ajax_markdown')|json_encode|raw}}, {'code': $(this).val()});
             });
             $("#parameters-{{param}}").trigger('propertychange');
         });
