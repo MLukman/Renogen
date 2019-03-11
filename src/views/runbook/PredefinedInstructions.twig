@@ -1,9 +1,20 @@
-{{data[0].params.Instructions|raw}}
+{% set is_template = data[0].runitem.template.templateClass().instructionsContainVariables(data[0].runitem) %}
+{% if not is_template %}
+    {{data[0].params.Instructions|raw}}
+{% endif %}
 <table class="ui striped very compact table">
     <thead>
         <tr>
             <th>#</th>
-            <th>Details</th>
+                {% if data[0].runitem.template.parameters['nodes']|length > 0 %}
+                <th>Nodes</th>
+                {% endif %}
+                {% if is_template %}
+                <th>Instructions</th>
+                {% endif %}
+                {% if data[0].params.Details|length > 0 %}
+                <th>Details</th>
+                {% endif %}
             <th>Status</th>
         </tr>
     </thead>
@@ -13,9 +24,21 @@
                 <td class="top aligned collapsing">
                     <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
                 </td>
-                <td class="top aligned">
-                    {{ r.prettyDisplay(row.params.Details) }}
-                </td>
+                {% if row.runitem.template.parameters['nodes']|length > 0 %}
+                    <td class="ui collapsing top aligned">
+                        {{ r.prettyDisplay(row.params.Nodes) }}
+                    </td>
+                {% endif %}
+                {% if is_template %}
+                    <td class="top aligned">
+                        {{ r.prettyDisplay(row.params.Instructions) }}
+                    </td>
+                {% endif %}
+                {% if row.params.Details|length > 0 %}
+                    <td class="top aligned">
+                        {{ r.prettyDisplay(row.params.Details) }}
+                    </td>
+                {% endif %}
                 <td class="top aligned collapsing">
                     {{ r.runItemStatusControl(row.runitem) }}
                 </td>

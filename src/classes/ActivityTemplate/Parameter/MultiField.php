@@ -157,7 +157,7 @@ class MultiField extends Parameter
                 $d = $p['title'];
             }
 
-            $options[$d] = null;
+            //$options[$d] = null;
             if (isset($data[$p['id']])) {
                 if ($p['type'] == 'file') {
                     $file = $this->app['datastore']->queryOne($activity->fileClass, array(

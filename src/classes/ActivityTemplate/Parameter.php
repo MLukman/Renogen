@@ -210,7 +210,7 @@ class Parameter
                 break;
             case 'dropdown':
             case 'multiselect':
-                if (empty($input[$key])) {
+                if (empty($input[$key]) && !empty($template_parameters[$key])) {
                     if (count($template_parameters[$key]) == 1) {
                         $input[$key] = array_values($template_parameters)[0];
                     } else {
@@ -246,7 +246,7 @@ class Parameter
             case 'dropdown':
             case 'multiselect':
             case 'multifreetext':
-                return count($templateParameter) > 0;
+                return !empty($templateParameter);
             default:
                 return !empty($this->activityLabel);
         }

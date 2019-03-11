@@ -42,6 +42,10 @@
                                     <input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{p.id}}_delete]" value="1" />
                                 </div>
                             {% endif %}
+                        {% else %}
+                            {% if errors|default(null) and errors[paramkey] is not defined %}
+                                {% set errors = errors + {(paramkey) : 'If you chose a file before, the file was not saved due to errors on other inputs, and you need to re-upload the file again'} %}
+                            {% endif %}
                         {% endif %}
                     </div>
                 {% elseif p.type == 'password' %}

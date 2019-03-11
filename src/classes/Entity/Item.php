@@ -39,7 +39,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public $deployment;
 
     /**
-     * @Column(type="string", length=16, nullable=true)
+     * @Column(type="string", length=40, nullable=true)
      */
     public $refnum;
 

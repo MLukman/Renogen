@@ -16,6 +16,7 @@ class PredefinedInstructions extends BaseClass
         parent::__construct($app);
         $this->addParameter('instructions', Parameter\Markdown::createForTemplateOnly('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below. You can use markdown syntax to format this instructions text.', true));
         $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
+        $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', false, 'Nodes', 'The list of nodes the file will be deployed at', true));
     }
 
     public function classTitle()
@@ -23,12 +24,61 @@ class PredefinedInstructions extends BaseClass
         return 'Perform predefined instructions with additional configurations';
     }
 
+    public function prepareInstructions(Actionable $activity)
+    {
+        $instr = $activity->template->parameters['instructions'];
+        foreach ($activity->template->parameters['details'] as $cfg) {
+            $k = $cfg['id'];
+            if (strpos($instr, "{{$k}}") === false ||
+                ($cfg['type'] == 'password' && $activity->actionableType != 'runitem')) {
+                continue;
+            }
+            $v     = $activity->parameters['details'][$k];
+            $instr = str_replace("{{$k}}", $v, $instr);
+        }
+        return $instr;
+    }
+
+    public function instructionsContainVariables(Actionable $activity)
+    {
+        foreach ($activity->template->parameters['details'] as $cfg) {
+            if (false !== strpos($activity->template->parameters['instructions'], "{{$cfg['id']}}")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function describeActivityAsArray(Actionable $activity)
     {
-        return array(
-            "Instructions" => $this->getParameter('instructions')->displayTemplateParameter($activity->template, 'instructions'),
-            "Details" => $this->getParameter('details')->displayActivityParameter($activity, 'details'),
+        $instr  = $activity->template->parameters['instructions'];
+        $params = $this->getParameter('details')->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'details', $activity);
+        foreach ($activity->template->parameters['details'] as $cfg) {
+            $k = $cfg['id'];
+            if (strpos($instr, "{{$k}}") === false ||
+                ($cfg['type'] == 'password' && $activity->actionableType != 'runitem')) {
+                continue;
+            }
+            if ($cfg['type'] == 'file') {
+                $v = $params[$k]['filename'];
+            } else {
+                $v = $params[$k];
+            }
+            if (!empty($v)) {
+                $instr = str_replace("{{$k}}", $v, $instr);
+                unset($activity->parameters['details'][$k]);
+            }
+        }
+        $activity->parameters['instructions'] = $instr;
+
+        $describe = array(
+            "Nodes" => $this->getParameter('nodes')->displayActivityParameter($activity, 'nodes'),
+            "Instructions" => $this->getParameter('instructions')->displayActivityParameter($activity, 'instructions'),
         );
+        if (($details  = $this->getParameter('details')->displayActivityParameter($activity, 'details'))) {
+            $describe["Details"] = $details;
+        }
+        return $describe;
     }
 
     public function convertActivitiesToRunbookGroups(array $activities)

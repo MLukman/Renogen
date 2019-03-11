@@ -83,7 +83,9 @@ class Template extends RenoController
                     $qb   = $this->app['em']->createQueryBuilder()
                         ->select('e')
                         ->from('\Renogen\Entity\Template', 'e')
-                        ->where('e.priority > :from')
+                        ->where('e.project = :p')
+                        ->andWhere('e.priority > :from')
+                        ->setParameter('p', $template->project)
                         ->setParameter('from', $template->priority)
                         ->orderBy('e.priority', 'ASC');
                     $prio = 0;
@@ -133,8 +135,10 @@ class Template extends RenoController
                     $qb = $this->app['em']->createQueryBuilder()
                         ->select('e')
                         ->from('\Renogen\Entity\Template', 'e')
-                        ->where('e.priority >= :from')
-                        ->andWhere('e.priority <= :to');
+                        ->where('e.project = :p')
+                        ->andWhere('e.priority >= :from')
+                        ->andWhere('e.priority <= :to')
+                        ->setParameter('p', $template->project);
                     if ($oldpriority > $template->priority) {
                         $qb->setParameter('from', $template->priority)
                             ->setParameter('to', $oldpriority - 1)

@@ -29,8 +29,8 @@ class PredefinedCommands extends BaseClass
     public function describeActivityAsArray(Actionable $activity)
     {
         return array(
-            "Nodes" => $activity->parameters['nodes'],
-            "Run as" => $activity->parameters['runas'],
+            "Nodes" => $this->getParameter('nodes')->displayActivityParameter($activity, 'nodes'),
+            "Run as" => $this->getParameter('runas')->displayActivityParameter($activity, 'runas'),
             "Commands" => '<pre>'.htmlentities($this->prepareCommands($activity)).'</pre>',
         );
     }
