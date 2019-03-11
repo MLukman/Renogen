@@ -107,7 +107,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
      * @var array
      */
     protected $validation_rules = array(
-        'refnum' => array('trim' => 1, 'maxlen' => 16),
+        'refnum' => array('trim' => 1, 'maxlen' => 40),
         'title' => array('trim' => 1, 'required' => 1, 'truncate' => 255, 'unique' => 'deployment'),
         'category' => array('required' => 1),
         'modules' => array('required' => 1),
