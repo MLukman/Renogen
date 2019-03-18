@@ -64,7 +64,7 @@
                     <thead>
                         <tr>
                             <th>Project Title</th>
-                            <th>Access</th>
+                            <th colspan="6">Role</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,13 +72,14 @@
                             {% set user_role = project.userProjects[user.username].role|default('none') %}
                             <tr>
                                 <td>{{project.title}}</td>
-                                <td>
-                                    <select name="project_role[{{project.name}}]" class="ui dropdown fluid">
-                                        {% for role in constant('PROJECT_ROLES', app) %}
-                                            <option value="{{role}}" {% if role == user_role %}selected="selected"{% endif %}>{{role}}</option>
-                                        {% endfor %}
-                                    </select>
-                                </td>
+                                {% for lbl,role in {'None':'none','View':'view','Entry':'entry','Review':'review','Approval':'approval','Execute':'execute'} %}
+                                    <td class="ui collapsing">
+                                        <div class="ui toggle checkbox">
+                                            <input type="radio" name="project_role[{{project.name}}]" value="{{role}}" {% if role == user_role %}checked="checked"{% endif %} />
+                                            <label>{{lbl}}</label>
+                                        </div>
+                                    </td>
+                                {% endfor %}
                             </tr>
                         {% else %}
                             <tr>

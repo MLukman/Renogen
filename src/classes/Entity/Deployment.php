@@ -193,7 +193,8 @@ class Deployment extends ApproveableEntity
      */
     public function onUpdated()
     {
-        if (isset($this->old_values['execute_date']) && $this->execute_date != $this->old_values['execute_date']) {
+        if (isset($this->old_values['execute_date']) &&
+            $this->datetimeString(false, $this->execute_date) != $this->datetimeString(false, $this->old_values['execute_date'])) {
             foreach ($this->project->plugins as $plugin) {
                 /** @var \Renogen\Entity\Plugin $plugin */
                 $plugin->instance()->onDeploymentDateChanged($this, $this->old_values['execute_date']);

@@ -23,18 +23,27 @@
         <tbody>
             {% for user in users %}
                 <tr>
-                    <td>{{user.username}}</td>
-                    <td>{{user.shortname}}</td>
-                    <td class="ui center aligned"><div class="ui label">{{user.auth}}</div></td>
-                    <td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
+                    <td class="ui top aligned">{{user.username}}</td>
+                    <td class="ui top aligned">{{user.shortname}}</td>
+                    <td class="ui top aligned center aligned"><div class="ui label">{{user.auth}}</div></td>
+                    <td class="ui top aligned center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
                     <td>
-                        {% for userProject in user.userProjects.toArray()|psort('project.title') %}
-                            <div>{{userProject.project.title}} = {{userProject.role}}</div>
-                        {% else %}
-                            N/A
-                        {% endfor %}
+                        <div class="ui middle aligned divided list">
+                            {% for userProject in user.userProjects.toArray()|psort('project.title') %}
+                                <div class="item">
+                                    <div class="right floated content">
+                                        {{userProject.role}}
+                                    </div>
+                                    <div class="content">
+                                        {{userProject.project.title}}
+                                    </div>
+                                </div>
+                            {% else %}
+                                N/A
+                            {% endfor %}
+                        </div>
                     </td>
-                    <td class="ui collapsing">
+                    <td class="ui top aligned collapsing">
                         <a class="ui button" href="{{app.path('admin_user_edit', {'username': user.username})}}">
                             <i class="ui pencil icon"></i> Edit
                         </a>

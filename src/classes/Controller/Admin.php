@@ -67,21 +67,22 @@ class Admin extends RenoController
                         $project      = $this->app['datastore']->fetchProject($project_name);
                         $project_role = $project->userProjects->containsKey($user->username)
                                 ? $project->userProjects->get($user->username) : null;
-                        if ($role == 'none') {
+                        if ($role == 'none' || empty($role)) {
                             if ($project_role) {
                                 $this->app['datastore']->deleteEntity($project_role);
                             }
                         } else {
                             if (!$project_role) {
                                 $project_role = new UserProject($project, $user);
+                                $this->app['datastore']->manage($project_role);
                             }
                             $project_role->role = $role;
-                            $this->app['datastore']->commit($project_role);
                         }
                     } catch (Exception $e) {
                         continue;
                     }
                 }
+                $this->app['datastore']->commit();
                 return $this->app->params_redirect('admin_users');
             } else {
                 $errors = $user->errors;

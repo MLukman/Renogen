@@ -63,10 +63,10 @@ class PredefinedInstructions extends BaseClass
                 $v = $params[$k]['filename'];
             } else {
                 $v = $params[$k];
+                unset($activity->parameters['details'][$k]);
             }
             if (!empty($v)) {
                 $instr = str_replace("{{$k}}", $v, $instr);
-                unset($activity->parameters['details'][$k]);
             }
         }
         $activity->parameters['instructions'] = $instr;

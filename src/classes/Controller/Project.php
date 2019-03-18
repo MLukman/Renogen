@@ -62,9 +62,9 @@ class Project extends RenoController
                         if ($role) {
                             if (!$project_role) {
                                 $project_role = new UserProject($project, $this->app['datastore']->fetchUser($username));
+                                $this->app['datastore']->manage($project_role);
                             }
                             $project_role->role = $role;
-                            $this->app['datastore']->commit($project_role);
                         } else {
                             if ($project_role) {
                                 $this->app['datastore']->deleteEntity($project_role);
@@ -74,6 +74,7 @@ class Project extends RenoController
                         continue;
                     }
                 }
+                $this->app['datastore']->commit();
                 return $this->app->entity_redirect('project_users', $project);
             }
 

@@ -158,7 +158,10 @@
         </div>
     {% else %}
         <span class="ui horizontal label {% if runitem.status == 'Failed' %}red{% elseif runitem.status == 'Completed' %}green{% endif %}">{{runitem.status}}</span>
-        <small>by {{runitem.updated_by.shortname}}</small>
+        <small>
+            by {{runitem.updated_by.shortname}}
+            <br />{{runitem.updated_date|date('d/m/Y h:ia')}}
+        </small>
     {% endif %}
 {% endmacro %}
 

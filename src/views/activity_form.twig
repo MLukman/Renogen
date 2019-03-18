@@ -32,17 +32,26 @@
             {% if activity.template is empty %}
                 <div class="ui required field basic segment">
                     <label class="ui top attached large label">Template</label>
-                    <div class="ui basic segment grouped fields">
-                        {% for template in activity.item.deployment.project.templates %}
-                            <div class="field">
-                                <div class="ui radio checkbox">
-                                    <input type="radio" name="template" value="{{template.id}}" />
-                                    <label>{{template.title}}</label>
+                    <div class="ui basic segment">
+                        <div class="ui very relaxed divided list">
+                            {% for template in activity.item.deployment.project.templates %}
+                                <div class="ui item">
+                                    <div class="content">
+                                        <div class="ui radio checkbox">
+                                            <input type="radio" name="template" value="{{template.id}}" />
+                                            <label>
+                                                <h3 class="ui header">    
+                                                    {{template.title}}
+                                                </h3>
+                                                {{template.description}}
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
+                        {{ m.fieldError(errors|default([]), 'template') }}
                     </div>
-                    {{ m.fieldError(errors|default([]), 'template') }}
                 </div>
                 <div class="ui field">
                     <input type="submit" class="ui submit primary button" name="_action" value="Next" />
