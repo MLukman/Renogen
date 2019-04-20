@@ -65,18 +65,34 @@ class Template extends RenoController
                                       ParameterBag $post)
     {
         $context = array();
-        if (($class   = ($template->class ?: $post->get('class')))) {
-            $templateClass = $this->app->getActivityTemplateClass($class);
-            if ($templateClass) {
-                $context['class']          = $class;
-                $context['class_instance'] = $templateClass;
-            }
-        }
-        if ($post->count() > 0 &&
-            isset($context['class_instance']) &&
-            $post->get('_action') != 'Next') {
 
+        $this->setTemplateClassContext($context, $template->class);
+
+        if ($post->count() > 0) {
             switch ($post->get('_action')) {
+
+                case 'Next':
+                    if (!$this->setTemplateClassContext($context, $post->get('class'))) {
+                        $context['errors'] = array('class' => 'Please select a category');
+                    }
+                    break;
+
+                case 'Import':
+                    $file     = $request->files->get('import');
+                    if ($file && ($imported = json_decode(file_get_contents($file->getRealPath()), true))) {
+                        if (isset($imported['class']) && $this->setTemplateClassContext($context, $imported['class'])) {
+                            foreach (self::entityFields as $k) {
+                                if (isset($imported[$k])) {
+                                    $template->$k = $imported[$k];
+                                }
+                            }
+                            $template->priority = 0;
+                            break;
+                        }
+                    }
+                    $context['errors'] = array('import' => 'Please select a valid activity template exported file');
+                    break;
+
                 case 'Delete':
                     $this->app['datastore']->deleteEntity($template);
                     // Adjust priority of the other templates
@@ -118,56 +134,89 @@ class Template extends RenoController
                     $context['project']  = $template->project;
                     $context['template'] = $template;
                     return $this->render('template_form', $context);
-            }
 
-            $parameters = $post->get('parameters', array());
-            $errors     = array();
-            foreach ($context['class_instance']->getParameters() as $param => $parameter) {
-                $parameter->validateTemplateInput($parameters, $param, $errors, 'parameters');
-            }
-            $post->set('parameters', $parameters);
-            $oldpriority = $template->priority ?:
-                $template->project->templates->count() + 1;
-
-            if ($this->app['datastore']->prepareValidateEntity($template, static::entityFields, $post)
-                && empty($errors)) {
-                if ($oldpriority != $template->priority) {
-                    $qb = $this->app['em']->createQueryBuilder()
-                        ->select('e')
-                        ->from('\Renogen\Entity\Template', 'e')
-                        ->where('e.project = :p')
-                        ->andWhere('e.priority >= :from')
-                        ->andWhere('e.priority <= :to')
-                        ->setParameter('p', $template->project);
-                    if ($oldpriority > $template->priority) {
-                        $qb->setParameter('from', $template->priority)
-                            ->setParameter('to', $oldpriority - 1)
-                            ->orderBy('e.priority', 'ASC');
-                        $prio = $template->priority;
-                        foreach ($qb->getQuery()->getResult() as $atemplate) {
-                            $atemplate->priority = ++$prio;
-                        }
-                    } else {
-                        $qb->setParameter('from', $oldpriority + 1)
-                            ->setParameter('to', $template->priority)
-                            ->orderBy('e.priority', 'DESC');
-                        $prio = $template->priority;
-                        foreach ($qb->getQuery()->getResult() as $atemplate) {
-                            $atemplate->priority = --$prio;
-                        }
+                case 'Create activity template':
+                case 'Save activity template':
+                    $this->setTemplateClassContext($context, $post->get('class'));
+                    $parameters = $post->get('parameters', array());
+                    $errors     = array();
+                    foreach ($context['class_instance']->getParameters() as $param => $parameter) {
+                        $parameter->validateTemplateInput($parameters, $param, $errors, 'parameters');
                     }
-                    $this->app['datastore']->commit();
-                }
-                $this->app['datastore']->commit($template);
-                $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
-                return $this->app->entity_redirect('template_edit', $template);
-            } else {
-                $context['errors'] = $errors + $template->errors;
+                    $post->set('parameters', $parameters);
+                    $oldpriority = $template->priority ?:
+                        $template->project->templates->count() + 1;
+
+                    if ($this->app['datastore']->prepareValidateEntity($template, static::entityFields, $post)
+                        && empty($errors)) {
+                        if ($oldpriority != $template->priority) {
+                            $qb = $this->app['em']->createQueryBuilder()
+                                ->select('e')
+                                ->from('\Renogen\Entity\Template', 'e')
+                                ->where('e.project = :p')
+                                ->andWhere('e.priority >= :from')
+                                ->andWhere('e.priority <= :to')
+                                ->setParameter('p', $template->project);
+                            if ($oldpriority > $template->priority) {
+                                $qb->setParameter('from', $template->priority)
+                                    ->setParameter('to', $oldpriority - 1)
+                                    ->orderBy('e.priority', 'ASC');
+                                $prio = $template->priority;
+                                foreach ($qb->getQuery()->getResult() as $atemplate) {
+                                    $atemplate->priority = ++$prio;
+                                }
+                            } else {
+                                $qb->setParameter('from', $oldpriority + 1)
+                                    ->setParameter('to', $template->priority)
+                                    ->orderBy('e.priority', 'DESC');
+                                $prio = $template->priority;
+                                foreach ($qb->getQuery()->getResult() as $atemplate) {
+                                    $atemplate->priority = --$prio;
+                                }
+                            }
+                            $this->app['datastore']->commit();
+                        }
+                        $this->app['datastore']->commit($template);
+                        $this->app->addFlashMessage("Template '$template->title' has been successfully saved");
+                        return $this->app->entity_redirect('template_edit', $template);
+                    } else {
+                        $context['errors'] = $errors + $template->errors;
+                    }
+                    break;
             }
         }
 
         $context['project']  = $template->project;
         $context['template'] = $template;
         return $this->render('template_form', $context);
+    }
+
+    private function setTemplateClassContext(&$context, $class)
+    {
+        if ($class && ($templateClass = $this->app->getActivityTemplateClass($class))) {
+            $context['class']          = $class;
+            $context['class_instance'] = $templateClass;
+            return true;
+        }
+        return false;
+    }
+
+    public function export(Request $request, $project, $template)
+    {
+        try {
+            $project_obj  = $this->app['datastore']->fetchProject($project);
+            $this->checkAccess(array('approval', 'ROLE_ADMIN'), $project_obj);
+            $template_obj = $this->app['datastore']->fetchTemplate($template, $project_obj);
+            $export       = array();
+            foreach (self::entityFields as $k) {
+                $export[$k] = $template_obj->$k;
+            }
+            $filename = preg_replace('/[^a-z0-9]+/', '-', strtolower($template_obj->title));
+            return new \Symfony\Component\HttpFoundation\JsonResponse($export, 200, array(
+                'Content-Disposition' => "attachment; filename=\"{$filename}.json\"",
+            ));
+        } catch (NoResultException $ex) {
+            return $this->errorPage('Object not found', $ex->getMessage());
+        }
     }
 }

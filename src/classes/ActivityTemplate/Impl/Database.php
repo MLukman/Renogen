@@ -28,7 +28,7 @@ class Database extends BaseClass
     {
         return array(
             "Login" => $activity->parameters['login'],
-            "SQL" => '<pre>'.htmlentities($activity->parameters['sql']).'</pre>',
+            "SQL" => '<div class="ui form"><textarea readonly="readonly" style="font-family: monospace">'.htmlentities($activity->parameters['sql']).'</textarea></div>',
         );
     }
 

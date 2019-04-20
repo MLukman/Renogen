@@ -5,6 +5,7 @@
             {% set paramkey = 'parameters.' ~ param ~ '.' ~ p.id %}
             <div class="{% if p.required %}required {% endif %}field">
                 <label for="{{pid}}">{{p.title}}</label>
+                {% if p.desc %}<div>{{p.desc}}</div>{% endif %}
                 {% if p.type == 'dropdown' %}
                     <select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
                         <option value="">-- Please select --</option>
@@ -53,7 +54,9 @@
                 {% elseif p.type == 'multiline' %}
                     <textarea id="{{pid}}" name="parameters[{{param}}][{{p.id}}]">{{paramval[p.id]|default(p.details)}}</textarea>
                 {% elseif p.type == 'url' %}
-                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://" />
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://"  />
+                {% elseif p.type == 'formatted' %}
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]}}" onkeyup="if (new RegExp('^{{p.details|escape('js')}}$').test(this.value)) { $(this).parent('.field').removeClass('error'); } else { $(this).parent('.field').addClass('error'); }" />
                 {% else %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" />
                 {% endif %}

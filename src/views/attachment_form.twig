@@ -37,6 +37,7 @@
                 {{ m.fieldError(errors|default([]), 'description') }}
             </div>
             <div class="ui field">
+                <div class="ui yellow message"><strong>Warning:</strong> the file you attach here will not appear in the run book, so please do not attach any file that is required during deployment. Please create an activity that has file upload instead.</div>
                 <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} attachment" />
                 <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
                 {% if is_existing and app.securilex.isGranted('delete',attachment) %}

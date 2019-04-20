@@ -36,12 +36,16 @@
             </div>
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Category</label>
-                <select name="category" class="ui dropdown">
-                    <option value="">-- Please select --</option>
+                <div class="grouped fields">
                     {% for category in item.deployment.project.categories %}
-                        <option value="{{category}}" {% if category == item.category %}selected="selected"{% endif %}>{{category}}</option>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="category" value="{{category}}" {% if category == item.category %}checked="checked"{% endif %} />
+                            <label>{{category}}</label>
+                        </div>
+                    </div>
                     {% endfor %}
-                </select>
+                </div>
                 {{ m.fieldError(errors|default([]), 'category') }}
             </div>
             <div class="ui required field basic segment">

@@ -287,6 +287,7 @@ class App extends \Silex\Application
         $this->match('/{project}/templates/', 'template.controller:index')->bind('template_list');
         $this->match('/{project}/templates/+', 'template.controller:create')->bind('template_create');
         $this->match('/{project}/templates/{template}/', 'template.controller:edit')->bind('template_edit');
+        $this->match('/{project}/templates/{template}/export', 'template.controller:export')->bind('template_export');
 
         /* Routes: Deployment */
         $this['deployment.controller'] = $this->share(function() {

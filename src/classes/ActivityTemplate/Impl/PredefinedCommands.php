@@ -18,7 +18,7 @@ class PredefinedCommands extends BaseClass
         $this->addParameter('runas', Parameter::FreeTextWithDefault('Default run as user', 'The commands will be run as this user', true, 'Run as user', 'The commands will be run as this user', true));
         $this->addParameter('commands', Parameter::MultiLineConfig('Commands', 'The commands; any configurable parts can be specified using {config_id} where config_id refers to the configuration values below', true));
         $this->addParameter('configuration', Parameter\MultiField::create('Command Configuration', 'Define job options to be entered when creating activities', false, 'Parameters', '', false, array(
-                'freetext', 'password', 'dropdown'), 'freetext'));
+                'freetext', 'password', 'dropdown', 'formatted'), 'freetext'));
     }
 
     public function classTitle()

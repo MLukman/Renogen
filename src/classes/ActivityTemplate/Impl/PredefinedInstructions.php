@@ -16,7 +16,8 @@ class PredefinedInstructions extends BaseClass
         parent::__construct($app);
         $this->addParameter('instructions', Parameter\Markdown::createForTemplateOnly('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below. You can use markdown syntax to format this instructions text.', true));
         $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
-        $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', false, 'Nodes', 'The list of nodes the file will be deployed at', true));
+        $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', false, '{nodes_label}', 'The list of nodes the file will be deployed at', true));
+        $this->addParameter('nodes_label', Parameter::Config('Label for "Nodes"', 'This label will be shown in activity form, activity list and run book if you defined list of nodes above', true));
     }
 
     public function classTitle()
@@ -71,11 +72,17 @@ class PredefinedInstructions extends BaseClass
         }
         $activity->parameters['instructions'] = $instr;
 
-        $describe = array(
-            "Nodes" => $this->getParameter('nodes')->displayActivityParameter($activity, 'nodes'),
-            "Instructions" => $this->getParameter('instructions')->displayActivityParameter($activity, 'instructions'),
-        );
-        if (($details  = $this->getParameter('details')->displayActivityParameter($activity, 'details'))) {
+        $describe = array();
+
+        if (!empty($activity->template->parameters['nodes'])) {
+            $nodes_param                       = $this->getParameter('nodes');
+            $nodes_label                       = $nodes_param->activityLabel($activity->template->parameters);
+            $describe[$nodes_label ?: "Nodes"] = $nodes_param->displayActivityParameter($activity, 'nodes');
+        }
+
+        $describe["Instructions"] = $this->getParameter('instructions')->displayActivityParameter($activity, 'instructions');
+
+        if (($details = $this->getParameter('details')->displayActivityParameter($activity, 'details'))) {
             $describe["Details"] = $details;
         }
         return $describe;
@@ -85,7 +92,6 @@ class PredefinedInstructions extends BaseClass
     {
         $templates              = array();
         $activities_by_template = array();
-        $added                  = array();
 
         foreach ($activities as $activity) {
             /* @var $activity Actionable */

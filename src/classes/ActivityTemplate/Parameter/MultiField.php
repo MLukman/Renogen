@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MultiField extends Parameter
 {
     public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
-        'url', 'file'];
+        'url', 'file','formatted'];
     public $default_type  = null;
 
     static public function create($templateLabel, $templateDescription,
@@ -65,6 +65,8 @@ class MultiField extends Parameter
                 $errors[$errkey.'.'.$p['id']] = array('Required');
             } elseif ($p['type'] == 'url' && !filter_var($input[$key][$p['id']], FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
                 $errors[$errkey.'.'.$p['id']] = array('Must be a valid URL');
+            } elseif ($p['type'] == 'formatted' && !preg_match("/^{$p['details']}$/", $input[$key][$p['id']])) {
+                $errors[$errkey.'.'.$p['id']] = array('Invalid format');
             }
         }
         return empty($errors);
@@ -76,6 +78,9 @@ class MultiField extends Parameter
         foreach ($parameter as $p) {
             if (empty($p['id']) && empty($p['title']) && empty($p['details']) && !isset($p['required'])) {
                 continue;
+            }
+            if ($p['type'] == 'formatted') {
+                $p['details'] = trim(explode("\n", $p['details'])[0]);
             }
             $cfg[] = array_merge(array('required' => 0), $p);
         }
