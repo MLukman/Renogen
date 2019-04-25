@@ -7,7 +7,7 @@
         <tr>
             <th>#</th>
                 {% if data[0].runitem.template.parameters['nodes']|length > 0 %}
-                <th>Nodes</th>
+                <th>{{data[0].runitem.template.parameters['nodes_label']}}</th>
                 {% endif %}
                 {% if is_template %}
                 <th>Instructions</th>
@@ -26,7 +26,7 @@
                 </td>
                 {% if row.runitem.template.parameters['nodes']|length > 0 %}
                     <td class="ui collapsing top aligned">
-                        {{ r.prettyDisplay(row.params.Nodes) }}
+                        {{ r.prettyDisplay(row.params[row.runitem.template.parameters['nodes_label']]) }}
                     </td>
                 {% endif %}
                 {% if is_template %}
