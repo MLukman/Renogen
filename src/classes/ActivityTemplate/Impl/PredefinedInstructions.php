@@ -17,7 +17,7 @@ class PredefinedInstructions extends BaseClass
         $this->addParameter('instructions', Parameter\Markdown::createForTemplateOnly('Instructions', 'The instructions to be performed before/during/after deployment; any variations can be configurable during activity creations by adding them to the additional details below. You can use markdown syntax to format this instructions text.', true));
         $this->addParameter('details', Parameter\MultiField::create('Details', 'Define configurable activity details to be entered when creating activities', false, 'Details', '', false));
         $this->addParameter('nodes', Parameter::MultiSelect('Nodes', 'The list of nodes', false, '{nodes_label}', 'The list of nodes the file will be deployed at', true));
-        $this->addParameter('nodes_label', Parameter::Config('Label for "Nodes"', 'This label will be shown in activity form, activity list and run book if you defined list of nodes above', true));
+        $this->addParameter('nodes_label', Parameter::Config('Label for "Nodes"', 'This label will be shown in activity form, activity list and run book if you defined list of nodes above', false));
     }
 
     public function classTitle()
@@ -52,6 +52,9 @@ class PredefinedInstructions extends BaseClass
 
     public function describeActivityAsArray(Actionable $activity)
     {
+        if (empty($activity->template->parameters['nodes_label'])) {
+            $activity->template->parameters['nodes_label'] = 'Nodes';
+        }
         $instr  = $activity->template->parameters['instructions'];
         $params = $this->getParameter('details')->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'details', $activity);
         foreach ($activity->template->parameters['details'] as $cfg) {

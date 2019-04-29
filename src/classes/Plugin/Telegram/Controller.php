@@ -36,7 +36,7 @@ class Controller extends \Renogen\Plugin\PluginController
                 $hasUpdates   = true;
                 $lastUpdateId = null;
                 foreach ($updates['result'] as $update) {
-                    if ($update['message']['chat']['type'] == 'group') {
+                    if ($update['message']['chat']['type'] == 'group' || $update['message']['chat']['type'] == 'supergroup') {
                         $post['groups'][$update['message']['chat']['id']] = $update['message']['chat']['title'];
                     }
                     if ($time - $update['message']['date'] > 3600) {
