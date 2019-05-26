@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MultiField extends Parameter
 {
     public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
-        'url', 'file','formatted'];
+        'url', 'file', 'formatted', 'jsondropdown'];
     public $default_type  = null;
 
     static public function create($templateLabel, $templateDescription,
@@ -81,10 +81,22 @@ class MultiField extends Parameter
             }
             if ($p['type'] == 'formatted') {
                 $p['details'] = trim(explode("\n", $p['details'])[0]);
+            } elseif ($p['type'] == 'jsondropdown') {
+                $p['details'] = \json_decode($p['details'], true);
             }
             $cfg[] = array_merge(array('required' => 0), $p);
         }
         return $cfg;
+    }
+
+    public function templateDatabaseToForm($parameter)
+    {
+        foreach ($parameter as $k => $p) {
+            if ($p['type'] == 'jsondropdown') {
+                $parameter[$k]['details'] = \json_encode($p['details'], JSON_PRETTY_PRINT);
+            }
+        }
+        return $parameter;
     }
 
     public function activityDatabaseToForm(array $template_parameters,

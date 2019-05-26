@@ -57,6 +57,13 @@
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://"  />
                 {% elseif p.type == 'formatted' %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]}}" onkeyup="if (new RegExp('^{{p.details|escape('js')}}$').test(this.value)) { $(this).parent('.field').removeClass('error'); } else { $(this).parent('.field').addClass('error'); }" />
+                {% elseif p.type == 'jsondropdown' %}
+                    <select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
+                        <option value="">-- Please select --</option>
+                        {% for k,v in p.details %}
+                            <option value="{{k}}" {% if k == paramval[p.id]|default(null) %}selected="selected"{% endif %}>{{k}}</option>
+                        {% endfor %}
+                    </select>
                 {% else %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" />
                 {% endif %}

@@ -56,9 +56,19 @@ class PredefinedInstructions extends BaseClass
             $activity->template->parameters['nodes_label'] = 'Nodes';
         }
         $instr  = $activity->template->parameters['instructions'];
+        $instr  = str_replace("{@ID}", $activity->id, $instr);
         $params = $this->getParameter('details')->activityDatabaseToForm($activity->template->parameters, $activity->parameters, 'details', $activity);
         foreach ($activity->template->parameters['details'] as $cfg) {
             $k = $cfg['id'];
+            if ($cfg['type'] == 'jsondropdown') {
+                $options = $cfg['details'];
+                if (isset($options[$params[$k]])) {
+                    // $sk = sub key, $sv = sub value
+                    foreach ($options[$params[$k]] as $sk => $sv) {
+                        $instr = str_replace("{{$k}.{$sk}}", $sv, $instr);
+                    }
+                }
+            }
             if (strpos($instr, "{{$k}}") === false ||
                 ($cfg['type'] == 'password' && $activity->actionableType != 'runitem')) {
                 continue;
