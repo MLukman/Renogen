@@ -88,37 +88,45 @@
                         <input placeholder="User friendly activity template title (max 100 characters)" type="text" name="title" value="{{template.title}}" />
                         {{ m.fieldError(errors|default([]), 'title') }}
                     </div>
-                    <div class="ui field basic grey segment">
-                        <label class="ui top attached large label">Description</label>
-                        <textarea name="description" rows="3">{{template.description|default(null)}}</textarea>
-                        {{ m.fieldError(errors|default([]), 'description') }}
+                    <div class="ui grey basic segment stackable grid">
+                        <div class="ui twelve wide column field">
+                            <label class="ui top attached large label">Description</label>
+                            <textarea name="description" rows="3">{{template.description|default(null)}}</textarea>
+                            {{ m.fieldError(errors|default([]), 'description') }}
+                        </div>
+                        <div class="ui four wide column field">
+                            <label class="ui top attached large label">Disabled</label>
+                            <p>Set to disabled to prevent creation of new activities using this template</p>
+                            <div class="ui toggle checkbox">
+                                <input type="hidden" name="disabled" value="0" />
+                                <input type="checkbox" name="disabled" value="1" {% if template.disabled %}checked="checked"{% endif %} />
+                            </div>
+                        </div>
                     </div>
-                    <div class="ui grey basic segment">
-                        <div class="ui grid">
-                            <div class="ui twelve wide column field required">
-                                <label class="ui top attached large label">Default Stage</label>
-                                {% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
-                                <p>The pre-defaulted selected stage when creating activities (can be changed for each activity)</p>
-                                <div class="inline fields">
-                                    {% for stage,label in stages %}
-                                        <div class="field">
-                                            <div class="ui radio checkbox">
-                                                <input id="stage-{{stage}}" type="radio" name="stage" value="{{stage}}" {% if stage == template.stage|default(0) %}checked="checked"{% endif %}>
-                                                <label for="stage-{{stage}}">{{label}}</label>
-                                            </div>
+                    <div class="ui grey basic segment stackable grid">
+                        <div class="ui twelve wide column field">
+                            <label class="ui top attached large label">Default Stage</label>
+                            {% set stages = { '-1':'Pre Deployment', '0': 'During Deployment', '1': 'Post Deployment' } %}
+                            <p>The pre-defaulted selected stage when creating activities (can be changed for each activity)</p>
+                            <div class="inline fields">
+                                {% for stage,label in stages %}
+                                    <div class="field">
+                                        <div class="ui radio checkbox">
+                                            <input id="stage-{{stage}}" type="radio" name="stage" value="{{stage}}" {% if stage == template.stage|default(0) %}checked="checked"{% endif %}>
+                                            <label for="stage-{{stage}}">{{label}}</label>
                                         </div>
-                                    {% endfor %}
-                                </div>
+                                    </div>
+                                {% endfor %}
                             </div>
-                            <div class="ui four wide column field">
-                                <label class="ui top attached large label">Priority</label>
-                                <select name="priority" class="ui fluid dropdown">
-                                    {% set maxprio = project.templates.count() + (template.id ? 0:1) %}
-                                    {% for priority in range(1,maxprio) %}
-                                        <option value="{{priority}}" {% if priority == template.priority|default(maxprio) %}selected="selected"{% endif %}>{{priority}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                        </div>
+                        <div class="ui four wide column field">
+                            <label class="ui top attached large label">Priority</label>
+                            <select name="priority" class="ui fluid dropdown">
+                                {% set maxprio = project.templates.count() + (template.id ? 0:1) %}
+                                {% for priority in range(1,maxprio) %}
+                                    <option value="{{priority}}" {% if priority == template.priority|default(maxprio) %}selected="selected"{% endif %}>{{priority}}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                     {% for param,parameter in class_instance.getParameters() %}

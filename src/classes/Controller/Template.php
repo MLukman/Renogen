@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Template extends RenoController
 {
-    const entityFields = array('class', 'title', 'description', 'stage', 'priority',
+    const entityFields = array('class', 'title', 'description', 'disabled', 'stage', 'priority',
         'parameters');
 
     public function index(Request $request, $project)

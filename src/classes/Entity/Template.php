@@ -59,6 +59,11 @@ class Template extends Entity
     public $parameters;
 
     /**
+     * @Column(type="boolean", options={"default":"0"})
+     */
+    public $disabled = false;
+
+    /**
      * @OneToMany(targetEntity="Activity", mappedBy="template", indexBy="id")
      * @var ArrayCollection|Activity[]
      */

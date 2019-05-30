@@ -20,7 +20,7 @@
         </div>
     {% endif %}
 
-    {% if activity.item.deployment.project.templates.count == 0 %}
+    {% if activity.item.deployment.project.enabled_templates.count == 0 %}
         <div class="ui error message">
             There is no activity template found for project '{{activity.item.deployment.project.title}}'.
             Please contact administrator.
@@ -34,7 +34,7 @@
                     <label class="ui top attached large label">Template</label>
                     <div class="ui basic segment">
                         <div class="ui very relaxed divided list">
-                            {% for template in activity.item.deployment.project.templates %}
+                            {% for template in activity.item.deployment.project.enabled_templates %}
                                 <div class="ui item">
                                     <div class="content">
                                         <div class="ui radio checkbox">

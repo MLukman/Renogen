@@ -217,4 +217,12 @@ class Project extends Entity
         }
         return false;
     }
+
+    public function enabled_templates()
+    {
+        if (!isset($this->_enabled_templates)) {
+            $this->_enabled_templates = $this->templates->matching(Criteria::create()->where(Criteria::expr()->eq("disabled", false)));
+        }
+        return $this->_enabled_templates;
+    }
 }

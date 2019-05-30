@@ -21,7 +21,18 @@
                     <div class="ui item">
                         <i class="large copy middle aligned icon"></i>
                         <div class="content">
-                            <a href="{{app.entity_path('template_edit',template)}}" class="header"><h3><span class="ui label">#{{template.priority}}</span> {{template.title}}</h3></a>
+                            <a href="{{app.entity_path('template_edit',template)}}" class="header">
+                                <h3>
+
+                                    {% if template.disabled %}
+                                        <span class="ui label">#{{template.priority}} (disabled)</span>
+                                        <span style="text-decoration: line-through">{{template.title}}</span>
+                                    {% else %}
+                                        <span class="ui label">#{{template.priority}}</span>
+                                        {{template.title}}
+                                    {% endif %}
+                                </h3>
+                            </a>
                             <div class="ui description">
                                 <div>Category: {{template.templateClass().classTitle}}</div>
                                 <div>Used by {{template.activities.count}} {{ template.activities.count > 1 ? 'activities':'activity' }}</div>
