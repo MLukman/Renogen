@@ -56,6 +56,13 @@
                 {% if is_existing and app.securilex.isGranted('ROLE_ADMIN') %}
                     <input type="submit" class="ui red right floated button" name="_action" value="Delete"
                            onclick="return prompt('Are you sure you want to delete? Enter project title to delete') == '{{project.title}}'" />
+                    {% if project.archived %}
+                        <input type="submit" class="ui orange right floated button" name="_action" value="Unarchive"
+                               onclick="return confirm('Unarchive this project to put it back into the projects list?')" />
+                    {% else %}
+                        <input type="submit" class="ui orange right floated button" name="_action" value="Archive"
+                               onclick="return confirm('Archiving this project will hide it from the projects list. Confirm?')" />
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

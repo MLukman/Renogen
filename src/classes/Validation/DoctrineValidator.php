@@ -95,9 +95,16 @@ class DoctrineValidator implements DataValidator
 
             // validation: string conforms to pattern
             if (isset($rules['preg_match'])) {
-                $preg_match = preg_match($rules['preg_match'], $value);
+                if (is_array($rules['preg_match'])) {
+                    $pattern = $rules['preg_match'][0];
+                    $errmsg  = $rules['preg_match'][1];
+                } else {
+                    $pattern = $rules['preg_match'];
+                    $errmsg  = "Wrong format";
+                }
+                $preg_match = preg_match($pattern, $value);
                 if ($preg_match === 0) {
-                    $errors[] = "Wrong format";
+                    $errors[] = $errmsg;
                 }
             }
 

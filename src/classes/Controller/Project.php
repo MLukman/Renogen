@@ -115,6 +115,18 @@ class Project extends RenoController
                 $this->app->addFlashMessage("Project '$project->title' has been deleted");
                 return $this->app->params_redirect('home');
             }
+            if ($project && $post->get('_action') == 'Archive') {
+                $project->archived = true;
+                $this->app['datastore']->commit($project);
+                $this->app->addFlashMessage("Project '$project->title' has been archived");
+                return $this->app->redirect($this->app->path('archived'));
+            }
+            if ($project && $post->get('_action') == 'Unarchive') {
+                $project->archived = false;
+                $this->app['datastore']->commit($project);
+                $this->app->addFlashMessage("Project '$project->title' has been unarchived");
+                return $this->app->entity_redirect('project_view', $project);
+            }
             if (!$project) {
                 $project     = new \Renogen\Entity\Project();
                 $nuser       = new UserProject($project, $this->app->userEntity());

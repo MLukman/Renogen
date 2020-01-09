@@ -3,6 +3,17 @@
 {% set is_project_admin = app.securilex.isGranted('ROLE_ADMIN') or app.securilex.isGranted('approval',project) %}
 
 {% block content %}
+    {% if project.archived %}
+        <div class="ui icon warning message">
+            <i class="archive icon"></i>
+            <div class="content">
+                <div class="header">
+                    This is an archived project.
+                </div>            
+            </div>
+        </div>
+    {% endif %}
+
     <h1 class="ui dividing header">
         <span>
             <i class="ui cube icon"></i>{{project.title}}
@@ -33,7 +44,7 @@
 
     <h2>
         Upcoming Deployments
-        {% if app.securilex.isGranted('approval',project) %}
+        {% if app.securilex.isGranted('approval',project) and not project.archived %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('deployment_create',project)}}">
                 <i class="ui plus icon"></i>Create
             </a>
@@ -45,7 +56,7 @@
         {% if project.upcoming().count() > 0 %}
             {{ mm.deploymentList(project.upcoming()) }}
         {% else %}
-            <div class="ui warning message">This project has no upcoming deployments yet. A user with 'approval' role needs to create a new deployment.</div>
+            <div class="ui warning message">This project has no upcoming deployments. {% if not project.archived %}A user with 'approval' role needs to create a new deployment.{% endif %}</div>
         {% endif %}
     </div>
 

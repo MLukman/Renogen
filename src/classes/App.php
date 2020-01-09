@@ -231,6 +231,7 @@ class App extends \Silex\Application
             return new Home($this);
         });
         $this->match('/', 'home.controller:index')->bind('home');
+        $this->match('/archived', 'home.controller:archived')->bind('archived');
 
         /* Routes: Admin */
         $this['admin.controller'] = $this->share(function() {
