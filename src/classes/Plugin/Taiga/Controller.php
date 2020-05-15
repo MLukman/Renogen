@@ -86,7 +86,7 @@ class Controller extends PluginController
         switch ($payload['action']) {
             case 'create':
             case 'change':
-                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))) {
+                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id'], $payload['data']['project']['permalink']))) {
                     $nd->updated_by   = $this->taigaUser();
                     $nd->updated_date = new \DateTime();
                 } else {
@@ -94,6 +94,7 @@ class Controller extends PluginController
                     $nd->created_by           = $this->taigaUser();
                     $nd->plugin_data['Taiga'] = array(
                         'id' => $payload['data']['id'],
+                        'project' => $payload['data']['project']['permalink'],
                     );
                 }
 
@@ -112,7 +113,7 @@ class Controller extends PluginController
                 ));
 
             case 'delete':
-                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id']))
+                if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id'], $payload['data']['project']['permalink']))
                     &&
                     $nd->items->count() == 0) {
                     $nd->updated_by   = $this->taigaUser();
@@ -174,7 +175,7 @@ class Controller extends PluginController
                 'message' => 'milestone not defined',
             ));
         }
-        if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id']))) {
+        if (!($d_deployment = $this->findDeploymentWithTaigaId($project, $payload['data']['milestone']['id'], $payload['data']['project']['permalink']))) {
             // do not process the milestone was not integrated into Renogen
             return;
         }
@@ -238,11 +239,17 @@ class Controller extends PluginController
         ));
     }
 
-    protected function findDeploymentWithTaigaId(Project $project, $id)
+    protected function findDeploymentWithTaigaId(Project $project, $id,
+                                                 $taiga_project)
     {
         foreach ($project->deployments as $deployment) {
-            if (isset($deployment->plugin_data['Taiga']['id']) && $deployment->plugin_data['Taiga']['id']
-                == $id) {
+            if (isset($deployment->plugin_data['Taiga']['id']) &&
+                $deployment->plugin_data['Taiga']['id'] == $id &&
+                (
+                !isset($deployment->plugin_data['Taiga']['project']) ||
+                $deployment->plugin_data['Taiga']['project'] == $taiga_project
+                )
+            ) {
                 return $deployment;
             }
         }

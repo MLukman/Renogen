@@ -91,9 +91,11 @@ class MultiField extends Parameter
 
     public function templateDatabaseToForm($parameter)
     {
-        foreach ($parameter as $k => $p) {
-            if ($p['type'] == 'jsondropdown') {
-                $parameter[$k]['details'] = \json_encode($p['details'], JSON_PRETTY_PRINT);
+        if (!empty($parameter)) {
+            foreach ($parameter as $k => $p) {
+                if ($p['type'] == 'jsondropdown') {
+                    $parameter[$k]['details'] = \json_encode($p['details'], JSON_PRETTY_PRINT);
+                }
             }
         }
         return $parameter;
