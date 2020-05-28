@@ -20,103 +20,169 @@
 
     <p>{{deployment.description|nl2br}}</p>
 
-    <h2 class="ui header">
-        Deployment Items
+    <div class="ui top attached tabular secondary pointing menu">
+        <div class="active item" data-tab="items">
+            <h2 class="ui header">
+                <span>
+                    <i class="ui idea hide-on-mobile"></i> <span class="hide-on-mobile">Deployment</span> Items 
+                    <span class="ui circular large label">{{deployment.items|length}}</span>
+                </span>
+            </h2>
+
+        </div>
+        <div class="item" data-tab="checklist">
+            <h2 class="ui header">
+                <span>
+                    <i class="ui tasks icon hide-on-mobile"></i> Checklist
+                    <span class="ui circular large label">{{deployment.checklists|length}}</span>
+                </span>
+            </h2>
+
+        </div>
+    </div>
+
+    <div class="ui tab basic segment active" data-tab="items">
+
         {% if app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('item_create',deployment)}}">
                 <i class="ui plus icon"></i>Add Item
             </a>
+            <div style="clear:both"></div>
         {% endif %}
-        <div style="clear:both"></div>
-    </h2>
 
-    <div class="ui basic segment">
-        <div class="ui equal width stackable grid">
-            <div class="ui small statistic column">
-                <div class="label">
-                    TOTAL
-                </div>
-                <div class="value">
-                    {{deployment.items|length}}
-                </div>
-            </div>
-            {% set statuses = deployment.project.item_statuses|keys %}
-            {% for s in statuses %}
-                <div class="ui small statistic column">
+        <div class="ui basic segment">
+            <div class="ui equal width stackable grid">
+                {% set statuses = deployment.project.item_statuses|keys %}
+                {% for s in statuses %}
+                    <div class="ui tiny statistic column">
+                        <div class="label">
+                            {{s}}
+                        </div>
+                        <div class="value">
+                            {{deployment.getItemsWithStatus(s)|length}}
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="ui tiny statistic column">
                     <div class="label">
-                        {{s}}
+                        Rejected / Failed
                     </div>
                     <div class="value">
-                        {{deployment.getItemsWithStatus(s)|length}}
+                        {{deployment.getItemsWithStatus('Rejected')|length + deployment.getItemsWithStatus('Failed')|length}}
                     </div>
-                </div>
-            {% endfor %}
-            <div class="ui small statistic column">
-                <div class="label">
-                    Rejected / Failed
-                </div>
-                <div class="value">
-                    {{deployment.getItemsWithStatus('Rejected')|length + deployment.getItemsWithStatus('Failed')|length}}
                 </div>
             </div>
         </div>
-    </div>
 
-    <table class="ui celled striped sortable table">
-        <thead>
-            <tr>
-                <th class="ui collapsing">Reference #</th>
-                <th>Title</th>
-                <th class="ui collapsing">Category</th>
-                <th class="ui collapsing">Modules</th>
-                <th class="ui collapsing"><i class="ui add to cart icon" title="Activity Count"></i></th>
-                <th class="ui collapsing"><i class="ui attach icon" title="Attachment Count"></i></th>
-                <th class="ui collapsing"><i class="ui comment icon" title="Comment Count"></i></th>
-                <th class="ui collapsing">Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in deployment.items %}
-                <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
-                    <td class="ui collapsing top aligned">{{item.refnum|default('-')}}</td>
-                    <td class="ui top aligned">
-                        <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a></h3>
-                        {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {{ r.itemCategoryLabel(item) }}
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {{ r.itemModulesLabel(item) }}
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {% set activities = item.activities.count() %}
-                        <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {% set attachments = item.attachments.count() %}
-                        <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {% set comments = item.comments.count() %}
-                        {% set last = item.comments.last() %}
-                        <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
-                    </td>
-                    <td class="ui collapsing top aligned">
-                        {{ r.itemStatusLabel(item) }}
-                    </td>
-                </tr>
-            {% else %}
+        <table class="ui celled striped sortable table">
+            <thead>
                 <tr>
-                    <td colspan="1000" class="center aligned">No item found</td>
+                    <th class="ui collapsing">Reference #</th>
+                    <th>Title</th>
+                    <th class="ui collapsing">Category</th>
+                    <th class="ui collapsing">Modules</th>
+                    <th class="ui collapsing"><i class="ui add to cart icon" title="Activity Count"></i></th>
+                    <th class="ui collapsing"><i class="ui attach icon" title="Attachment Count"></i></th>
+                    <th class="ui collapsing"><i class="ui comment icon" title="Comment Count"></i></th>
+                    <th class="ui collapsing">Status</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for item in deployment.items %}
+                    <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
+                        <td class="ui collapsing top aligned">{{item.refnum|default('-')}}</td>
+                        <td class="ui top aligned">
+                            <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a></h3>
+                            {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {{ r.itemCategoryLabel(item) }}
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {{ r.itemModulesLabel(item) }}
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {% set activities = item.activities.count() %}
+                            <span class="ui circular {{activities?'blue':'red'}} label">{{activities}}</span>
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {% set attachments = item.attachments.count() %}
+                            <span class="ui circular {{attachments?'blue':'red'}} label">{{attachments}}</span>
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {% set comments = item.comments.count() %}
+                            {% set last = item.comments.last() %}
+                            <span class="ui circular {{comments?'blue':''}} label" title="{{last.text|default(null)}}">{{comments}}</span>
+                        </td>
+                        <td class="ui collapsing top aligned">
+                            {{ r.itemStatusLabel(item) }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="1000" class="center aligned">No item found</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    <div class="ui label">
-        Total Items Count
-        <span class="detail"><i class="ui hashtag icon"></i>{{deployment.items|length}}</span>
+    </div>
+    <div class="ui tab basic segment" data-tab="checklist">
+        {% set can_manage = app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
+
+        {% if can_manage %}
+            <a class="ui right floated primary button no-print" href="{{app.entity_path('checklist_create',deployment)}}">
+                <i class="ui plus icon"></i>Add Activity
+            </a>
+            <div style="clear:both"></div>
+        {% endif %}
+
+        <table class="ui celled striped sortable table">
+            <thead>
+                <tr>
+                    <th class="ui collapsing">#</th>
+                    <th>Activity</th>
+                    <th class="ui collapsing">Start Date/Time</th>
+                    <th class="ui collapsing">End Date/Time</th>
+                    <th class="ui collapsing">PIC</th>
+                    <th class="ui collapsing">Status</th>
+                        {% if can_manage %}
+                        <th class="ui collapsing">Action</th>
+                        {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in deployment.checklists %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ c.title }}</td>
+                        <td class="ui collapsing" data-sort-value="{{ c.start_datetime.getTimestamp() }}">{{ c.start_datetime|date('d/m/Y h:i A') }}</td>
+                        {% if c.end_datetime %}
+                            <td class="ui collapsing" data-sort-value="{{ c.end_datetime.getTimestamp() }}">{{ c.end_datetime|date('d/m/Y h:i A') }}</td>
+                        {% else %}
+                            <td></td>
+                        {% endif %}
+                        <td>
+                            {% for p in c.pics %}
+                                <span class="ui label">{{p.name}}</span>
+                            {% endfor %}
+                        </td>
+                        <td class="ui collapsing">{{ c.status }}</td>
+                        {% if can_manage %}
+                            <td>
+                                <a class="ui icon button" title="Edit" href="{{app.entity_path('checklist_edit',c)}}">
+                                    <i class="ui pencil icon"></i>
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="1000" class="center aligned">No checklist activity has been created</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     {{ r.timestamps(deployment) }}
 

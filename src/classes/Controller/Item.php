@@ -33,6 +33,7 @@ class Item extends RenoController
     {
         try {
             $item_obj    = $this->app['datastore']->fetchItem($project, $deployment, $item);
+            $this->checkAccess('any', $item_obj);
             $this->addEntityCrumb($item_obj);
             $editable    = (
                 $this->app['securilex']->isGranted(['entry', 'approval'], $item_obj->deployment->project)

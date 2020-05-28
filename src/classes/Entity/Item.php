@@ -15,17 +15,14 @@ use Doctrine\ORM\Mapping\PostPersist;
 use Doctrine\ORM\Mapping\PostRemove;
 use Doctrine\ORM\Mapping\PostUpdate;
 use Doctrine\ORM\Query\Expr\OrderBy;
-use Renogen\Base\ApproveableEntity;
-use Securilex\Authorization\SecuredAccessInterface;
-use Securilex\Authorization\SecuredAccessTrait;
+use Renogen\App;
+use Renogen\Base\Entity;
 
 /**
  * @Entity @Table(name="items") @HasLifecycleCallbacks
  */
-class Item extends ApproveableEntity implements SecuredAccessInterface
+class Item extends Entity
 {
-
-    use SecuredAccessTrait;
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
      */
@@ -95,6 +92,12 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
      * @Column(type="string", length=100, nullable=true)
      */
     public $status = 'Documentation';
+
+    /**
+     * @Column(type="datetime", nullable=true)
+     * @var \DateTime
+     */
+    public $approved_date;
 
     /**
      * @Column(type="json_array", nullable=true)
@@ -186,19 +189,12 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     {
         $project         = $this->deployment->project;
         $old_status_real = $this->status();
-        if ($status == 'Test Review' &&
-            static::compareStatuses($project, $old_status_real, $status) > 0) {
-            parent::submit();
-        }
-        if (static::compareStatuses($project, $status, 'Documentation') >= 0) {
-            parent::unsubmit();
-        }
         if ($status == 'Ready For Release' &&
             static::compareStatuses($project, $old_status_real, $status) > 0) {
-            parent::approve();
+            $this->approved_date = new \DateTime();
         }
         if (static::compareStatuses($project, $status, 'Go No Go') >= 0) {
-            parent::unapprove();
+            $this->approved_date = null;
         }
 
         $old_status   = $this->status;
@@ -301,7 +297,7 @@ class Item extends ApproveableEntity implements SecuredAccessInterface
     public function getAllowedTransitions(User $user = null)
     {
         if (!$user) {
-            $user = \Renogen\App::instance()->userEntity();
+            $user = App::instance()->userEntity();
         }
         $transitions = array();
         foreach ($this->deployment->project->item_statuses as $status => $config) {

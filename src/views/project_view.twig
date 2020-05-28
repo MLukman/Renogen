@@ -64,6 +64,7 @@
         <h2>
             Past Deployments (Showing last 10)
             <a class="ui button right floated" href="{{app.entity_path('project_past',project)}}"><i class="ui clock icon"></i>Show all past deployments</a>
+            <div style="clear:both"></div>
         </h2>
         <div class="ui basic segment">
             {{ mm.deploymentList(project.past()|slice(0, 10)) }}
@@ -77,7 +78,7 @@
         {% for deployment in deployments %}
             <div class="ui purple card">
                 <div class="content">
-                    <a  class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
+                    <a class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
                         <span class="ui right floated">
                             {{deployment.datetimeString(true)}}
                         </span>

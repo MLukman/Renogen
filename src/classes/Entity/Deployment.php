@@ -11,13 +11,15 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
+use Doctrine\ORM\Mapping\PostPersist;
+use Doctrine\ORM\Mapping\PostUpdate;
 use Renogen\App;
-use Renogen\Base\ApproveableEntity;
+use Renogen\Base\Entity;
 
 /**
  * @Entity @Table(name="deployments") @HasLifecycleCallbacks
  */
-class Deployment extends ApproveableEntity
+class Deployment extends Entity
 {
     /**
      * @Id @Column(type="string") @GeneratedValue(strategy="UUID")
@@ -61,6 +63,13 @@ class Deployment extends ApproveableEntity
     public $runitems = null;
 
     /**
+     * @OneToMany(targetEntity="Checklist", mappedBy="deployment", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @OrderBy({"start_datetime" = "ASC", "end_datetime" = "ASC"})
+     * @var ArrayCollection|Item[]
+     */
+    public $checklists = null;
+
+    /**
      * @Column(type="json_array", nullable=true)
      * @var array
      */
@@ -77,9 +86,10 @@ class Deployment extends ApproveableEntity
 
     public function __construct(Project $project)
     {
-        $this->project  = $project;
-        $this->items    = new ArrayCollection();
-        $this->runitems = new ArrayCollection();
+        $this->project    = $project;
+        $this->items      = new ArrayCollection();
+        $this->runitems   = new ArrayCollection();
+        $this->checklists = new ArrayCollection();
     }
 
     public function name()
@@ -183,7 +193,7 @@ class Deployment extends ApproveableEntity
     public function onInserted()
     {
         foreach ($this->project->plugins as $plugin) {
-            /** @var \Renogen\Entity\Plugin $plugin */
+            /** @var Plugin $plugin */
             $plugin->instance()->onDeploymentCreated($this);
         }
     }
@@ -196,7 +206,7 @@ class Deployment extends ApproveableEntity
         if (isset($this->old_values['execute_date']) &&
             $this->datetimeString(false, $this->execute_date) != $this->datetimeString(false, $this->old_values['execute_date'])) {
             foreach ($this->project->plugins as $plugin) {
-                /** @var \Renogen\Entity\Plugin $plugin */
+                /** @var Plugin $plugin */
                 $plugin->instance()->onDeploymentDateChanged($this, $this->old_values['execute_date']);
             }
         }

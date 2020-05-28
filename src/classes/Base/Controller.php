@@ -56,12 +56,13 @@ abstract class Controller
         $this->basectx['extra_css'][$tag ?: $file] = $this->relativizeFile($file);
     }
 
-    public function addCrumb($text, $url, $icon = null)
+    public function addCrumb($text, $url, $icon = null, $hide_on_mobile = false)
     {
         $this->basectx['crumbs'][] = array(
             'text' => $text,
             'url' => $url,
             'icon' => $icon,
+            'hide_on_mobile' => $hide_on_mobile,
         );
     }
 

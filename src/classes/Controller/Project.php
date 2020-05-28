@@ -23,7 +23,7 @@ class Project extends RenoController
     {
         try {
             $project = $this->app['datastore']->fetchProject($project);
-            $this->checkAccess(array('view', 'execute', 'entry', 'review', 'approval'), $project);
+            $this->checkAccess('any', $project);
             $this->addEntityCrumb($project);
             return $this->render('project_view', array(
                     'project' => $project

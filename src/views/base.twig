@@ -143,9 +143,14 @@
                 $('.ui.dropdown:not(.action-nothing)').dropdown({
                     fullTextSearch: true
                 });
-                setTimeout(function () {
-                    $('.flash.message:not(.error,.persist)').fadeOut(1000);
-                }, 3000);
+                $('.flash.message:not(.error,.persist)').delay(3000).animate({
+                    height: 0,
+                    opacity: 0,
+                    marginTop: 0, marginBottom: 0,
+                    paddingTop: 0, paddingBottom: 0
+                }, 'slow', function () {
+                    $(this).hide();
+                });
 
                 $('#overlay').dimmer({
                     closable: false
@@ -187,95 +192,101 @@
                     display: none !important;
                 }
             }
+
+            @media only screen and (max-width: 767px) {
+                .hide-on-mobile {
+                    display: none !important;
+                }
+            }
         </style>
-    {% block head %}{% endblock %}
-</head>
-<body>
+        {% block head %}{% endblock %}
+    </head>
+    <body>
 
-    <div id="topbar" class="no-print">
-        <div id="topmenu" class="ui stackable menu inverted purple">
+        <div id="topbar" class="no-print">
+            <div id="topmenu" class="ui stackable menu inverted purple">
 
-            <div class="ui title item" style="padding:8px">
-                <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
-                    {% block menutitle %}
-                        {% if app.logo %}
-                            <img src="{{app.logo}}" />
-                        {% else %}
-                            <h3 style="padding: 8px;">
-                                {% if app.icon %}<i class="ui {{app.icon}} icon"></i>{% endif %}
-                                {{app.title}}
-                            </h3>
-                        {% endif %}
-                    {% endblock %}
-                </a>
-            </div>
+                <div class="ui title item" style="padding:8px">
+                    <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
+                        {% block menutitle %}
+                            {% if app.logo %}
+                                <img src="{{app.logo}}" />
+                            {% else %}
+                                <h3 style="padding: 8px;">
+                                    {% if app.icon %}<i class="ui {{app.icon}} icon"></i>{% endif %}
+                                    {{app.title}}
+                                </h3>
+                            {% endif %}
+                        {% endblock %}
+                    </a>
+                </div>
 
-            {% block menubar %}
-            {% endblock %}
-
-            <div class="right menu">
-                {% block menuright %}
+                {% block menubar %}
                 {% endblock %}
 
-                {% if app.securilex is defined %}
-                    {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
-                        <div class="ui dropdown item">
-                            <i class="ui user icon"></i> {{app['user'].getName()}}
-                            <i class="dropdown icon"></i>
-                            <div class="menu">
-                                {% block usermenu %}
-                                {% endblock %}
-                                {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
-                                {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
-                                    <div class="ui divider"></div>
-                                    <div class="ui header">Administrations</div>
-                                    {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
-                                    {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
-                                    {{ m.topmenu_item('Archived Projects', app.path('archived'), 'archive') }}
-                                {% endif %}
+                <div class="right menu">
+                    {% block menuright %}
+                    {% endblock %}
+
+                    {% if app.securilex is defined %}
+                        {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
+                            <div class="ui dropdown item">
+                                <i class="ui user icon"></i> {{app['user'].getName()}}
+                                <i class="dropdown icon"></i>
+                                <div class="menu">
+                                    {% block usermenu %}
+                                    {% endblock %}
+                                    {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
+                                    {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
+                                        <div class="ui divider"></div>
+                                        <div class="ui header">Administrations</div>
+                                        {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+                                        {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
+                                        {{ m.topmenu_item('Archived Projects', app.path('archived'), 'archive') }}
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
-                    {% else %}
-                        <a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+                        {% else %}
+                            <a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-            </div>
-        </div>
-
-        {% block belowtopmenu %}
-        {% endblock %}
-    </div>
-
-    <div id="topfiller" class="no-print"></div>
-
-    {% for message in app.session.flashbag.get('message') %}
-        <div class="ui floating {{message.type}} flash message {% if message.persistent %}persist{% endif %}" style="margin:1em" onclick="javascript:$(this).fadeOut()">
-            {% if message.title %}
-                <div class="header">
-                    {{message.title}}
                 </div>
-            {% endif %}
-            <p>{{message.text|nl2br}}</p>
-        </div>
-    {% endfor %}
+            </div>
 
-    <div class="ui basic segment">
-        {% block content %}
-            {{content|default(null)|raw}}
-        {% endblock %}
-    </div>
-
-    {% if block('footer')|trim is not empty %}
-        <div style="margin: 2em 0em; border-top: 1px solid silver">
-            {% block footer %}
+            {% block belowtopmenu %}
             {% endblock %}
         </div>
-    {% endif %}
 
-    <div id="overlay" class="ui page dimmer">
-        <div id="overlayContent" class="content"></div>
-    </div>
-</body>
+        <div id="topfiller" class="no-print"></div>
+
+        {% for message in app.session.flashbag.get('message') %}
+            <div class="ui floating {{message.type}} flash message {% if message.persistent %}persist{% endif %}" style="margin:1em" onclick="javascript:$(this).fadeOut()">
+                {% if message.title %}
+                    <div class="header">
+                        {{message.title}}
+                    </div>
+                {% endif %}
+                <p>{{message.text|nl2br}}</p>
+            </div>
+        {% endfor %}
+
+        <div class="ui basic segment">
+            {% block content %}
+                {{content|default(null)|raw}}
+            {% endblock %}
+        </div>
+
+        {% if block('footer')|trim is not empty %}
+            <div style="margin: 2em 0em; border-top: 1px solid silver">
+                {% block footer %}
+                {% endblock %}
+            </div>
+        {% endif %}
+
+        <div id="overlay" class="ui page dimmer">
+            <div id="overlayContent" class="content"></div>
+        </div>
+    </body>
 </html>
 
 {% macro topmenu_item(text, url, icon, extra_classes) %}
@@ -311,13 +322,13 @@
 
 {% macro dateField(id, name, value, placeholder, mode) %}
     <div class="ui calendar" id="{{id}}">
-        {% if value %}<div>Current value = {{value}}</div>{% endif %}
         <div class="ui input left icon action">
             <i class="calendar icon"></i>
             <input type="text" name="{{name}}" placeholder="{{placeholder}}" value="{{value}}" autocomplete="off" />
             <button class="ui button" type="button" onclick="$('#{{id}}').calendar('clear');
                     return false;">Clear</button>
         </div>
+        {% if value %}<div>Current value = {{value}}</div>{% endif %}
     </div>
     <script>
         $(function () {

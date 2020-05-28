@@ -33,6 +33,7 @@ class Deployment extends RenoController
             if (is_string($deployment) && $deployment != $deployment_obj->datetimeString()) {
                 return $this->app->entity_redirect('deployment_view', $deployment_obj);
             }
+            $this->checkAccess('any', $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             return $this->render('deployment_view', array(
                     'deployment' => $deployment_obj,

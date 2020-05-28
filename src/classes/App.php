@@ -90,8 +90,7 @@ class App extends \Silex\Application
         });
 
         $app['em'] = $app->share(function () use ($app) {
-            $config = Setup::createAnnotationMetadataConfiguration(array(
-                    __DIR__), $app['debug']);
+            $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__), $app['debug']);
 
             if ($app['debug']) {
                 $cache = new ArrayCache;
@@ -177,8 +176,15 @@ class App extends \Silex\Application
                 exit;
             }
             $driverClass = new $className($driver->parameters ?: array());
-            $this->firewall->addAuthenticationFactory($driverClass->getAuthenticationFactory(), new DoctrineMutableUserProvider($em, '\Renogen\Entity\User', 'username', array(
-                'auth' => $driverName)));
+            $this->firewall->addAuthenticationFactory(
+                $driverClass->getAuthenticationFactory(),
+                new DoctrineMutableUserProvider(
+                    $em,
+                    '\Renogen\Entity\User',
+                    'username',
+                    array('auth' => $driverName)
+                )
+            );
         }
 
         $this->security->addFirewall($this->firewall);
@@ -218,9 +224,7 @@ class App extends \Silex\Application
                 $error['title']   = 'Access Denied';
             }
 
-            return $this['twig']->render("exception.twig", array(
-                    'error' => $error,
-            ));
+            return $this['twig']->render("exception.twig", array('error' => $error));
         });
     }
 
@@ -306,6 +310,13 @@ class App extends \Silex\Application
         $this->match('/{project}/{deployment}/runbook/', 'runbook.controller:view')->bind('runbook_view');
         $this->match('/{project}/{deployment}/runbook/{runitem}', 'runbook.controller:runitem_update')->bind('runitem_update');
         $this->match('/{project}/{deployment}/runbook/{runitem}/{file}', 'runbook.controller:download_file')->bind('runitem_file_download');
+
+        /* Routes: Checklist */
+        $this['checklist.controller'] = $this->share(function() {
+            return new Controller\Checklist($this);
+        });
+        $this->match('/{project}/{deployment}/checklist/', 'checklist.controller:create')->bind('checklist_create');
+        $this->match('/{project}/{deployment}/checklist/{checklist}', 'checklist.controller:edit')->bind('checklist_edit');
 
         /* Routes: Item */
         $this['item.controller'] = $this->share(function() {
@@ -556,6 +567,10 @@ class App extends \Silex\Application
         } elseif ($entity instanceof Entity\Item) {
             return $this->entityParams($entity->deployment) + array(
                 'item' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\Checklist) {
+            return $this->entityParams($entity->deployment) + array(
+                'checklist' => $entity->id,
             );
         } elseif ($entity instanceof Entity\Activity) {
             return $this->entityParams($entity->item) + array(

@@ -95,7 +95,7 @@ class Entity implements SecuredAccessInterface
 
         $validator    = DoctrineValidator::instance();
         $validator->setEntityManager($em);
-        $this->errors = $validator->validate($this, $rules);
+        $this->errors = array_merge($this->errors, $validator->validate($this, $rules));
         return empty($this->errors);
     }
 

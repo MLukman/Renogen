@@ -135,10 +135,30 @@ class DataStore implements ServiceProviderInterface
         if (!($item instanceof Item)) {
             $id   = $item;
             if (!($item = $this->queryOne('\Renogen\Entity\Item', array('id' => $id)))) {
-                throw new NoResultException("There is not such deployment with id '$id'");
+                throw new NoResultException("There is not such deployment item with id '$id'");
             }
         }
         return $item;
+    }
+
+    /**
+     *
+     * @param type $project
+     * @param type $deployment
+     * @param type $item
+     * @return Item
+     * @throws NoResultException
+     */
+    public function fetchChecklist($project, $deployment, $checklist)
+    {
+        if (!($checklist instanceof Entity\Checklist)) {
+            $id        = $checklist;
+            if (!($checklist = $this->queryOne('\Renogen\Entity\Checklist', array(
+                'id' => $id)))) {
+                throw new NoResultException("There is not such deployment checklist id '$id'");
+            }
+        }
+        return $checklist;
     }
 
     /**
@@ -271,7 +291,8 @@ class DataStore implements ServiceProviderInterface
             }
             $entity->storeOldValues(array($field));
             $field_value = $data->get($field);
-            if (substr($field, -5) == '_date' && !($field_value instanceof \DateTime)) {
+            if ((substr($field, -5) == '_date' || substr($field, -9) == '_datetime')
+                && !($field_value instanceof \DateTime)) {
                 if (!empty($field_value) && strlen($field_value) <= 10) {
                     $field_value .= ' 00:00 AM';
                 }
