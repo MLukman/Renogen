@@ -6,7 +6,7 @@
             <span>{{r.crumb_project(deployment.project, true)}} &raquo;</span>
         </div>
         <span>
-            <i class="ui calendar check o icon"></i>{{deployment.displayTitle}}
+            <i class="ui calendar check o icon" title="Deployment"></i>{{deployment.displayTitle}}
         </span>
         {% if app.securilex.isGranted('approval',deployment.project) %}
             <a class="ui right floated button no-print" href="{{app.entity_path('deployment_edit',deployment)}}"><i class="ui pencil icon"></i>Edit</a>
@@ -24,7 +24,7 @@
         <div class="active item" data-tab="items">
             <h2 class="ui header">
                 <span>
-                    <i class="ui idea hide-on-mobile"></i> <span class="hide-on-mobile">Deployment</span> Items 
+                    <i class="ui flag icon hide-on-mobile"></i> <span class="hide-on-mobile">Deployment</span> Items 
                     <span class="ui circular large label">{{deployment.items|length}}</span>
                 </span>
             </h2>
@@ -68,7 +68,7 @@
                         Rejected / Failed
                     </div>
                     <div class="value">
-                        {{deployment.getItemsWithStatus('Rejected')|length + deployment.getItemsWithStatus('Failed')|length}}
+                        {{deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_REJECTED'))|length + deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_FAILED'))|length}}
                     </div>
                 </div>
             </div>
@@ -132,7 +132,7 @@
 
         {% if can_manage %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('checklist_create',deployment)}}">
-                <i class="ui plus icon"></i>Add Activity
+                <i class="ui plus icon"></i>Add Task
             </a>
             <div style="clear:both"></div>
         {% endif %}
@@ -141,7 +141,7 @@
             <thead>
                 <tr>
                     <th class="ui collapsing">#</th>
-                    <th>Activity</th>
+                    <th>Task</th>
                     <th class="ui collapsing">Start Date/Time</th>
                     <th class="ui collapsing">End Date/Time</th>
                     <th class="ui collapsing">PIC</th>

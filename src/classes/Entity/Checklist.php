@@ -80,4 +80,9 @@ class Checklist extends Entity
         $this->deployment = $deployment;
         $this->pics       = new ArrayCollection();
     }
+
+    public function isPending()
+    {
+        return $this->status == 'Not Started' || $this->status == 'In Progress';
+    }
 }

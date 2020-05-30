@@ -65,7 +65,7 @@ class Deployment extends Entity
     /**
      * @OneToMany(targetEntity="Checklist", mappedBy="deployment", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @OrderBy({"start_datetime" = "ASC", "end_datetime" = "ASC"})
-     * @var ArrayCollection|Item[]
+     * @var ArrayCollection|Checklist[]
      */
     public $checklists = null;
 

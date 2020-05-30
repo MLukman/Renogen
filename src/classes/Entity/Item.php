@@ -91,7 +91,7 @@ class Item extends Entity
     /**
      * @Column(type="string", length=100, nullable=true)
      */
-    public $status = 'Documentation';
+    public $status = Project::ITEM_STATUS_INIT;
 
     /**
      * @Column(type="datetime", nullable=true)
@@ -189,11 +189,12 @@ class Item extends Entity
     {
         $project         = $this->deployment->project;
         $old_status_real = $this->status();
-        if ($status == 'Ready For Release' &&
+        if ($status == Project::ITEM_STATUS_READY &&
             static::compareStatuses($project, $old_status_real, $status) > 0) {
             $this->approved_date = new \DateTime();
         }
-        if (static::compareStatuses($project, $status, 'Go No Go') >= 0) {
+        if (static::compareStatuses($project, $status, Project::ITEM_STATUS_APPROVAL)
+            >= 0) {
             $this->approved_date = null;
         }
 
@@ -328,7 +329,7 @@ class Item extends Entity
                         );
                     }
                 }
-                if ($this->status == 'Ready For Release' &&
+                if ($this->status == Project::ITEM_STATUS_READY &&
                     $this->activities->count() > 0) {
                     // Special condition: Ready For Release cannot be completed here
                     $transition = array();

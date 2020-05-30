@@ -3,6 +3,7 @@
 namespace Renogen\Controller;
 
 use Renogen\Base\RenoController;
+use Renogen\Entity\Project;
 use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -52,7 +53,7 @@ class Runbook extends RenoController
                 $remark          = $request->request->get('remark');
 
                 switch ($status) {
-                    case 'Completed':
+                    case Project::ITEM_STATUS_COMPLETED:
                         foreach ($runitem->activities as $activity) {
                             if ($activity->item->status == $status) {
                                 continue;
@@ -67,7 +68,7 @@ class Runbook extends RenoController
                             $this->app['datastore']->commit($activity->item);
                         }
                         break;
-                    case 'Failed':
+                    case Project::ITEM_STATUS_FAILED:
                         foreach ($runitem->activities as $activity) {
                             if ($activity->item->status == $status) {
                                 continue;

@@ -34,7 +34,7 @@ abstract class RenoController extends Controller
             $this->addEntityCrumb($item->deployment, $level + 1);
             $this->title = $item->displayTitle();
             $this->addCrumb(strlen($this->title) > self::titleLength ?
-                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->entity_path('item_view', $item), 'idea',
+                    substr($this->title, 0, self::titleLength).'...' : $this->title, $this->app->entity_path('item_view', $item), 'flag',
                 $level > self::hideOnMobileThreshold);
         } elseif ($entity instanceof Activity) {
             $activity    = $entity;

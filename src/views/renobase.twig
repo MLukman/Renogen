@@ -151,16 +151,16 @@
 {% macro runItemStatusControl(runitem) %}
     {% if runitem.status == 'New' and app.securilex.isGranted(['execute','approval'],runitem.deployment.project) %}
         <div class="ui buttons">
-            <div class="ui positive button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, 'Completed')">
+            <div class="ui positive button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, {{constant('Renogen\\Entity\\Project::ITEM_STATUS_COMPLETED')|json_encode}})">
                 <i class="ui checkmark icon"></i>Completed
             </div>
             <div class="or"></div>
-            <div class="ui negative button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, 'Failed', true)">
+            <div class="ui negative button" onclick="return changeStatus({{runitem.id|raw|json_encode}}, {{constant('Renogen\\Entity\\Project::ITEM_STATUS_FAILED')|json_encode}}, true)">
                 <i class="ui x icon"></i>Failed
             </div>
         </div>
     {% else %}
-        <span class="ui horizontal label {% if runitem.status == 'Failed' %}red{% elseif runitem.status == 'Completed' %}green{% endif %}">{{runitem.status}}</span>
+        <span class="ui horizontal label {% if runitem.status == constant('Renogen\\Entity\\Project::ITEM_STATUS_FAILED') %}red{% elseif runitem.status == constant('Renogen\\Entity\\Project::ITEM_STATUS_COMPLETED') %}green{% endif %}">{{runitem.status}}</span>
         <small>
             by {{runitem.updated_by.shortname}}
             <br />{{runitem.updated_date|date('d/m/Y h:ia')}}
@@ -169,7 +169,7 @@
 {% endmacro %}
 
 {% macro crumb_project(project, link) %}
-    <i class="ui cube icon"></i>
+    <i class="ui cube icon" title="Project"></i>
     {% if link %}
         <a href="{{app.entity_path('project_view',project)}}">{{project.title}}</a>
     {% else %}
@@ -178,7 +178,7 @@
 {% endmacro %}
 
 {% macro crumb_deployment(deployment, link, anchor) %}
-    <i class="ui calendar check o icon"></i>
+    <i class="ui calendar check o icon" title="Deployment"></i>
     {% if link %}
         <a href="{{app.entity_path('deployment_view',deployment)}}{{anchor}}">{{deployment.displayTitle}}</a>
     {% else %}
@@ -187,7 +187,7 @@
 {% endmacro %}
 
 {% macro crumb_item(item, link) %}
-    <i class="ui idea icon"></i>
+    <i class="ui flag icon" title="Deployment Item"></i>
     {% if link %}
         <a href="{{app.entity_path('item_view',item)}}">{{item.displayTitle}}</a>
     {% else %}

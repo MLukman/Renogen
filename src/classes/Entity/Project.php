@@ -51,7 +51,11 @@ class Project extends Entity
     /**
      * @Column(type="json_array", nullable=true)
      */
-    public $categories = array();
+    public $categories = array(
+        'Bug Fix',
+        'Enhancement',
+        'New Feature',
+    );
 
     /**
      * @Column(type="boolean", options={"default":"0"})
@@ -101,36 +105,45 @@ class Project extends Entity
         'modules' => array('required' => 1),
     );
     protected $validation_default = array('trim' => 1);
-    public $item_statuses         = array(
-        'Documentation' => array(
+
+    const ITEM_STATUS_INIT      = 'Documentation';
+    const ITEM_STATUS_REVIEW    = 'Test Review';
+    const ITEM_STATUS_APPROVAL  = 'Go No Go';
+    const ITEM_STATUS_READY     = 'Ready For Release';
+    const ITEM_STATUS_COMPLETED = 'Completed';
+    const ITEM_STATUS_REJECTED  = 'Rejected';
+    const ITEM_STATUS_FAILED    = 'Failed';
+
+    public $item_statuses = array(
+        self::ITEM_STATUS_INIT => array(
             'icon' => 'edit',
             'stepicon' => 'edit',
             'proceedaction' => 'Submit For Review',
             'rejectaction' => false,
             'role' => ['entry', 'approval'],
         ),
-        'Test Review' => array(
+        self::ITEM_STATUS_REVIEW => array(
             'icon' => 'clipboard check',
             'stepicon' => 'clipboard check',
             'proceedaction' => 'Verified',
             'rejectaction' => 'Rejected',
             'role' => ['review', 'approval'],
         ),
-        'Go No Go' => array(
+        self::ITEM_STATUS_APPROVAL => array(
             'icon' => 'thumbs up',
             'stepicon' => 'thumbs up',
             'proceedaction' => 'Approved',
             'rejectaction' => 'Rejected',
             'role' => 'approval',
         ),
-        'Ready For Release' => array(
+        self::ITEM_STATUS_READY => array(
             'icon' => 'cloud upload',
             'stepicon' => 'cloud upload',
             'proceedaction' => 'Completed',
             'rejectaction' => 'Failed',
             'role' => ['execute', 'approval'],
         ),
-        'Completed' => array(
+        self::ITEM_STATUS_COMPLETED => array(
             'icon' => 'flag checkered',
             'stepicon' => 'flag checkered',
             'proceedaction' => false,
@@ -148,6 +161,10 @@ class Project extends Entity
         $this->userProjects = new ArrayCollection();
     }
 
+    /**
+     * Get upcoming deployments
+     * @return Deployment[]
+     */
     public function upcoming()
     {
         return $this->cached('upcoming', function() {
@@ -158,6 +175,10 @@ class Project extends Entity
             });
     }
 
+    /**
+     * Get past deployments
+     * @return Deployment[]
+     */
     public function past()
     {
         return $this->cached('past', function() {
@@ -196,6 +217,9 @@ class Project extends Entity
 
     public function getUserAccess($username)
     {
+        if ($username instanceof User) {
+            $username = $username->username;
+        }
         return ($this->userProjects->containsKey($username) ?
             $this->userProjects->get($username)->role : null);
     }

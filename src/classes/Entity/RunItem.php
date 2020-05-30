@@ -4,15 +4,17 @@ namespace Renogen\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Renogen\Base\Actionable;
 
 /**
  * @Entity @Table(name="runitems")
  * @HasLifecycleCallbacks
  */
-class RunItem extends \Renogen\Base\Actionable
+class RunItem extends Actionable
 {
     /**
      * @ManyToOne(targetEntity="Deployment")

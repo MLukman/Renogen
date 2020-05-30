@@ -15,18 +15,16 @@ class Controller extends \Renogen\Plugin\PluginController
                                     \Renogen\Entity\Project $project,
                                     \Renogen\Plugin\PluginCore &$pluginCore)
     {
-        $post       = array_merge($pluginCore->getOptions(), array(
-            'groups' => array(
-                '' => '-- Disabled --',
-            ),
-        ));
+        $post       = array_merge($pluginCore->getOptions(),
+            array('groups' => array('' => '-- Disabled --'))
+        );
         $options    = $pluginCore->getOptions();
         $hasUpdates = false;
         if (isset($options['group_id']) && isset($options['group_name'])) {
             $post['groups'][$options['group_id']] = $options['group_name'];
         }
-        if (($token = $request->request->get('bot_token') ?: (isset($options['bot_token'])
-                ? $options['bot_token'] : null))) {
+        if (($token = $request->request->get('bot_token') ?: (
+            isset($options['bot_token']) ? $options['bot_token'] : null))) {
             $post['bot_token'] = $token;
             $client            = new \GuzzleHttp\Client();
             $response          = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
@@ -36,7 +34,8 @@ class Controller extends \Renogen\Plugin\PluginController
                 $hasUpdates   = true;
                 $lastUpdateId = null;
                 foreach ($updates['result'] as $update) {
-                    if ($update['message']['chat']['type'] == 'group' || $update['message']['chat']['type'] == 'supergroup') {
+                    if ($update['message']['chat']['type'] == 'group' ||
+                        $update['message']['chat']['type'] == 'supergroup') {
                         $post['groups'][$update['message']['chat']['id']] = $update['message']['chat']['title'];
                     }
                     if ($time - $update['message']['date'] > 3600) {

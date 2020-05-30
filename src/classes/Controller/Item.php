@@ -5,7 +5,9 @@ namespace Renogen\Controller;
 use DateTime;
 use Doctrine\Common\Collections\Criteria;
 use Renogen\Base\RenoController;
+use Renogen\Entity\Item as ItemEntity;
 use Renogen\Entity\ItemComment;
+use Renogen\Entity\Project;
 use Renogen\Entity\RunItem;
 use Renogen\Entity\RunItemFile;
 use Renogen\Exception\NoResultException;
@@ -23,7 +25,7 @@ class Item extends RenoController
             $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add deployment item', $this->app->entity_path('item_create', $deployment_obj));
-            return $this->edit_or_create(new \Renogen\Entity\Item($deployment_obj), $request->request);
+            return $this->edit_or_create(new ItemEntity($deployment_obj), $request->request);
         } catch (NoResultException $ex) {
             return $this->errorPage('Object not found', $ex->getMessage());
         }
@@ -37,7 +39,7 @@ class Item extends RenoController
             $this->addEntityCrumb($item_obj);
             $editable    = (
                 $this->app['securilex']->isGranted(['entry', 'approval'], $item_obj->deployment->project)
-                && $item_obj->compareCurrentStatusTo('Go No Go') > 0);
+                && 0 < $item_obj->compareCurrentStatusTo(Project::ITEM_STATUS_APPROVAL));
             $commentable = $this->app['securilex']->isGranted(['execute', 'entry',
                 'review', 'approval'], $item_obj->deployment->project);
             return $this->render('item_view', array(
@@ -80,11 +82,11 @@ class Item extends RenoController
         } else {
             $old_status = $item_obj->status;
             $direction  = $item_obj->changeStatus($new_status, $remark);
-            if ($item_obj->status == 'Ready For Release' && $direction > 0) {
+            if ($item_obj->status == Project::ITEM_STATUS_READY && $direction > 0) {
                 /* @var $activity Activity */
                 foreach ($item_obj->activities as $activity) {
-                    if ($activity->runitem == null || $activity->runitem->status
-                        == 'Failed') {
+                    if ($activity->runitem == null ||
+                        $activity->runitem->status == Project::ITEM_STATUS_FAILED) {
                         $runitems = $item_obj->deployment->runitems->matching(Criteria::create()
                                 ->where(Criteria::expr()->eq('signature', $activity->signature))
                                 ->andWhere(Criteria::expr()->eq('status', 'New'))
@@ -110,7 +112,7 @@ class Item extends RenoController
                         }
                     }
                 }
-            } elseif ($old_status == 'Ready For Release' && $direction < 0) {
+            } elseif ($old_status == Project::ITEM_STATUS_READY && $direction < 0) {
                 /* @var $activity Activity */
                 foreach ($item_obj->activities as $activity) {
                     if ($activity->runitem != null && $activity->runitem->status
@@ -140,8 +142,7 @@ class Item extends RenoController
         return $this->app->entity_redirect('item_view', $item_obj);
     }
 
-    protected function edit_or_create(\Renogen\Entity\Item $item,
-                                      ParameterBag $post)
+    protected function edit_or_create(ItemEntity $item, ParameterBag $post)
     {
         $context = array();
         $ds      = $this->app['datastore'];

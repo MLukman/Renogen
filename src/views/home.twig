@@ -1,60 +1,133 @@
 {% extends "renobase.twig" %}
+{% import _self as h %}
 
 {% block content %}
-    <h2>Renogen is a release management approval &amp; tracking platform</h2>
-    <h3>Please select a project below <i class="ui level down icon"></i></h3>
-    <p>&nbsp;</p>
-    <div class="ui three stackable cards secondary segment">
-        {% for project in projects %}
-            {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
-            {% if has_access or not project.private %}
-                <a class="ui card" {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% endif %}>
-                    <div class="ui content">
-                        <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
-                            <h2>
-                                <i class="ui cube icon"></i> 
-                                {{project.title}}
-                                {% if project.private %}
-                                    <div class="ui right corner label">
-                                        <i class="ui lock icon" title="Private project"></i>
-                                    </div>
-                                {% elseif not has_access %}
-                                    <div class="ui right corner label">
-                                        <i class="ui eye slash icon" title="No access"></i>
-                                    </div>
-                                {% endif %}
-                            </h2>
-                        </div>
-                        {% if project.description %}
-                            <div class="ui description">
-                                {{project.description}}
+    <h2 class="ui header">
+        <span>
+            Renogen is a release management approval &amp; tracking platform
+        </span>
+    </h2>
+
+    <div class="ui stackable grid">
+        <div class="{% if has_actions %}eleven wide computer sixteen wide tablet{% else %}sixteen wide{% endif %} column">
+            <h3>
+                {% if app.securilex.isGranted('prefix', 'project_create') %}
+                    <a class="ui right floated primary button no-print" href="{{app.path('project_create')}}">
+                        <i class="ui plus icon"></i>Create new project
+                    </a>
+                    <div style="clear:both"></div>
+                {% endif %}
+                <span>Please select a project below <i class="ui level down icon"></i></span>
+            </h3>
+            <table class="ui large padded celled striped sortable table">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th class="ui collapsing">Next deployment</th>
+                        <th class="ui collapsing">Previous deployment</th>
+                        <th class="ui collapsing">Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects_with_access %}
+                        {{ h.add_project_to_list(project) }}
+                    {% endfor %}
+                    {% for project in projects_no_access %}
+                        {{ h.add_project_to_list(project) }}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if has_actions > 0 %}
+            <div class="five wide computer sixteen wide tablet column">
+                <h3>Need actions</h3>
+                <div class="ui cards">
+                    {% for d in need_actions %}
+                        <div class="ui fluid card" href="{{ app.entity_path('deployment_view', d.deployment) }}">
+                            <div class="ui content">
+                                <h4>
+                                    <span><i class="ui cube icon" title="Project"></i> {{ d.deployment.project.title }} &raquo;</span>
+                                    <span><i class="ui calendar check o icon" title="Deployment"></i> {{ d.deployment.datetimeString(true) }}</span>
+                                </h4>
+                                <div class="ui celled list">
+                                    {% for item in d.items %}
+                                        <a class="item" href="{{ app.entity_path('item_view', item) }}">
+                                            <i class="flag icon" title="{{ item.status }}"></i>
+                                            <div class="content">
+                                                <div class="header">{{ item.title }}</div>
+                                                <div class="description">{{ item.status }}</div>
+                                                <div class="description">
+                                                    <i class="add to cart icon" title="Activities"></i>{{ item.activities|length }} &nbsp;
+                                                    <i class="attach icon" title="Attachments"></i>{{ item.attachments|length }} &nbsp;
+                                                    <i class="comments icon" title="Comments"></i>{{ item.comments|length }}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+                                    {%  for checklist in d.checklists %}
+                                        <a class="item" href="{{ app.entity_path('deployment_view', checklist.deployment) }}#checklist">
+                                            <i class="tasks icon" title="Checklist Task"></i>
+                                            <div class="content">
+                                                <div class="header">{{ checklist.title }}</div>
+                                                <div class="description">{{ checklist.status }}</div>
+                                                <div class="description">{{ checklist.start_datetime|date('d-m-Y h:i A') }}</div>
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+                                    {%  for activity in d.activities %}
+                                        <a class="item" href="{{ app.entity_path('runbook_view', d.deployment) }}">
+                                            <i class="cloud upload icon" title="{{ activity.status }}"></i>
+                                            <div class="content">
+                                                <div class="header">{{ activity.template.title }}</div>
+                                                <div class="description">{{ activity.runitems|length }} pending</div>
+                                            </div>
+                                        </a>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        {% endif %}
-                    </div>
-                    <div class="extra content">
-                        <div class="ui meta">
-                            {% if has_access %}
-                                {{project.upcoming().count}} upcoming deployment{% if project.upcoming().count > 1 %}s{% endif %}
-                            {% else %}
-                                You have no access to this project
-                            {% endif %}
                         </div>
-                    </div>
-                </a>
-            {% endif %}
-        {% endfor %}
-        {% if app.securilex.isGranted('prefix', 'project_create') %}
-            <a class="ui card" href="{{app.path('project_create')}}">
-                <div class="content">
-                    <div class="ui red header">
-                        <h2>
-                            <i class="ui plus icon"></i>Create new project
-                        </h2>
-                    </div>
+                    {% endfor %}
                 </div>
-            </a>
-        {% elseif projects|length == 0 %}
-            <h2 class="ui text centered header">No project has been created by the administrator</h2>
+            </div>
         {% endif %}
     </div>
 {% endblock %}
+
+{% macro add_project_to_list(project) %}
+    {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
+    {% if has_access or not project.private %}
+        <tr>
+            <td>
+                <a {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% else %}class="disabled"{% endif %} title="{{project.description}}">
+                    <h2>
+                        {% if project.private %}
+                            <i class="ui lock icon" title="Private project"></i>
+                        {% elseif not has_access %}
+                            <i class="ui eye slash icon" title="No access"></i>
+                        {% else %}
+                            <i class="ui cube icon" title="Project"></i> 
+                        {% endif %}
+                        {{project.title}}
+                    </h2>
+                </a>
+            </td>
+            {%  if has_access and project.upcoming()|length > 0 %}
+                {% set upcoming = project.upcoming()[0] %}
+                <td class="ui collapsing" data-sort-value="{{ upcoming.execute_date.getTimestamp() }}">
+                    <a href="{{app.entity_path('deployment_view',upcoming)}}"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
+                </td>
+            {% else %}
+                <td>-</td>
+            {% endif %}
+            {%  if has_access and project.past()|length > 0 %}
+                {% set past = project.past()[0] %}
+                <td class="ui collapsing" data-sort-value="{{ past.execute_date.getTimestamp() }}">
+                    <a href="{{app.entity_path('deployment_view',past)}}"><strong>{{ past.dateTimeString(true) }}</strong></a>
+                </td>
+            {% else %}
+                <td>-</td>
+            {% endif %}
+            <td class="ui collapsing">{{ project.getUserAccess(app.userEntity())|default('-') }}</td>
+        </tr>
+    {% endif %}
+{% endmacro %}
