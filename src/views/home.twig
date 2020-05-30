@@ -117,7 +117,7 @@
                     <a href="{{app.entity_path('deployment_view',upcoming)}}"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
                 </td>
             {% else %}
-                <td>-</td>
+                <td data-sort-value="0">-</td>
             {% endif %}
             {%  if has_access and project.past()|length > 0 %}
                 {% set past = project.past()[0] %}
@@ -125,7 +125,7 @@
                     <a href="{{app.entity_path('deployment_view',past)}}"><strong>{{ past.dateTimeString(true) }}</strong></a>
                 </td>
             {% else %}
-                <td>-</td>
+                <td data-sort-value="0">-</td>
             {% endif %}
             <td class="ui collapsing">{{ project.getUserAccess(app.userEntity())|default('-') }}</td>
         </tr>
