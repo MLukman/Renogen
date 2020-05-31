@@ -70,6 +70,31 @@ class DataStore implements ServiceProviderInterface
 
     /**
      *
+     * @param type $entity
+     * @param array $criteria
+     * @param array $sort
+     * @param type $limit
+     * @return ArrayCollection
+     */
+    public function queryUsingOr($entity, Array $criteria = array(),
+                                 Array $sort = array(), $limit = 0)
+    {
+        $repo = $this->app['em']->getRepository($entity);
+        $qb   = $repo->createQueryBuilder('e');
+        foreach ($criteria as $crit => $value) {
+            $qb->orWhere("e.$crit = :$crit")->setParameter($crit, $value);
+        }
+        if ($limit > 0) {
+            $qb->setMaxResults($limit);
+        }
+        foreach ($sort as $srt => $ord) {
+            $qb->addOrderBy("e.$srt", $ord);
+        }
+        return $qb->getQuery()->execute();
+    }
+
+    /**
+     *
      * @param type $project
      * @return Project
      * @throws NoResultException

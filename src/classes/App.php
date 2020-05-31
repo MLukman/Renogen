@@ -182,7 +182,7 @@ class App extends \Silex\Application
                     $em,
                     '\Renogen\Entity\User',
                     'username',
-                    array('auth' => $driverName)
+                    array('auth' => $driverName, 'blocked' => null)
                 )
             );
         }
@@ -599,6 +599,10 @@ class App extends \Silex\Application
         } elseif ($entity instanceof Entity\RunItemFile) {
             return $this->entityParams($entity->runitem) + array(
                 'file' => $entity->id,
+            );
+        } elseif ($entity instanceof Entity\User) {
+            return array(
+                'username' => $entity->username,
             );
         } else {
             return array();

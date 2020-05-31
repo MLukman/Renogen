@@ -40,41 +40,53 @@ class Admin extends RenoController
 
     protected function edit_or_create_user(User $user, ParameterBag $post)
     {
+        $ds     = $this->app['datastore'];
         $errors = array();
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
+                case 'Block':
+                    $user->blocked = 1;
+                    $ds->commit();
+                    $this->app->addFlashMessage("User '$user->username' has been blocked");
+                    return $this->app->entity_redirect('admin_user_edit', $user);
+                case 'Unblock':
+                    $user->blocked = null;
+                    $ds->commit();
+                    $this->app->addFlashMessage("User '$user->username' has been unblocked");
+                    return $this->app->entity_redirect('admin_user_edit', $user);
                 case 'Delete':
-                    $this->app['datastore']->deleteEntity($user);
-                    $this->app['datastore']->commit();
+                    $ds->deleteEntity($user);
+                    $ds->commit();
                     $this->app->addFlashMessage("User '$user->username' has been deleted");
                     return $this->app->params_redirect('admin_users');
                 case 'Reset Password':
-                    $res = $this->app->getAuthDriver($user->auth)->resetPassword($user);
+                    $res           = $this->app->getAuthDriver($user->auth)->resetPassword($user);
                     if ($res) {
-                        $this->app['datastore']->commit($user);
+                        $ds->commit($user);
                         $this->app->addFlashMessage($res);
                     }
                     return $this->app->params_redirect('admin_users');
             }
+
             if (!$post->has('roles')) {
                 $post->set('roles', array());
             }
-            if ($this->app['datastore']->prepareValidateEntity($user, array('auth',
-                    'username', 'shortname', 'roles'), $post)) {
-                $this->app['datastore']->commit($user);
+            if ($ds->prepareValidateEntity($user, array('auth', 'username', 'shortname',
+                    'roles'), $post)) {
+                $ds->commit($user);
                 foreach ($post->get('project_role', array()) as $project_name => $role) {
                     try {
-                        $project      = $this->app['datastore']->fetchProject($project_name);
+                        $project      = $ds->fetchProject($project_name);
                         $project_role = $project->userProjects->containsKey($user->username)
                                 ? $project->userProjects->get($user->username) : null;
                         if ($role == 'none' || empty($role)) {
                             if ($project_role) {
-                                $this->app['datastore']->deleteEntity($project_role);
+                                $ds->deleteEntity($project_role);
                             }
                         } else {
                             if (!$project_role) {
                                 $project_role = new UserProject($project, $user);
-                                $this->app['datastore']->manage($project_role);
+                                $ds->manage($project_role);
                             }
                             $project_role->role = $role;
                         }
@@ -82,17 +94,29 @@ class Admin extends RenoController
                         continue;
                     }
                 }
-                $this->app['datastore']->commit();
+                $ds->commit();
                 return $this->app->params_redirect('admin_users');
             } else {
                 $errors = $user->errors;
             }
         }
 
+        $has_contrib = false;
+        if ($user->created_date) {
+            $entities = array('Activity', 'Attachment', 'Item', 'Checklist', 'ItemComment',
+                'ItemStatusLog', 'Deployment', 'Template', 'Project', 'UserProject',
+                'User');
+            foreach ($entities as $entity) {
+                $has_contrib = $has_contrib || ($ds->queryUsingOr("\Renogen\Entity\\$entity",
+                        array('created_by' => $user, 'updated_by' => $user)) != null);
+            }
+        }
+
         return $this->render('admin_user_form', array(
                 'user' => $user,
-                'auths' => $this->app['datastore']->queryMany('\Renogen\Entity\AuthDriver'),
-                'projects' => $this->app['datastore']->queryMany('\Renogen\Entity\Project'),
+                'has_contrib' => $has_contrib,
+                'auths' => $ds->queryMany('\Renogen\Entity\AuthDriver'),
+                'projects' => $ds->queryMany('\Renogen\Entity\Project'),
                 'errors' => $errors,
         ));
     }

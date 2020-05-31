@@ -25,7 +25,13 @@
                 <tr>
                     <td class="ui top aligned">{{user.username}}</td>
                     <td class="ui top aligned">{{user.shortname}}</td>
-                    <td class="ui top aligned center aligned"><div class="ui label">{{user.auth}}</div></td>
+                    <td class="ui top aligned center aligned">
+                        {% if user.blocked %}
+                            <div class="ui red label">Blocked</div>
+                        {% else %}
+                            <div class="ui label">{{user.auth}}</div>
+                        {% endif %}
+                    </td>
                     <td class="ui top aligned center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
                     <td>
                         <div class="ui middle aligned divided list">

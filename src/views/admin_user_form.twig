@@ -94,13 +94,22 @@
             <div class="ui field">
                 <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} user" />
                 <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
+                {% if is_existing and user != app.userEntity() %}
+                    {% if not has_contrib %}
+                        <input type="submit" class="ui red right floated button" name="_action" value="Delete"
+                               onclick="return prompt('Are you sure you want to delete? Enter username to delete') == '{{user.username}}'" />
+                    {% endif %}
+                    {% if user.blocked %}
+                        <input type="submit" class="ui red right floated button" name="_action" value="Unblock"
+                               onclick="return confirm('Are you sure you want to re-allow this user to login?')" />
+                    {% else %}
+                        <input type="submit" class="ui red right floated button" name="_action" value="Block"
+                               onclick="return confirm('Are you sure you want to block this user from login?')" />
+                    {% endif %}
+                {% endif %}
                 {% if user.auth and app.getAuthDriver(user.auth).canResetPassword() %}
                     <input type="submit" class="ui orange right floated button" name="_action" value="Reset Password"
                            onclick="return confirm('Are you sure you want to reset the user password?')" />
-                {% endif %}
-                {% if is_existing and user != app.userEntity() %}
-                    <input type="submit" class="ui red right floated button" name="_action" value="Delete"
-                           onclick="return prompt('Are you sure you want to delete? Enter username to delete') == '{{user.username}}'" />
                 {% endif %}
             </div>
         </div>
