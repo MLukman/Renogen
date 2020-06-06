@@ -2,7 +2,7 @@
 
 {% block content %}
     {% set is_existing = (checklist.id|default(null) is not empty) %}
-    {% set critical_permission = (is_existing and (checklist.created_by == app.userEntity() or app.securilex.isGranted('approval',item.deployment.project))) %}
+    {% set can_edit_title = (not is_existing or (checklist.created_by == app.userEntity() or app.securilex.isGranted('approval',item.deployment.project))) %}
     <h1 class="ui header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(checklist.deployment.project, true)}} &raquo;</span>
@@ -21,7 +21,6 @@
     <form method="POST">
         <div class="ui form">
             <div class="ui required field basic segment">
-                {%  set can_edit_title = checklist.created_by == app.userEntity() %}
                 <label class="ui top attached large label">Title</label>
                 <input placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} />
                 {% if not can_edit_title %}<em>Only task creator and users with approval role can edit task titles</em>{% endif %}
@@ -96,7 +95,7 @@
     <p>&nbsp;</p>
     {{ r.timestamps(checklist) }}
 
-    {% if checklist.updates %}
+    {% if checklist.updates|length > 0 %}
         <h3>Previous updates</h3>
         <table class="ui celled striped sortable table">
             <thead>
