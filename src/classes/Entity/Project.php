@@ -63,6 +63,11 @@ class Project extends Entity
     public $private = false;
 
     /**
+     * @Column(type="json_array", nullable=true)
+     */
+    public $checklist_templates;
+
+    /**
      * @Column(type="boolean", options={"default":"0"})
      */
     public $archived = false;

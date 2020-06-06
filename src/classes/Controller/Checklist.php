@@ -23,7 +23,7 @@ class Checklist extends RenoController
             $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add checklist task', $this->app->entity_path('checklist_create', $deployment_obj));
-            $checklist      = new \Renogen\Entity\Checklist($deployment_obj);
+            $checklist = new \Renogen\Entity\Checklist($deployment_obj);
             $checklist->pics->add($this->app->userEntity());
             return $this->edit_or_create($checklist, $request->request);
         } catch (NoResultException $ex) {
@@ -46,7 +46,7 @@ class Checklist extends RenoController
                                       ParameterBag $post)
     {
         $context = array();
-        $ds      = $this->app['datastore'];
+        $ds = $this->app['datastore'];
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Delete':
@@ -64,6 +64,9 @@ class Checklist extends RenoController
                     } else {
                         $checklist->errors['pics'][] = 'Required';
                     }
+                    if (empty($post->get('title'))) {
+                        $post->set('title', $post->get('template'));
+                    }
                     if ($ds->prepareValidateEntity($checklist, static::entityFields, $post)) {
                         $ds->commit($checklist);
                         $this->app->addFlashMessage("Checklist task '$checklist->title' has been successfully saved");
@@ -74,7 +77,7 @@ class Checklist extends RenoController
             }
         }
         $context['checklist'] = $checklist;
-        $context['project']   = $checklist->deployment->project;
+        $context['project'] = $checklist->deployment->project;
         return $this->render('checklist_form', $context);
     }
 }

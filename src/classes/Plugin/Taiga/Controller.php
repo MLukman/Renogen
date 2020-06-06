@@ -17,7 +17,7 @@ use function random_bytes;
 
 class Controller extends PluginController
 {
-    protected $extract_refnum_patterns     = array(
+    protected $extract_refnum_patterns = array(
         '([^\-\s]+)\s*-\s*(.*)' => 'REFNUM - Item title',
         '#([^\-\s]+)\s*\-*\s*(.*)' => '#REFNUM Item title',
         '\[([^\]\s]+)\]\s*\-*\s*(.*)' => '[REFNUM] Item title',
@@ -87,11 +87,11 @@ class Controller extends PluginController
             case 'create':
             case 'change':
                 if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id'], $payload['data']['project']['permalink']))) {
-                    $nd->updated_by   = $this->taigaUser();
+                    $nd->updated_by = $this->taigaUser();
                     $nd->updated_date = new \DateTime();
                 } else {
-                    $nd                       = new Deployment($project);
-                    $nd->created_by           = $this->taigaUser();
+                    $nd = new Deployment($project);
+                    $nd->created_by = $this->taigaUser();
                     $nd->plugin_data['Taiga'] = array(
                         'id' => $payload['data']['id'],
                         'project' => $payload['data']['project']['permalink'],
@@ -116,7 +116,7 @@ class Controller extends PluginController
                 if (($nd = $this->findDeploymentWithTaigaId($project, $payload['data']['id'], $payload['data']['project']['permalink']))
                     &&
                     $nd->items->count() == 0) {
-                    $nd->updated_by   = $this->taigaUser();
+                    $nd->updated_by = $this->taigaUser();
                     $nd->updated_date = new \DateTime();
                     $this->app['datastore']->deleteEntity($nd);
                     $this->app['datastore']->commit();
@@ -141,8 +141,8 @@ class Controller extends PluginController
             foreach ($deployment->items as $item) {
                 if (isset($item->plugin_data['Taiga']['id']) && $item->plugin_data['Taiga']['id']
                     == $payload['data']['id']) {
-                    $d_item               = $item;
-                    $d_item->updated_by   = $this->taigaUser();
+                    $d_item = $item;
+                    $d_item->updated_by = $this->taigaUser();
                     $d_item->updated_date = new \DateTime();
                     break 2;
                 }
@@ -182,8 +182,8 @@ class Controller extends PluginController
 
         $parameters = new ParameterBag();
         if (!$d_item) {
-            $d_item               = new Item($d_deployment);
-            $d_item->created_by   = $this->taigaUser();
+            $d_item = new Item($d_deployment);
+            $d_item->created_by = $this->taigaUser();
             $d_item->created_date = new \DateTime();
             $parameters->set('category', 'N/A');
             $parameters->set('modules', array('N/A'));
@@ -196,7 +196,7 @@ class Controller extends PluginController
             'id' => $payload['data']['id'],
         );
 
-        $title   = $payload['data']['subject'];
+        $title = $payload['data']['subject'];
         $matches = null;
         if (($extract = $pluginCore->getOptions('extract_refnum_from_subject')) && preg_match("/^$extract$/", $title, $matches)) {
             $parameters->set('refnum', $matches[1]);
@@ -204,8 +204,8 @@ class Controller extends PluginController
         } else {
             $parameters->set('title', $title);
             if (empty($d_item->refnum) && ($prefix = $pluginCore->getOptions('auto_refnum_from_id_prefix'))) {
-                $id     = $payload['data']['id'];
-                $lpad   = intval($pluginCore->getOptions('auto_refnum_from_id_ldap'));
+                $id = $payload['data']['id'];
+                $lpad = intval($pluginCore->getOptions('auto_refnum_from_id_ldap'));
                 $refnum = (strlen($id) >= $lpad ? $id : str_repeat('0', $lpad - strlen($id)).$id);
                 $parameters->set('refnum', $prefix.$refnum);
             }
@@ -231,6 +231,8 @@ class Controller extends PluginController
 
         if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
             $this->app['datastore']->commit($d_item);
+        } else {
+            $errors = $d_item->errors;
         }
 
         return new JsonResponse(array(
@@ -287,12 +289,12 @@ class Controller extends PluginController
         try {
             return $this->app['datastore']->fetchUser('taiga');
         } catch (Exception $ex) {
-            $taiga            = new User();
-            $taiga->username  = 'taiga';
+            $taiga = new User();
+            $taiga->username = 'taiga';
             $taiga->shortname = 'Taiga';
-            $taiga->roles     = array('ROLE_NONE');
-            $taiga->auth      = 'password';
-            $taiga->password  = md5(random_bytes(100));
+            $taiga->roles = array('ROLE_NONE');
+            $taiga->auth = 'password';
+            $taiga->password = md5(random_bytes(100));
             $this->app['datastore']->commit($taiga);
             return $taiga;
         }

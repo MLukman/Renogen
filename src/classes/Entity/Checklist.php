@@ -78,11 +78,25 @@ class Checklist extends Entity
     public function __construct(Deployment $deployment)
     {
         $this->deployment = $deployment;
-        $this->pics       = new ArrayCollection();
+        $this->pics = new ArrayCollection();
     }
 
     public function isPending()
     {
         return $this->status == 'Not Started' || $this->status == 'In Progress';
+    }
+
+    public function isUsernameAllowed($username, $attribute)
+    {
+        $allowed = false;
+
+        switch ($attribute) {
+            case 'delete':
+                $allowed = ($this->created_by->username == $username);
+                $attribute = 'approval';
+                break;
+        }
+
+        return $allowed || $this->deployment->isUsernameAllowed($username, $attribute);
     }
 }

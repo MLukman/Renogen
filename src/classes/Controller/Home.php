@@ -40,6 +40,7 @@ class Home extends Controller
         }
 
         // Need actions
+        $need_actions = array();
         foreach ($contexts['projects_with_access'] as $project) {
             $project_role = null;
             foreach ($roles as $role) {
@@ -104,11 +105,16 @@ class Home extends Controller
                     }
                 }
                 if ((!empty($d['items']) || !empty($d['checklists']) || !empty($d['activities']))) {
-                    $contexts['need_actions'][] = $d;
+                    $k                = $deployment->execute_date->getTimestamp()."-".$project->name;
+                    $need_actions[$k] = $d;
                 }
             }
         }
-        $contexts['has_actions'] = !empty($contexts['need_actions']);
+
+        if (!empty($need_actions)) {
+            ksort($need_actions);
+            $contexts['need_actions'] = $need_actions;
+        }
 
         return $this->render('home', $contexts);
     }

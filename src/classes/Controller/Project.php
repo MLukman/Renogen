@@ -128,16 +128,19 @@ class Project extends RenoController
                 return $this->app->entity_redirect('project_view', $project);
             }
             if (!$project) {
-                $project     = new \Renogen\Entity\Project();
-                $nuser       = new UserProject($project, $this->app->userEntity());
+                $project = new \Renogen\Entity\Project();
+                $nuser = new UserProject($project, $this->app->userEntity());
                 $nuser->role = 'approval';
                 $project->userProjects->add($nuser);
             }
-            $project->categories = (($categories          = trim($post->get('categories')))
-                    ? explode("\n", str_replace("\r\n", "\n", $categories)) : null);
-            $project->modules    = (($modules             = trim($post->get('modules')))
-                    ? explode("\n", str_replace("\r\n", "\n", $modules)) : null);
-            $project->private    = $post->get('private', false);
+
+            $multiline2array = function($multiline) {
+                return empty($multiline) ? null : explode("\n", str_replace("\r\n", "\n", $multiline));
+            };
+            $project->categories = $multiline2array(trim($post->get('categories')));
+            $project->modules = $multiline2array(trim($post->get('modules')));
+            $project->checklist_templates = $multiline2array(trim($post->get('checklist_templates')));
+            $project->private = $post->get('private', false);
             if ($this->app['datastore']->prepareValidateEntity($project, static::entityFields, $post)) {
                 $this->app['datastore']->commit($project);
                 $this->app->addFlashMessage("Project '$project->title' has been successfully saved");

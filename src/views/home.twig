@@ -9,7 +9,7 @@
     </h2>
 
     <div class="ui stackable grid">
-        <div class="{% if has_actions %}eleven wide computer sixteen wide tablet{% else %}sixteen wide{% endif %} column">
+        <div class="{% if need_actions %}eleven wide computer sixteen wide tablet{% else %}sixteen wide{% endif %} column">
             <h3>
                 {% if app.securilex.isGranted('prefix', 'project_create') %}
                     <a class="ui right floated primary button no-print" href="{{app.path('project_create')}}">
@@ -38,7 +38,7 @@
                 </tbody>
             </table>
         </div>
-        {% if has_actions > 0 %}
+        {% if need_actions %}
             <div class="five wide computer sixteen wide tablet column">
                 <h3>Need actions</h3>
                 <div class="ui cards">

@@ -44,6 +44,11 @@
                 {{ m.fieldError(errors|default([]), 'categories') }}
             </div>
             <div class="ui field basic segment">
+                <label class="ui top attached large label">Checklist Templates</label>
+                <textarea name="checklist_templates" placeholder="Deployment Checklist Templates">{{project.checklist_templates|default([])|join("\n")}}</textarea>
+                {{ m.fieldError(errors|default([]), 'checklist_templates') }}
+            </div>
+            <div class="ui field basic segment">
                 <label class="ui top attached large label">Private Project</label>
                 <div class="ui checkbox">
                     <input type="checkbox" value="1" name="private" {% if project.private %}checked="checked"{% endif %} />

@@ -160,11 +160,11 @@
                         {% if c.end_datetime %}
                             <td class="ui collapsing" data-sort-value="{{ c.end_datetime.getTimestamp() }}">{{ c.end_datetime|date('d/m/Y h:i A') }}</td>
                         {% else %}
-                            <td></td>
+                            <td data-sort-value="0"></td>
                         {% endif %}
-                        <td>
+                        <td class="ui collapsing">
                             {% for p in c.pics %}
-                                <span class="ui label">{{p.name}}</span>
+                                <div>{{p.name}}</div>
                             {% endfor %}
                         </td>
                         <td class="ui collapsing">{{ c.status }}</td>

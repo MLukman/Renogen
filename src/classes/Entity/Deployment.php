@@ -2,22 +2,28 @@
 
 namespace Renogen\Entity;
 
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\PostPersist;
 use Doctrine\ORM\Mapping\PostUpdate;
+use Doctrine\ORM\Mapping\Table;
 use Renogen\App;
 use Renogen\Base\Entity;
 
 /**
- * @Entity @Table(name="deployments") @HasLifecycleCallbacks
+ * @Entity
+ * @Table(name="deployments", indexes={@Index(name="execute_date_idx", columns={"execute_date"})})
+ * @HasLifecycleCallbacks
  */
 class Deployment extends Entity
 {
@@ -45,7 +51,7 @@ class Deployment extends Entity
 
     /**
      * @Column(type="datetime")
-     * @var \DateTime
+     * @var DateTime
      */
     public $execute_date;
 
@@ -86,9 +92,9 @@ class Deployment extends Entity
 
     public function __construct(Project $project)
     {
-        $this->project    = $project;
-        $this->items      = new ArrayCollection();
-        $this->runitems   = new ArrayCollection();
+        $this->project = $project;
+        $this->items = new ArrayCollection();
+        $this->runitems = new ArrayCollection();
         $this->checklists = new ArrayCollection();
     }
 
@@ -102,7 +108,7 @@ class Deployment extends Entity
         return $this->datetimeString(true).' - '.$this->title;
     }
 
-    public function datetimeString($pretty = false, \DateTime $ddate = null)
+    public function datetimeString($pretty = false, DateTime $ddate = null)
     {
         if (!$ddate) {
             $ddate = $this->execute_date;
@@ -157,7 +163,7 @@ class Deployment extends Entity
             1 => array(),
         );
         foreach ($this->runitems as $runitem) {
-            $tid   = sprintf("%03d:%s", $runitem->template->priority, $runitem->template->id);
+            $tid = sprintf("%03d:%s", $runitem->template->priority, $runitem->template->id);
             $array = &$activities[$runitem->stage ?: 0];
             if (!isset($array[$tid])) {
                 $array[$tid] = array();
@@ -185,6 +191,19 @@ class Deployment extends Entity
     public function isUsernameAllowed($username, $attribute)
     {
         return $this->project->isUsernameAllowed($username, $attribute);
+    }
+
+    public function getChecklistTemplates()
+    {
+        if (empty($this->project->checklist_templates)) {
+            return array();
+        }
+        $checklists = array_map(function($c) {
+            return $c->title;
+        }, $this->checklists->toArray());
+        return array_values(array_filter($this->project->checklist_templates, function($a) use ($checklists) {
+                return !in_array($a, $checklists);
+            }));
     }
 
     /**
