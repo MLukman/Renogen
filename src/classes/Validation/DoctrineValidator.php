@@ -77,7 +77,7 @@ class DoctrineValidator implements DataValidator
         // pre-validation: truncate string to given length
         if (isset($rules['truncate']) && $rules['truncate'] > 0 && strlen($value)
             > $rules['truncate']) {
-            $value = substr($value, 0, $rules['truncate'] - 8).'&#8230;';
+            $value = substr($value, 0, $rules['truncate'] - 6).'…';
         }
 
         // validation: value is not null/empty
