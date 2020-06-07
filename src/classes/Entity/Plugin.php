@@ -28,7 +28,7 @@ class Plugin extends Entity
     public $name;
 
     /**
-     * @Column(type="string", length=255)
+     * @Column(type="string", length=250)
      */
     public $class;
 

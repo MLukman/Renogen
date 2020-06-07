@@ -114,7 +114,7 @@
             {%  if has_access and project.upcoming()|length > 0 %}
                 {% set upcoming = project.upcoming()[0] %}
                 <td class="ui collapsing" data-sort-value="{{ upcoming.execute_date.getTimestamp() }}">
-                    <a href="{{app.entity_path('deployment_view',upcoming)}}"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
+                    <a href="{{app.entity_path('deployment_view',upcoming)}}" title="{{ upcoming.title }}"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
                 </td>
             {% else %}
                 <td data-sort-value="0">-</td>
@@ -122,7 +122,7 @@
             {%  if has_access and project.past()|length > 0 %}
                 {% set past = project.past()[0] %}
                 <td class="ui collapsing" data-sort-value="{{ past.execute_date.getTimestamp() }}">
-                    <a href="{{app.entity_path('deployment_view',past)}}"><strong>{{ past.dateTimeString(true) }}</strong></a>
+                    <a href="{{app.entity_path('deployment_view',past)}}" title="{{ past.title }}"><strong>{{ past.dateTimeString(true) }}</strong></a>
                 </td>
             {% else %}
                 <td data-sort-value="0">-</td>

@@ -2,7 +2,12 @@
 
 namespace Renogen\Plugin\Telegram;
 
-class Core extends \Renogen\Plugin\PluginCore
+use GuzzleHttp\Client;
+use Renogen\Entity\Deployment;
+use Renogen\Entity\Item;
+use Renogen\Plugin\PluginCore;
+
+class Core extends PluginCore
 {
     protected $options = array(
         'bot_token' => null,
@@ -32,13 +37,13 @@ class Core extends \Renogen\Plugin\PluginCore
             // Not send if message template starts with a dash
             return;
         }
-        $token    = $this->options['bot_token'];
+        $token = $this->options['bot_token'];
         $group_id = $this->options['group_id'];
         if (!$token || !$group_id) {
             return;
         }
-        $client = new \GuzzleHttp\Client();
-        $send   = $client->postAsync("https://api.telegram.org/bot$token/sendMessage", array(
+        $client = new Client();
+        $send = $client->postAsync("https://api.telegram.org/bot$token/sendMessage", array(
             'json' => array(
                 'chat_id' => $group_id,
                 'text' => $message,
@@ -71,13 +76,13 @@ class Core extends \Renogen\Plugin\PluginCore
          */
         $text = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
             $char = current($m);
-            $utf  = iconv('UTF-8', 'UCS-4', $char);
+            $utf = iconv('UTF-8', 'UCS-4', $char);
             return sprintf("&#x%s;", ltrim(strtoupper(bin2hex($utf)), "0"));
         }, $text);
         return htmlentities($text, ENT_COMPAT | ENT_HTML401, null, false);
     }
 
-    public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment)
+    public function onDeploymentCreated(Deployment $deployment)
     {
         $message = $this->options['template_deployment_created'];
         $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
@@ -88,7 +93,7 @@ class Core extends \Renogen\Plugin\PluginCore
         $this->sendMessage($message);
     }
 
-    public function onDeploymentDateChanged(\Renogen\Entity\Deployment $deployment,
+    public function onDeploymentDateChanged(Deployment $deployment,
                                             \DateTime $old_date)
     {
         $message = $this->options['template_deployment_date_changed'];
@@ -101,8 +106,7 @@ class Core extends \Renogen\Plugin\PluginCore
         $this->sendMessage($message);
     }
 
-    public function onItemStatusUpdated(\Renogen\Entity\Item $item,
-                                        $old_status = null)
+    public function onItemStatusUpdated(Item $item, $old_status = null)
     {
         if ($old_status) {
             $message = $this->options['template_item_status_changed'];
@@ -120,8 +124,7 @@ class Core extends \Renogen\Plugin\PluginCore
         $this->sendMessage($message);
     }
 
-    public function onItemMoved(\Renogen\Entity\Item $item,
-                                \Renogen\Entity\Deployment $old_deployment)
+    public function onItemMoved(Item $item, Deployment $old_deployment)
     {
         $message = $this->options['template_item_moved'];
         $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
@@ -133,7 +136,7 @@ class Core extends \Renogen\Plugin\PluginCore
         $this->sendMessage($message);
     }
 
-    public function onItemDeleted(\Renogen\Entity\Item $item)
+    public function onItemDeleted(Item $item)
     {
         $message = $this->options['template_item_deleted'];
         $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);

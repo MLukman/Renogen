@@ -2,7 +2,13 @@
 
 namespace Renogen\Plugin\Telegram;
 
-class Controller extends \Renogen\Plugin\PluginController
+use GuzzleHttp\Client;
+use Renogen\Entity\Project;
+use Renogen\Plugin\PluginController;
+use Renogen\Plugin\PluginCore;
+use Symfony\Component\HttpFoundation\Request;
+
+class Controller extends PluginController
 {
     protected $twigpath;
 
@@ -11,14 +17,13 @@ class Controller extends \Renogen\Plugin\PluginController
         return 'Telegram Notification';
     }
 
-    public function handleConfigure(\Symfony\Component\HttpFoundation\Request $request,
-                                    \Renogen\Entity\Project $project,
-                                    \Renogen\Plugin\PluginCore &$pluginCore)
+    public function handleConfigure(Request $request, Project $project,
+                                    PluginCore &$pluginCore)
     {
-        $post       = array_merge($pluginCore->getOptions(),
+        $post = array_merge($pluginCore->getOptions(),
             array('groups' => array('' => '-- Disabled --'))
         );
-        $options    = $pluginCore->getOptions();
+        $options = $pluginCore->getOptions();
         $hasUpdates = false;
         if (isset($options['group_id']) && isset($options['group_name'])) {
             $post['groups'][$options['group_id']] = $options['group_name'];
@@ -26,12 +31,12 @@ class Controller extends \Renogen\Plugin\PluginController
         if (($token = $request->request->get('bot_token') ?: (
             isset($options['bot_token']) ? $options['bot_token'] : null))) {
             $post['bot_token'] = $token;
-            $client            = new \GuzzleHttp\Client();
-            $response          = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
-            $updates           = json_decode($response->getBody(), true);
-            $time              = time();
+            $client = new Client();
+            $response = $client->request('GET', "https://api.telegram.org/bot$token/getUpdates");
+            $updates = json_decode($response->getBody(), true);
+            $time = time();
             if (isset($updates['result'])) {
-                $hasUpdates   = true;
+                $hasUpdates = true;
                 $lastUpdateId = null;
                 foreach ($updates['result'] as $update) {
                     if ($update['message']['chat']['type'] == 'group' ||
@@ -50,7 +55,7 @@ class Controller extends \Renogen\Plugin\PluginController
 
         switch ($request->request->get('_action')) {
             case 'Save':
-                $group_id    = $request->request->get('group_id');
+                $group_id = $request->request->get('group_id');
                 $group_names = $request->request->get('group_name');
                 if (!$request->request->get('bot_token')) {
                     $this->deletePlugin();
@@ -78,10 +83,8 @@ class Controller extends \Renogen\Plugin\PluginController
         return $this->render('configure', $post);
     }
 
-    public function handleAction(\Symfony\Component\HttpFoundation\Request $request,
-                                 \Renogen\Entity\Project $project,
-                                 \Renogen\Plugin\PluginCore &$pluginCore,
-                                 $action)
+    public function handleAction(Request $request, Project $project,
+                                 PluginCore &$pluginCore, $action)
     {
 
     }

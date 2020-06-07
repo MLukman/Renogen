@@ -229,6 +229,9 @@ class Controller extends PluginController
             $parameters->set('modules', $modules);
         }
 
+        // external URL
+        $parameters->set('external_url', $payload['data']['project']['permalink'].'/us/'.$payload['data']['ref']);
+
         if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
             $this->app['datastore']->commit($d_item);
         } else {

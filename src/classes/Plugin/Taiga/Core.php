@@ -2,7 +2,11 @@
 
 namespace Renogen\Plugin\Taiga;
 
-class Core extends \Renogen\Plugin\PluginCore
+use Renogen\Entity\Deployment;
+use Renogen\Entity\Item;
+use Renogen\Plugin\PluginCore;
+
+class Core extends PluginCore
 {
     protected $options = array(
         'allow_delete_item' => false,
@@ -24,30 +28,28 @@ class Core extends \Renogen\Plugin\PluginCore
         return 'Integration with Taiga';
     }
 
-    public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment)
+    public function onDeploymentCreated(Deployment $deployment)
     {
 
     }
 
-    public function onDeploymentDateChanged(\Renogen\Entity\Deployment $deployment,
+    public function onDeploymentDateChanged(Deployment $deployment,
                                             \DateTime $old_date)
     {
 
     }
 
-    public function onItemStatusUpdated(\Renogen\Entity\Item $item,
-                                        $old_status = null)
+    public function onItemStatusUpdated(Item $item, $old_status = null)
     {
         
     }
 
-    public function onItemMoved(\Renogen\Entity\Item $item,
-                                \Renogen\Entity\Deployment $old_deployment)
+    public function onItemMoved(Item $item, Deployment $old_deployment)
     {
         
     }
 
-    public function onItemDeleted(\Renogen\Entity\Item $item)
+    public function onItemDeleted(Item $item)
     {
 
     }

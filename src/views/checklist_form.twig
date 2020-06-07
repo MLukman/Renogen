@@ -22,7 +22,7 @@
         <div class="ui form">
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Title</label>
-                <input placeholder="User friendly title (max 255 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" />
+                <input placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" />
                 {{ m.fieldError(errors|default([]), 'title') }}
                 {% if templates %}
                     <div class="ui horizontal divider">

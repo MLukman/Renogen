@@ -29,7 +29,7 @@ class Checklist extends Entity
     public $deployment;
 
     /**
-     * @Column(type="string", length=255)
+     * @Column(type="string", length=250)
      */
     public $title;
 
@@ -70,7 +70,7 @@ class Checklist extends Entity
      * @var array
      */
     protected $validation_rules = array(
-        'title' => array('trim' => 1, 'required' => 1, 'truncate' => 255, 'unique' => 'deployment'),
+        'title' => array('trim' => 1, 'required' => 1, 'truncate' => 250, 'unique' => 'deployment'),
         'start_datetime' => array('required' => 1),
         'pics' => array('required' => 1),
     );

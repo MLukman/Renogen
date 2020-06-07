@@ -2,7 +2,6 @@
 
 namespace Renogen\Base;
 
-use ReflectionClass;
 use Renogen\App;
 
 abstract class Controller
@@ -29,13 +28,13 @@ abstract class Controller
 
     public function __construct(App $app)
     {
-        $this->app                   = $app;
-        $this->app['controller']     = $this;
+        $this->app = $app;
+        $this->app['controller'] = $this;
         $this->basectx['controller'] = $this;
-        $this->basectx['errors']     = array();
-        $this->basectx['crumbs']     = array();
+        $this->basectx['errors'] = array();
+        $this->basectx['crumbs'] = array();
         if (empty($this->title)) {
-            $reflect     = new ReflectionClass($this);
+            $reflect = new \ReflectionClass($this);
             $this->title = $reflect->getShortName();
         }
     }

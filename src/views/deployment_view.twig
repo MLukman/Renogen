@@ -90,10 +90,21 @@
             <tbody>
                 {% for item in deployment.items %}
                     <tr data-category="{{item.category}}" data-status="{{item.status}}" data-modules="{% for m in item.modules %}[{{m}}]{% endfor %}">
-                        <td class="ui collapsing top aligned">{{item.refnum|default('-')}}</td>
+                        <td class="ui collapsing top aligned">
+                            {{item.refnum|default('-')}}
+                        </td>
                         <td class="ui top aligned">
-                            <h3 class="ui header" style="margin-bottom: 0"><a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a></h3>
-                            {% if item.description %}<p>{{item.description|nl2br}}</p>{% endif %}
+                            <h3 style="margin-bottom: 0">
+                                {% if item.external_url %}
+                                    <a class="ui right floated secondary icon mini button no-print" href="{{ item.external_url }}" target="_blank" title="External URL">
+                                        <i class="ui linkify icon"></i>
+                                    </a>
+                                {% endif %}
+                                <a href="{{app.entity_path('item_view',item)}}">{{item.title}}</a>
+                            </h3>
+                            {% if item.description %}
+                                <p>{{item.description|nl2br}}</p>
+                            {% endif %}
                         </td>
                         <td class="ui collapsing top aligned">
                             {{ r.itemCategoryLabel(item) }}

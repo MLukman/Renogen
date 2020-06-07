@@ -2,6 +2,10 @@
 
 namespace Renogen\Plugin;
 
+use Renogen\App;
+use Renogen\Entity\Deployment;
+use Renogen\Entity\Item;
+
 abstract class PluginCore
 {
     protected $options = array();
@@ -9,7 +13,7 @@ abstract class PluginCore
 
     public function __construct(array $options)
     {
-        $this->app = \Renogen\App::instance();
+        $this->app = App::instance();
         $this->setOptions($options);
     }
 
@@ -17,18 +21,16 @@ abstract class PluginCore
 
     abstract static function getTitle();
 
-    abstract public function onDeploymentCreated(\Renogen\Entity\Deployment $deployment);
+    abstract public function onDeploymentCreated(Deployment $deployment);
 
-    abstract public function onDeploymentDateChanged(\Renogen\Entity\Deployment $deployment,
+    abstract public function onDeploymentDateChanged(Deployment $deployment,
                                                      \DateTime $old_date);
 
-    abstract public function onItemStatusUpdated(\Renogen\Entity\Item $item,
-                                                 $old_status = null);
+    abstract public function onItemStatusUpdated(Item $item, $old_status = null);
 
-    abstract public function onItemMoved(\Renogen\Entity\Item $item,
-                                         \Renogen\Entity\Deployment $old_deployment);
+    abstract public function onItemMoved(Item $item, Deployment $old_deployment);
 
-    abstract public function onItemDeleted(\Renogen\Entity\Item $item);
+    abstract public function onItemDeleted(Item $item);
 
     public function getOptions($key = null)
     {

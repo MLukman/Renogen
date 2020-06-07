@@ -9,7 +9,7 @@ use \Doctrine\Common\Collections\Expr\Comparison;
 class DoctrineValidator implements DataValidator
 {
     static $instance = null;
-    protected $em    = null;
+    protected $em = null;
 
     static public function instance()
     {
@@ -97,10 +97,10 @@ class DoctrineValidator implements DataValidator
             if (isset($rules['preg_match'])) {
                 if (is_array($rules['preg_match'])) {
                     $pattern = $rules['preg_match'][0];
-                    $errmsg  = $rules['preg_match'][1];
+                    $errmsg = $rules['preg_match'][1];
                 } else {
                     $pattern = $rules['preg_match'];
-                    $errmsg  = "Wrong format";
+                    $errmsg = "Wrong format";
                 }
                 $preg_match = preg_match($pattern, $value);
                 if ($preg_match === 0) {
@@ -127,6 +127,11 @@ class DoctrineValidator implements DataValidator
             // validation: maximum value
             if (isset($rules['maxvalue']) && $value > $rules['maxvalue']) {
                 $errors[] = "Max value is {$rules['maxvalue']}";
+            }
+
+            // validation: url
+            if (isset($rules['url']) && $rules['url'] && !filter_var($value, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
+                $errors[] = "Must be a valid URL";
             }
         }
 

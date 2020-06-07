@@ -4,6 +4,7 @@ namespace Renogen\Plugin;
 
 use ReflectionClass;
 use Renogen\Base\RenoController;
+use Renogen\Entity\Plugin;
 use Renogen\Entity\Project;
 use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,14 +19,14 @@ abstract class PluginController extends RenoController
 
     public function getName()
     {
-        $reflection = new ReflectionClass($this);
+        $reflection = new \ReflectionClass($this);
         return basename(dirname($reflection->getFileName()));
     }
 
     public function getTitle()
     {
-        $reflection = new ReflectionClass($this);
-        $coreClass  = $reflection->getNamespaceName().'\\Core';
+        $reflection = new \ReflectionClass($this);
+        $coreClass = $reflection->getNamespaceName().'\\Core';
         return $coreClass::getTitle();
     }
 
@@ -34,7 +35,7 @@ abstract class PluginController extends RenoController
         $pname = $this->getName();
         try {
             if (!$this->fetchPluginCore($project)) {
-                $pclass           = "\\Renogen\\Plugin\\$pname\\Core";
+                $pclass = "\\Renogen\\Plugin\\$pname\\Core";
                 $this->pluginCore = new $pclass(array());
             }
             $this->checkAccess(array('approval', 'ROLE_ADMIN'), $this->project);
@@ -70,9 +71,9 @@ abstract class PluginController extends RenoController
 
     protected function fetchPluginCore($project)
     {
-        $pname         = $this->getName();
+        $pname = $this->getName();
         $this->project = $this->app['datastore']->fetchProject($project);
-        $plugin        = $this->app['datastore']->queryOne('\\Renogen\\Entity\\Plugin', array(
+        $plugin = $this->app['datastore']->queryOne('\\Renogen\\Entity\\Plugin', array(
             'project' => $this->project,
             'name' => $pname,
         ));
@@ -99,10 +100,10 @@ abstract class PluginController extends RenoController
 
     protected function savePlugin()
     {
-        $plugin          = $this->app['datastore']->queryOne('\Renogen\Entity\Plugin', array(
+        $plugin = $this->app['datastore']->queryOne('\Renogen\Entity\Plugin', array(
                 'project' => $this->project,
                 'name' => $this->getName(),
-            )) ?: new \Renogen\Entity\Plugin($this->project, $this->pluginCore);
+            )) ?: new Plugin($this->project, $this->pluginCore);
         $plugin->options = $this->pluginCore->getOptions();
         $this->app['datastore']->commit($plugin);
     }

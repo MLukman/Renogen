@@ -16,7 +16,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Item extends RenoController
 {
-    const entityFields = array('refnum', 'title', 'category', 'modules', 'description');
+    const entityFields = array('refnum', 'title', 'external_url', 'category', 'modules',
+        'description');
 
     public function create(Request $request, $project, $deployment)
     {
@@ -34,10 +35,10 @@ class Item extends RenoController
     public function view(Request $request, $project, $deployment, $item)
     {
         try {
-            $item_obj    = $this->app['datastore']->fetchItem($project, $deployment, $item);
+            $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             $this->checkAccess('any', $item_obj);
             $this->addEntityCrumb($item_obj);
-            $editable    = (
+            $editable = (
                 $this->app['securilex']->isGranted(['entry', 'approval'], $item_obj->deployment->project)
                 && 0 < $item_obj->compareCurrentStatusTo(Project::ITEM_STATUS_APPROVAL));
             $commentable = $this->app['securilex']->isGranted(['execute', 'entry',
@@ -73,15 +74,15 @@ class Item extends RenoController
     public function changeStatus(Request $request, $project, $deployment, $item)
     {
         $new_status = $request->request->get('new_status');
-        $item_obj   = $this->app['datastore']->fetchItem($project, $deployment, $item);
-        $user       = $this->app->user();
+        $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
+        $user = $this->app->user();
 
         $remark = trim($request->request->get('remark'));
         if (empty($remark) && $request->request->get('remark_required', 0)) {
             $this->app->addFlashMessage("Remark is required", "Unable to change status", "error");
         } else {
             $old_status = $item_obj->status;
-            $direction  = $item_obj->changeStatus($new_status, $remark);
+            $direction = $item_obj->changeStatus($new_status, $remark);
             if ($item_obj->status == Project::ITEM_STATUS_READY && $direction > 0) {
                 /* @var $activity Activity */
                 foreach ($item_obj->activities as $activity) {
@@ -92,18 +93,18 @@ class Item extends RenoController
                                 ->andWhere(Criteria::expr()->eq('status', 'New'))
                         );
                         if ($runitems->isEmpty()) {
-                            $activity->runitem             = new RunItem($item_obj->deployment);
-                            $activity->runitem->signature  = $activity->signature;
-                            $activity->runitem->template   = $activity->template;
-                            $activity->runitem->stage      = $activity->stage;
+                            $activity->runitem = new RunItem($item_obj->deployment);
+                            $activity->runitem->signature = $activity->signature;
+                            $activity->runitem->template = $activity->template;
+                            $activity->runitem->stage = $activity->stage;
                             $activity->runitem->parameters = $activity->parameters;
-                            $activity->runitem->priority   = $activity->priority;
+                            $activity->runitem->priority = $activity->priority;
                             foreach ($activity->files as $file) {
-                                $rfile              = new RunItemFile($activity->runitem);
-                                $rfile->filename    = $file->filename;
-                                $rfile->classifier  = $file->classifier;
+                                $rfile = new RunItemFile($activity->runitem);
+                                $rfile->filename = $file->filename;
+                                $rfile->classifier = $file->classifier;
                                 $rfile->description = $file->description;
-                                $rfile->filestore   = $file->filestore;
+                                $rfile->filestore = $file->filestore;
                                 $activity->runitem->files->add($rfile);
                             }
                             $this->app['datastore']->commit($activity->runitem);
@@ -145,7 +146,7 @@ class Item extends RenoController
     protected function edit_or_create(ItemEntity $item, ParameterBag $post)
     {
         $context = array();
-        $ds      = $this->app['datastore'];
+        $ds = $this->app['datastore'];
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
                 case 'Move':
@@ -191,7 +192,7 @@ class Item extends RenoController
                     }
             }
         }
-        $context['item']    = $item;
+        $context['item'] = $item;
         $context['project'] = $item->deployment->project;
         return $this->render('item_form', $context);
     }
@@ -200,7 +201,7 @@ class Item extends RenoController
     {
         try {
             $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
-            $comment  = new ItemComment($item_obj);
+            $comment = new ItemComment($item_obj);
             if ($this->app['datastore']->prepareValidateEntity($comment, array('text'), $request->request)) {
                 $this->app['datastore']->commit($comment);
                 $this->app->addFlashMessage("Succesfully post a comment");
@@ -231,7 +232,7 @@ class Item extends RenoController
         try {
             $item_obj = $this->app['datastore']->fetchItem($project, $deployment, $item);
             if ($item_obj->comments->containsKey($comment)) {
-                $comment_obj               = $item_obj->comments->get($comment);
+                $comment_obj = $item_obj->comments->get($comment);
                 $comment_obj->deleted_date = $date;
                 $this->app['datastore']->commit($comment_obj);
             }
