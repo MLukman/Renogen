@@ -94,7 +94,7 @@ class PropertyPathBuilder
     public function remove($offset, $length = 1)
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset %s is not within the property path', $offset));
+            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         $this->resize($offset, $length, 0);
@@ -149,7 +149,7 @@ class PropertyPathBuilder
     public function replaceByIndex($offset, $name = null)
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset %s is not within the property path', $offset));
+            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         if (null !== $name) {
@@ -170,7 +170,7 @@ class PropertyPathBuilder
     public function replaceByProperty($offset, $name = null)
     {
         if (!isset($this->elements[$offset])) {
-            throw new OutOfBoundsException(sprintf('The offset %s is not within the property path', $offset));
+            throw new OutOfBoundsException(sprintf('The offset "%s" is not within the property path.', $offset));
         }
 
         if (null !== $name) {
@@ -193,7 +193,7 @@ class PropertyPathBuilder
     /**
      * Returns the current property path.
      *
-     * @return PropertyPathInterface The constructed property path
+     * @return PropertyPathInterface|null The constructed property path
      */
     public function getPropertyPath()
     {
@@ -257,9 +257,8 @@ class PropertyPathBuilder
             }
 
             // All remaining elements should be removed
-            for (; $i < $length; ++$i) {
-                unset($this->elements[$i], $this->isIndex[$i]);
-            }
+            $this->elements = \array_slice($this->elements, 0, $i);
+            $this->isIndex = \array_slice($this->isIndex, 0, $i);
         } else {
             $diff = $insertionLength - $cutLength;
 

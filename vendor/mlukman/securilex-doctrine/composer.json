@@ -1,6 +1,6 @@
 {
 	"name": "mlukman/securilex-doctrine",
-	"license": "GPL",
+	"license": "LGPL-2.0-only",
 	"description": "Securilex is a simplified security provider for Silex. Securilex-Doctrine adds support to use Doctrine as the source of user authentication",
 	"keywords": ["silex", "security", "securilex", "doctrine"],
 	"homepage": "https://github.com/MLukman/Securilex-Doctrine",
@@ -11,8 +11,7 @@
 		}
 	],
 	"require": {
-		"mlukman/securilex": "1.*",
-		"symfony/security": "^3.0",
+		"mlukman/securilex": "^1.0",
 		"doctrine/orm": "~2.5"
 	},
 	"autoload": {
