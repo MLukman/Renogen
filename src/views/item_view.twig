@@ -46,13 +46,14 @@
     {% if item.description %}
         <p>{{item.description|nl2br}}</p>
     {% endif %}
+
     <div>
         {% if editable %}
             <a class="ui right floated button no-print" href="{{app.entity_path('item_edit',item)}}"><i class="ui pencil icon"></i>Edit</a>
         {% endif %}
         {% if item.external_url %}
-            <a class="ui right floated secondary icon button no-print" href="{{ item.external_url }}" target="_blank" title="External URL">
-                <i class="ui linkify icon"></i>
+            <a class="ui right floated secondary button no-print" href="{{ item.external_url }}" target="_blank" title="External URL">
+                <i class="ui linkify icon"></i>{{ item.external_url_label|default('External URL') }}
             </a>
         {% endif %}
         <div class="ui labels">

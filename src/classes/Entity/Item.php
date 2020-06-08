@@ -66,6 +66,11 @@ class Item extends Entity
     public $external_url;
 
     /**
+     * @Column(type="string", length=30, nullable=true)
+     */
+    public $external_url_label;
+
+    /**
      * @OneToMany(targetEntity="Activity", mappedBy="item", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @OrderBy({"stage" = "asc", "priority" = "asc", "created_date" = "asc"})
      * @var ArrayCollection|Activity[]
@@ -119,7 +124,8 @@ class Item extends Entity
         'title' => array('trim' => 1, 'required' => 1, 'truncate' => 250, 'unique' => 'deployment'),
         'category' => array('required' => 1),
         'modules' => array('required' => 1),
-        'external_url' => array('trim' => 1, 'truncate' => 2000, 'url' => 1),
+        'external_url' => array('trim' => 1, 'maxlen' => 2000, 'url' => 1),
+        'external_url_label' => array('trim' => 1, 'truncate' => 30),
     );
     protected $_statuses;
 

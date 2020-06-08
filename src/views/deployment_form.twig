@@ -32,6 +32,18 @@
                 <textarea name="description" rows="3">{{deployment.description|default(null)}}</textarea>
                 {{ m.fieldError(errors|default([]), 'description') }}
             </div>
+            <div class="ui basic segment stackable grid">
+                <div class="ui ten wide column field">
+                    <label class="ui top attached large label">External URL</label>
+                    <input placeholder="External URL for this deployment (if any)" type="text" name="external_url" value="{{deployment.external_url|default(null)}}" />
+                    {{ m.fieldError(errors|default([]), 'external_url') }}
+                </div>
+                <div class="ui six wide column field">
+                    <label class="ui top attached large label">External URL Label</label>
+                    <input placeholder="Label for external URL (default to 'External URL' if empty)" type="text" name="external_url_label" value="{{deployment.external_url_label|default(null)}}" />
+                    {{ m.fieldError(errors|default([]), 'external_url_label') }}
+                </div>
+            </div>
             <div class="ui field">
                 <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} deployment" />
                 <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>

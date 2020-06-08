@@ -100,8 +100,16 @@ class Controller extends PluginController
 
                 $parameters = new ParameterBag(array(
                     'title' => $payload['data']['name'],
-                    'execute_date' => $this->makeDeploymentDate($pluginCore, $payload['data']['estimated_finish']),
+                    'external_url' => $payload['data']['project']['permalink'].'/taskboard/'.$payload['data']['slug'],
+                    'external_url_label' => 'Taiga Taskboard',
                 ));
+
+                // only change execute_date if milestone end date changed
+                if (!isset($payload['change']) || !isset($payload['change']['diff'])
+                    || $payload['change']['diff']['estimated_finish']['to'] != $payload['change']['diff']['estimated_finish']['from']) {
+                    $parameters->set('execute_date', $this->makeDeploymentDate($pluginCore, $payload['data']['estimated_finish']));
+                }
+
                 if ($this->app['datastore']->prepareValidateEntity($nd, $parameters->keys(), $parameters)) {
                     $this->app['datastore']->commit($nd);
                 } else {
@@ -180,7 +188,11 @@ class Controller extends PluginController
             return;
         }
 
-        $parameters = new ParameterBag();
+        $parameters = new ParameterBag(array(
+            'external_url' => $payload['data']['project']['permalink'].'/us/'.$payload['data']['ref'],
+            'external_url_label' => 'Taiga User Story',
+        ));
+
         if (!$d_item) {
             $d_item = new Item($d_deployment);
             $d_item->created_by = $this->taigaUser();
@@ -228,9 +240,6 @@ class Controller extends PluginController
         if (!empty($modules)) {
             $parameters->set('modules', $modules);
         }
-
-        // external URL
-        $parameters->set('external_url', $payload['data']['project']['permalink'].'/us/'.$payload['data']['ref']);
 
         if ($this->app['datastore']->prepareValidateEntity($d_item, $parameters->keys(), $parameters)) {
             $this->app['datastore']->commit($d_item);

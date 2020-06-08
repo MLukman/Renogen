@@ -56,6 +56,16 @@ class Deployment extends Entity
     public $execute_date;
 
     /**
+     * @Column(type="string", length=2000, nullable=true)
+     */
+    public $external_url;
+
+    /**
+     * @Column(type="string", length=30, nullable=true)
+     */
+    public $external_url_label;
+
+    /**
      * @OneToMany(targetEntity="Item", mappedBy="deployment", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
      * @var ArrayCollection|Item[]
      */
@@ -88,6 +98,8 @@ class Deployment extends Entity
     protected $validation_rules = array(
         'execute_date' => array('required' => 1, 'unique' => 'project'),
         'title' => array('trim' => 1, 'required' => 1, 'truncate' => 100),
+        'external_url' => array('trim' => 1, 'maxlen' => 2000, 'url' => 1),
+        'external_url_label' => array('trim' => 1, 'truncate' => 30),
     );
 
     public function __construct(Project $project)

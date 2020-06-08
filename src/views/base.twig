@@ -325,10 +325,11 @@
         <div class="ui input left icon action">
             <i class="calendar icon"></i>
             <input type="text" name="{{name}}" placeholder="{{placeholder}}" value="{{value}}" autocomplete="off" />
-            <button class="ui button" type="button" onclick="$('#{{id}}').calendar('clear');
-                    return false;">Clear</button>
+            <button class="ui button" type="button" onclick="return $('#{{id}}').calendar('clear');">Clear</button>
         </div>
-        {% if value %}<div>Current value = {{value}}</div>{% endif %}
+        {% if value %}
+            <div>Current value = <a href="#" onclick="return $('#{{id}}').calendar('set date', '{{value}}');">{{value}}</a></div>
+        {% endif %}
     </div>
     <script>
         $(function () {

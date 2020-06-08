@@ -16,8 +16,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Item extends RenoController
 {
-    const entityFields = array('refnum', 'title', 'external_url', 'category', 'modules',
-        'description');
+    const entityFields = array('refnum', 'title', 'category', 'modules',
+        'description', 'external_url', 'external_url_label');
 
     public function create(Request $request, $project, $deployment)
     {

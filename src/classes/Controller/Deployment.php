@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Deployment extends RenoController
 {
-    const entityFields = array('execute_date', 'title', 'description');
+    const entityFields = array('execute_date', 'title', 'description', 'external_url', 'external_url_label');
 
     public function create(Request $request, $project)
     {
@@ -87,7 +87,7 @@ class Deployment extends RenoController
             }
         }
         $context['deployment'] = $deployment;
-        $context['project']    = $deployment->project;
+        $context['project'] = $deployment->project;
         return $this->render('deployment_form', $context);
     }
 

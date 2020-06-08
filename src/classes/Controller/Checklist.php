@@ -2,15 +2,12 @@
 
 namespace Renogen\Controller;
 
-use DateTime;
-use Doctrine\Common\Collections\Criteria;
 use Renogen\Base\RenoController;
-use Renogen\Entity\ItemComment;
-use Renogen\Entity\RunItem;
-use Renogen\Entity\RunItemFile;
+use Renogen\Entity\Checklist as ChecklistEntity;
 use Renogen\Exception\NoResultException;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class Checklist extends RenoController
 {
@@ -23,7 +20,7 @@ class Checklist extends RenoController
             $this->checkAccess(array('entry', 'approval'), $deployment_obj);
             $this->addEntityCrumb($deployment_obj);
             $this->addCreateCrumb('Add checklist task', $this->app->entity_path('checklist_create', $deployment_obj));
-            $checklist = new \Renogen\Entity\Checklist($deployment_obj);
+            $checklist = new ChecklistEntity($deployment_obj);
             $checklist->pics->add($this->app->userEntity());
             return $this->edit_or_create($checklist, $request->request);
         } catch (NoResultException $ex) {
@@ -35,6 +32,9 @@ class Checklist extends RenoController
     {
         try {
             $checklist_obj = $this->app['datastore']->fetchChecklist($project, $deployment, $checklist);
+            if (!$checklist_obj->isUsernameAllowed($this->app->userEntity()->username, 'edit')) {
+                throw new AccessDeniedException();
+            }
             $this->addEntityCrumb($checklist_obj);
             return $this->edit_or_create($checklist_obj, $request->request);
         } catch (NoResultException $ex) {
@@ -42,7 +42,7 @@ class Checklist extends RenoController
         }
     }
 
-    protected function edit_or_create(\Renogen\Entity\Checklist $checklist,
+    protected function edit_or_create(ChecklistEntity $checklist,
                                       ParameterBag $post)
     {
         $context = array();

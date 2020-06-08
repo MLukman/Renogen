@@ -88,15 +88,25 @@ class Checklist extends Entity
 
     public function isUsernameAllowed($username, $attribute)
     {
-        $allowed = false;
-
         switch ($attribute) {
+            case 'edit':
+                if ($this->created_by->username == $username) {
+                    return true;
+                }
+                foreach ($this->pics as $user) {
+                    if ($user->username == $username) {
+                        return true;
+                    }
+                }
+                break;
+
             case 'delete':
-                $allowed = ($this->created_by->username == $username);
-                $attribute = 'approval';
+                if ($this->created_by->username == $username) {
+                    return true;
+                }
                 break;
         }
 
-        return $allowed || $this->deployment->isUsernameAllowed($username, $attribute);
+        return $this->deployment->isUsernameAllowed($username, 'approval');
     }
 }
