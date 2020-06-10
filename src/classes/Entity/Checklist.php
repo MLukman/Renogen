@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Renogen\Base\Entity;
 
 /**
- * @Entity @Table(name="checklists") @HasLifecycleCallbacks
+ * @Entity @Table(name="checklists")
  */
 class Checklist extends Entity
 {
@@ -66,6 +66,13 @@ class Checklist extends Entity
     public $pics;
 
     /**
+     * @OneToMany(targetEntity="ChecklistUpdate", mappedBy="checklist", indexBy="id", orphanRemoval=true, cascade={"persist"}, fetch="EXTRA_LAZY")
+     * @OrderBy({"created_date" = "asc"})
+     * @var ArrayCollection|ChecklistUpdate[]
+     */
+    public $updates;
+
+    /**
      * Validation rules
      * @var array
      */
@@ -79,6 +86,7 @@ class Checklist extends Entity
     {
         $this->deployment = $deployment;
         $this->pics = new ArrayCollection();
+        $this->updates = new ArrayCollection();
     }
 
     public function isPending()

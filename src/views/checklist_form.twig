@@ -21,10 +21,12 @@
     <form method="POST">
         <div class="ui form">
             <div class="ui required field basic segment">
+                {%  set can_edit_title = checklist.created_by == app.userEntity() %}
                 <label class="ui top attached large label">Title</label>
-                <input placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" />
+                <input placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} />
+                {% if not can_edit_title %}<em>Only task creator and users with approval role can edit task titles</em>{% endif %}
                 {{ m.fieldError(errors|default([]), 'title') }}
-                {% if templates %}
+                {% if templates and can_edit_title %}
                     <div class="ui horizontal divider">
                         Or select a template
                     </div>
@@ -64,7 +66,7 @@
                     {% for status in ['Not Started', 'In Progress', 'Completed', 'Cancelled'] %}
                         <div class="field">
                             <div class="ui radio checkbox">
-                                <input id="status-{{loop.index}}" type="radio" name="class" value="{{status}}" {% if checklist.status|default('Not Started') == status %}checked="checked"{% endif %}>
+                                <input id="status-{{loop.index}}" type="radio" name="status" value="{{status}}" {% if checklist.status|default('Not Started') == status %}checked="checked"{% endif %}>
                                 <label for="status-{{loop.index}}">{{status}}</label>
                             </div>
                         </div>
@@ -72,14 +74,49 @@
                 </div>
                 {{ m.fieldError(errors|default([]), 'status') }}
             </div>
+            {% if is_existing %}
+                <div class="ui required field basic segment">
+                    <label class="ui top attached large label">Update Comment</label>
+                    <input placeholder="Update comment (max 150 characters)" type="text" name="update" value="{{post.get('update')|default(null)}}" />
+                    {{ m.fieldError(errors|default([]), 'update') }}
+                </div>
+            {% endif %}
             <div class="ui field">
                 <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Add{% endif %} checklist task" />
                 <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
                 {% if is_existing and app.securilex.isGranted('delete',checklist) %}
                     <input type="submit" class="ui red right floated button" name="_action" value="Delete"
                            onclick="return confirm('Are you sure you want to delete?')" />
+                    <a href="checklist_form.twig"></a>
                 {% endif %}
             </div>
         </div>
     </form>
+
+    <p>&nbsp;</p>
+    {{ r.timestamps(checklist) }}
+
+    {% if checklist.updates %}
+        <h3>Previous updates</h3>
+        <table class="ui celled striped sortable table">
+            <thead>
+                <tr>
+                    <th class="ui collapsing">#</th>
+                    <th>Comments</th>
+                    <th class="ui collapsing">By</th>
+                    <th class="ui collapsing">Date/Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in checklist.updates %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ u.comment }}</td>
+                        <td class="ui collapsing" >{{ u.created_by.name }}</td>
+                        <td class="ui collapsing" data-sort-value="{{ u.created_date.getTimestamp() }}">{{ u.created_date|date('d/m/Y h:i A') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 {% endblock %}

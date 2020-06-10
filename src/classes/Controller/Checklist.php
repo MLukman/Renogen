@@ -45,7 +45,9 @@ class Checklist extends RenoController
     protected function edit_or_create(ChecklistEntity $checklist,
                                       ParameterBag $post)
     {
-        $context = array();
+        $context = array(
+            'post' => $post,
+        );
         $ds = $this->app['datastore'];
         if ($post->count() > 0) {
             switch ($post->get('_action')) {
@@ -67,12 +69,27 @@ class Checklist extends RenoController
                     if (empty($post->get('title'))) {
                         $post->set('title', $post->get('template'));
                     }
+                    $errors = array();
                     if ($ds->prepareValidateEntity($checklist, static::entityFields, $post)) {
+                        if ($checklist->id) {
+                            $update = new \Renogen\Entity\ChecklistUpdate($checklist);
+                            $update->comment = $post->get('update');
+                            if ($update->validate($this->app['em'])) {
+                                $checklist->updates->add($update);
+                            } else {
+                                $errors['update'] = $update->errors['comment'];
+                            }
+                        }
+                    } else {
+                        $errors = $checklist->errors;
+                    }
+
+                    if (empty($errors)) {
                         $ds->commit($checklist);
                         $this->app->addFlashMessage("Checklist task '$checklist->title' has been successfully saved");
                         return $this->app->entity_redirect('deployment_view', $checklist->deployment, 'checklist');
                     } else {
-                        $context['errors'] = $checklist->errors;
+                        $context['errors'] = $errors;
                     }
             }
         }

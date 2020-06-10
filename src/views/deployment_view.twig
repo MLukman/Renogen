@@ -162,6 +162,7 @@
                     <th class="ui collapsing">End Date/Time</th>
                     <th class="ui collapsing">PIC</th>
                     <th class="ui collapsing">Status</th>
+                    <th>Updates</th>
                     <th class="ui collapsing">Action</th>
                 </tr>
             </thead>
@@ -170,9 +171,9 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ c.title }}</td>
-                        <td class="ui collapsing" data-sort-value="{{ c.start_datetime.getTimestamp() }}">{{ c.start_datetime|date('d/m/Y h:i A') }}</td>
+                        <td data-sort-value="{{ c.start_datetime.getTimestamp() }}">{{ c.start_datetime|date('d/m/Y h:i A') }}</td>
                         {% if c.end_datetime %}
-                            <td class="ui collapsing" data-sort-value="{{ c.end_datetime.getTimestamp() }}">{{ c.end_datetime|date('d/m/Y h:i A') }}</td>
+                            <td data-sort-value="{{ c.end_datetime.getTimestamp() }}">{{ c.end_datetime|date('d/m/Y h:i A') }}</td>
                         {% else %}
                             <td data-sort-value="0"></td>
                         {% endif %}
@@ -182,6 +183,17 @@
                             {% endfor %}
                         </td>
                         <td class="ui collapsing">{{ c.status }}</td>
+                        <td>
+                            <div class="ui divided list">
+                                {% for u in c.updates %}
+                                    <div class="item">
+                                        <div class="content">
+                                            [{{ u.created_by.name }}] {{ u.comment }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </td>
                         {% if c.isUsernameAllowed(app.userEntity().username, 'edit') %}
                             <td class="ui collapsing">
                                 <a class="ui icon button" title="Edit" href="{{app.entity_path('checklist_edit',c)}}">
