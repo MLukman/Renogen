@@ -24,7 +24,7 @@ class AuthDriver extends Entity
     /**
      * @Column(type="json_array", nullable=true)
      */
-    public $parameters;
+    public $parameters = array();
 
     /**
      * Validation rules
@@ -35,7 +35,7 @@ class AuthDriver extends Entity
         'class' => array('required' => 1),
     );
 
-    public function __construct($name)
+    public function __construct($name = null)
     {
         $this->name = $name;
     }

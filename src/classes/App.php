@@ -55,10 +55,9 @@ class App extends \Silex\Application
 
     static protected $instance;
     protected $_templateClasses = array();
-    protected $_pluginClasses   = array();
-    protected $_authClassNames  = array();
+    protected $_pluginClasses = array();
+    protected $_authClassNames = array();
     protected $security;
-    protected $admin_route      = null;
     protected $username;
 
     public function __construct($values = array())
@@ -129,7 +128,7 @@ class App extends \Silex\Application
         foreach (glob(__DIR__.'/Auth/Driver/*.php') as $fn) {
             $shortName = basename($fn, '.php');
             $className = 'Renogen\Auth\Driver\\'.$shortName;
-            $classId   = strtolower($shortName);
+            $classId = strtolower($shortName);
 
             $this->_authClassNames[$classId] = $className;
         }
@@ -144,8 +143,8 @@ class App extends \Silex\Application
         });
 
         foreach (glob(__DIR__.'/Plugin/*', GLOB_ONLYDIR) as $plugin) {
-            $plugin                        = basename($plugin);
-            $pclass                        = "\\Renogen\\Plugin\\$plugin\\Core";
+            $plugin = basename($plugin);
+            $pclass = "\\Renogen\\Plugin\\$plugin\\Core";
             $this->_pluginClasses[$plugin] = array(
                 'name' => $plugin,
                 'class' => $pclass,
@@ -169,8 +168,8 @@ class App extends \Silex\Application
 
         foreach ($em->getRepository('\Renogen\Entity\AuthDriver')->findAll() as $driver) {
             $driverName = $driver->name;
-            $className  = $driver->class;
-            if (($errors     = $className::checkParams($driver->parameters))) {
+            $className = $driver->class;
+            if (($errors = $className::checkParams($driver->parameters))) {
                 print_r($errors);
                 print json_encode($driver->parameters);
                 exit;
@@ -221,7 +220,7 @@ class App extends \Silex\Application
 
             if ($e instanceof AccessDeniedException) {
                 $error['message'] = 'You are not authorized to access this page.';
-                $error['title']   = 'Access Denied';
+                $error['title'] = 'Access Denied';
             }
 
             return $this['twig']->render("exception.twig", array('error' => $error));
@@ -237,17 +236,21 @@ class App extends \Silex\Application
         $this->match('/', 'home.controller:index')->bind('home');
         $this->match('/archived', 'home.controller:archived')->bind('archived');
 
-        /* Routes: Admin */
-        $this['admin.controller'] = $this->share(function() {
-            return new Admin($this);
+        /* Routes: Admin Users */
+        $this['admin_users.controller'] = $this->share(function() {
+            return new Admin\Users($this);
         });
-        $this->admin_route = 'admin_index';
-        $this->match('/!/', 'admin.controller:index')->bind('admin_index');
-        $this->match('/!/users/', 'admin.controller:users')->bind('admin_users');
-        $this->match('/!/users/+', 'admin.controller:user_create')->bind('admin_user_add');
-        $this->match('/!/users/{username}/', 'admin.controller:user_edit')->bind('admin_user_edit');
-        $this->match('/!/auth/', 'admin.controller:auth')->bind('admin_auth');
-        $this->match('/!/auth/{driver}', 'admin.controller:auth_edit')->bind('admin_auth_edit');
+        $this->match('/!/users/', 'admin_users.controller:index')->bind('admin_users');
+        $this->match('/!/users/+', 'admin_users.controller:create')->bind('admin_user_add');
+        $this->match('/!/users/{username}/', 'admin_users.controller:edit')->bind('admin_user_edit');
+
+        /* Routes: Admin Auth */
+        $this['admin_auth.controller'] = $this->share(function() {
+            return new Admin\Auth($this);
+        });
+        $this->match('/!/auth/', 'admin_auth.controller:index')->bind('admin_auth');
+        $this->match('/!/auth/+', 'admin_auth.controller:create')->bind('admin_auth_add');
+        $this->match('/!/auth/{driver}', 'admin_auth.controller:edit')->bind('admin_auth_edit');
 
         /* Routes: Ajax helper */
         $this['ajax.controller'] = $this->share(function() {
@@ -385,7 +388,7 @@ class App extends \Silex\Application
 
     static public function execute($debug = false)
     {
-        $app          = new static();
+        $app = new static();
         $app['debug'] = $debug;
         $app->activateSecurity();
         $app->configureRoutes();
@@ -447,7 +450,7 @@ class App extends \Silex\Application
                 $em->getConnection()->exec("SET foreign_key_checks = 0");
                 break;
         }
-        $tool    = new SchemaTool($em);
+        $tool = new SchemaTool($em);
         $classes = array();
         foreach (glob(__DIR__.'/Entity/*.php') as $entityfn) {
             $classes[] = $em->getClassMetadata('Renogen\Entity\\'.basename($entityfn, '.php'));
@@ -459,17 +462,14 @@ class App extends \Silex\Application
         $tool->updateSchema($classes, true);
 
         if (count($em->getRepository('\Renogen\Entity\AuthDriver')->findAll()) == 0) {
-            $auth_password               = new AuthDriver('password');
-            $auth_password->class        = Password::class;
-            $auth_password->created_date = new DateTime();
-            $auth_password->parameters   = array();
+            $auth_password = new AuthDriver('password');
+            $auth_password->class = Password::class;
             $em->persist($auth_password);
 
             if (getenv("LDAP_HOST")) {
-                $auth_ldap               = new AuthDriver('gems');
-                $auth_ldap->class        = LDAP::class;
-                $auth_ldap->created_date = new DateTime();
-                $auth_ldap->parameters   = array(
+                $auth_ldap = new AuthDriver(getenv("LDAP_LABEL") ?: 'ldap');
+                $auth_ldap->class = LDAP::class;
+                $auth_ldap->parameters = array(
                     "host" => getenv("LDAP_HOST"),
                     "port" => getenv("LDAP_PORT") ?: 389,
                     "dn" => getenv("LDAP_DN"),
@@ -490,12 +490,12 @@ class App extends \Silex\Application
 
         // if no admin then create new admin user admin/admin123
         if (!$has_admin) {
-            $newUser            = new User();
-            $newUser->username  = 'admin';
+            $newUser = new User();
+            $newUser->username = 'admin';
             $newUser->shortname = 'Administrator';
-            $newUser->password  = 'admin'.date_format(new DateTime(), 'Ymd');
-            $newUser->roles     = array('ROLE_ADMIN');
-            $newUser->auth      = 'password';
+            $newUser->password = 'admin'.date_format(new DateTime(), 'Ymd');
+            $newUser->roles = array('ROLE_ADMIN');
+            $newUser->auth = 'password';
 
             $this->addFlashMessage("Auto-created administrator id '{$newUser->username}' with password '{$newUser->password}'", "Administrator id", 'notice', true);
 
@@ -542,11 +542,6 @@ class App extends \Silex\Application
         } else {
             return (!isset($this->_templateClasses[$name]) ? null : $this->_templateClasses[$name]);
         }
-    }
-
-    public function getAdminRoute()
-    {
-        return $this->admin_route;
     }
 
     public function getBaseUrl()

@@ -237,7 +237,7 @@
                                     {% block usermenu %}
                                     {% endblock %}
                                     {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
-                                    {% if app.securilex.isGranted('prefix','admin') and app.getAdminRoute() %}
+                                    {% if app.securilex.isGranted('prefix','admin') %}
                                         <div class="ui divider"></div>
                                         <div class="ui header">Administrations</div>
                                         {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}

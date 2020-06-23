@@ -4,7 +4,7 @@
     <h1 class="ui dividing header">
         <small><i class="ui setting icon"></i>Admin &raquo;</small><br />
         <span><i class="ui lock icon"></i>Authentication</span>
-        <a class="ui right floated primary button" href="{{app.path('admin_user_add')}}">
+        <a class="ui right floated primary button" href="{{app.path('admin_auth_add')}}">
             <i class="ui plus icon"></i>Add new authentication
         </a>
     </h1>
@@ -31,9 +31,11 @@
                         {% endif %}
                     </td>
                     <td class="ui collapsing top aligned">
-                        <a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
-                            <i class="ui pencil icon"></i> Edit
-                        </a>
+                        {% if auth.name != 'password' %}
+                            <a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
+                                <i class="ui pencil icon"></i> Edit
+                            </a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

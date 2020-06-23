@@ -42,7 +42,7 @@ class User extends Entity implements MutableUserInterface
     /**
      * @Column(type="boolean", nullable=true)
      */
-    public $blocked = 0;
+    public $blocked;
 
     /**
      * @OneToMany(targetEntity="UserProject", mappedBy="user", orphanRemoval=true)
