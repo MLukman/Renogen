@@ -34,6 +34,6 @@ class UserProject extends Entity
     public function __construct(Project $project, User $user)
     {
         $this->project = $project;
-        $this->user    = $user;
+        $this->user = $user;
     }
 }

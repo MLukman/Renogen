@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of the Symfony package.
  *
@@ -11,10 +10,11 @@
 
 namespace Symfony\Component\Security\Core\Authentication\Provider;
 
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\SimpleAuthenticatorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
@@ -25,7 +25,9 @@ class SimpleAuthenticationProvider implements AuthenticationProviderInterface
     private $userProvider;
     private $providerKey;
 
-    public function __construct(SimpleAuthenticatorInterface $simpleAuthenticator, UserProviderInterface $userProvider, $providerKey)
+    public function __construct(SimpleAuthenticatorInterface $simpleAuthenticator,
+                                UserProviderInterface $userProvider,
+                                $providerKey)
     {
         $this->simpleAuthenticator = $simpleAuthenticator;
         $this->userProvider = $userProvider;

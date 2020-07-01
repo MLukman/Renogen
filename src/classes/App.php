@@ -14,24 +14,40 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\ORM\Tools\Setup;
 use Exception;
 use Renogen\ActivityTemplate\BaseClass;
-use Renogen\Auth\Driver\LDAP;
+use Renogen\Auth\Driver;
 use Renogen\Auth\Driver\Password;
+use Renogen\Base\Entity;
 use Renogen\Controller\Activity;
 use Renogen\Controller\Admin;
+use Renogen\Controller\Ajax;
 use Renogen\Controller\Attachment;
+use Renogen\Controller\Checklist as ChecklistController;
 use Renogen\Controller\Deployment;
 use Renogen\Controller\Home;
 use Renogen\Controller\Item;
+use Renogen\Controller\Plugin;
 use Renogen\Controller\Project;
 use Renogen\Controller\Runbook;
 use Renogen\Controller\Template;
+use Renogen\Entity\Activity as Activity2;
+use Renogen\Entity\ActivityFile;
+use Renogen\Entity\Attachment as Attachment2;
 use Renogen\Entity\AuthDriver;
+use Renogen\Entity\Checklist;
+use Renogen\Entity\Deployment as Deployment2;
+use Renogen\Entity\Item as Item2;
+use Renogen\Entity\ItemComment;
+use Renogen\Entity\Project as Project2;
+use Renogen\Entity\RunItem;
+use Renogen\Entity\RunItemFile;
+use Renogen\Entity\Template as Template2;
 use Renogen\Entity\User;
 use Securilex\Authorization\SecuredAccessVoter;
 use Securilex\Authorization\SubjectPrefixVoter;
 use Securilex\Doctrine\DoctrineMutableUserProvider;
 use Securilex\Firewall;
 use Securilex\ServiceProvider;
+use Silex\Application;
 use Silex\Application\UrlGeneratorTrait;
 use Silex\Provider\ServiceControllerServiceProvider;
 use Silex\Provider\SessionServiceProvider;
@@ -39,6 +55,7 @@ use Silex\Provider\TwigServiceProvider;
 use Silex\Provider\UrlGeneratorServiceProvider;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -46,7 +63,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
  * The main Application class for GitSync. This class is the entrypoint for all
  * request handlings within GitSync.
  */
-class App extends \Silex\Application
+class App extends Application
 {
 
     use UrlGeneratorTrait;
@@ -121,7 +138,7 @@ class App extends \Silex\Application
         ));
         $app['twig']->addExtension(new TwigInstanceOf());
         $app['twig']->addExtension(new TwigSortByProperty());
-        // for plugins
+// for plugins
         $app['twig.loader.filesystem']->addPath(realpath(__DIR__."/Plugin"), 'plugin');
 
         /* Security */
@@ -170,9 +187,7 @@ class App extends \Silex\Application
             $driverName = $driver->name;
             $className = $driver->class;
             if (($errors = $className::checkParams($driver->parameters))) {
-                print_r($errors);
-                print json_encode($driver->parameters);
-                exit;
+                continue;
             }
             $driverClass = new $className($driver->parameters ?: array());
             $this->firewall->addAuthenticationFactory(
@@ -186,6 +201,17 @@ class App extends \Silex\Application
             );
         }
 
+        $this->firewall->addSuccessLoginHandler('flash', function(Request $request, TokenInterface $token) {
+            $user = $this->userEntity();
+            $welcome = sprintf('Welcome back, %s. ', $user->shortname);
+            if ($user->last_login) {
+                $welcome .= sprintf('Your last login was on %s.', $user->last_login->format('d/m/Y h:i A'));
+            }
+            $this->addFlashMessage($welcome, 'Hello there!', 'notice', true);
+            $user->last_login = new \DateTime();
+            $this['datastore']->commit($user);
+        });
+
         $this->security->addFirewall($this->firewall);
         $this->security->addAuthorizationVoter(new SecuredAccessVoter());
         $this->security->addAuthorizationVoter(SubjectPrefixVoter::instance());
@@ -196,12 +222,18 @@ class App extends \Silex\Application
 
         /* Login page (not using controller because too simple) */
         $this->get('/login/', function(Request $request) {
+            $count_last = 30;
+            $query = $this['em']->createQuery("SELECT COUNT(u) FROM \Renogen\Entity\User u WHERE u.last_login > ?1");
+            $query->setParameter(1, new \DateTime("- $count_last minute"));
+            $usersCount = $query->getSingleScalarResult();
             return $this['twig']->render("login.twig", array(
                     'error' => $this['security.last_error']($request),
+                    'last_username' => $this['session']->get('_security.last_username'),
+                    'bottom_message' => ($usersCount < 2 ? '' : "There are ${usersCount} users who logged in within the last ${count_last} minutes"),
             ));
         })->bind('login');
 
-        $this->before(function(Request $request, \Silex\Application $app) {
+        $this->before(function(Request $request, Application $app) {
             if (!$app['securilex']->getFirewall()) {
                 return;
             }
@@ -252,9 +284,16 @@ class App extends \Silex\Application
         $this->match('/!/auth/+', 'admin_auth.controller:create')->bind('admin_auth_add');
         $this->match('/!/auth/{driver}', 'admin_auth.controller:edit')->bind('admin_auth_edit');
 
+        /* Routes: Admin System */
+        $this['admin_system.controller'] = $this->share(function() {
+            return new Admin\System($this);
+        });
+        $this->match('/!/phpinfo/', 'admin_system.controller:phpinfo')->bind('admin_phpinfo');
+        $this->match('/!/phpinfo/!/', 'admin_system.controller:phpinfo_content')->bind('admin_phpinfo_content');
+
         /* Routes: Ajax helper */
         $this['ajax.controller'] = $this->share(function() {
-            return new Controller\Ajax($this);
+            return new Ajax($this);
         });
         $this->match('/$/markdown', 'ajax.controller:markdown')->bind('ajax_markdown');
 
@@ -270,7 +309,7 @@ class App extends \Silex\Application
 
         /* Routes: Plugins */
         $this['plugin.controller'] = $this->share(function() {
-            return new Controller\Plugin($this);
+            return new Plugin($this);
         });
         $this->match('/{project}/plugins/', 'plugin.controller:index')->bind('plugin_index');
 
@@ -316,7 +355,7 @@ class App extends \Silex\Application
 
         /* Routes: Checklist */
         $this['checklist.controller'] = $this->share(function() {
-            return new Controller\Checklist($this);
+            return new ChecklistController($this);
         });
         $this->match('/{project}/{deployment}/checklist/', 'checklist.controller:create')->bind('checklist_create');
         $this->match('/{project}/{deployment}/checklist/{checklist}', 'checklist.controller:edit')->bind('checklist_edit');
@@ -465,18 +504,6 @@ class App extends \Silex\Application
             $auth_password = new AuthDriver('password');
             $auth_password->class = Password::class;
             $em->persist($auth_password);
-
-            if (getenv("LDAP_HOST")) {
-                $auth_ldap = new AuthDriver(getenv("LDAP_LABEL") ?: 'ldap');
-                $auth_ldap->class = LDAP::class;
-                $auth_ldap->parameters = array(
-                    "host" => getenv("LDAP_HOST"),
-                    "port" => getenv("LDAP_PORT") ?: 389,
-                    "dn" => getenv("LDAP_DN"),
-                );
-                $em->persist($auth_ldap);
-            }
-
             $em->flush();
         }
 
@@ -509,7 +536,7 @@ class App extends \Silex\Application
     /**
      *
      * @param string $classId
-     * @return Auth\Driver|null
+     * @return Driver|null
      */
     public function getAuthDriver($classId)
     {
@@ -549,53 +576,53 @@ class App extends \Silex\Application
         return $this->path('home');
     }
 
-    public function entityParams(Base\Entity $entity)
+    public function entityParams(Entity $entity)
     {
-        if ($entity instanceof Entity\Project) {
+        if ($entity instanceof Project2) {
             return array(
                 'project' => $entity->name,
             );
-        } elseif ($entity instanceof Entity\Deployment) {
+        } elseif ($entity instanceof Deployment2) {
             return $this->entityParams($entity->project) + array(
                 'deployment' => $entity->datetimeString(),
             );
-        } elseif ($entity instanceof Entity\Item) {
+        } elseif ($entity instanceof Item2) {
             return $this->entityParams($entity->deployment) + array(
                 'item' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\Checklist) {
+        } elseif ($entity instanceof Checklist) {
             return $this->entityParams($entity->deployment) + array(
                 'checklist' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\Activity) {
+        } elseif ($entity instanceof Activity2) {
             return $this->entityParams($entity->item) + array(
                 'activity' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\ActivityFile) {
+        } elseif ($entity instanceof ActivityFile) {
             return $this->entityParams($entity->activity) + array(
                 'file' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\ItemComment) {
+        } elseif ($entity instanceof ItemComment) {
             return $this->entityParams($entity->item) + array(
                 'comment' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\Attachment) {
+        } elseif ($entity instanceof Attachment2) {
             return $this->entityParams($entity->item) + array(
                 'attachment' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\Template) {
+        } elseif ($entity instanceof Template2) {
             return $this->entityParams($entity->project) + array(
                 'template' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\RunItem) {
+        } elseif ($entity instanceof RunItem) {
             return $this->entityParams($entity->deployment) + array(
                 'runitem' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\RunItemFile) {
+        } elseif ($entity instanceof RunItemFile) {
             return $this->entityParams($entity->runitem) + array(
                 'file' => $entity->id,
             );
-        } elseif ($entity instanceof Entity\User) {
+        } elseif ($entity instanceof User) {
             return array(
                 'username' => $entity->username,
             );
@@ -604,8 +631,7 @@ class App extends \Silex\Application
         }
     }
 
-    public function entity_path($path, Base\Entity $entity,
-                                array $extras = array())
+    public function entity_path($path, Entity $entity, array $extras = array())
     {
         return $this->path($path, $this->entityParams($entity) + $extras);
     }
@@ -624,7 +650,7 @@ class App extends \Silex\Application
             ($anchor ? "#$anchor" : "") : $this['request']->getUri());
     }
 
-    public function entity_redirect($path, Base\Entity $entity, $anchor = null)
+    public function entity_redirect($path, Entity $entity, $anchor = null)
     {
         return $this->params_redirect($path, $this->entityParams($entity), $anchor);
     }

@@ -109,6 +109,7 @@ class Checklist extends Entity
                 break;
 
             case 'delete':
+            case 'edit_title':
                 if ($this->created_by->username == $username) {
                     return true;
                 }

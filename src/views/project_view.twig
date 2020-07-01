@@ -9,14 +9,14 @@
             <div class="content">
                 <div class="header">
                     This is an archived project.
-                </div>            
+                </div>
             </div>
         </div>
     {% endif %}
 
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <span>
-            <i class="ui cube icon" title="Project"></i>{{project.title}}
+            <i class="ui {{project.icon}} icon" title="Project"></i>{{project.title}}
         </span>
         {% if is_project_admin %}
             <div class="ui right floated buttons no-print">
@@ -30,8 +30,8 @@
                     </div>
                 </div>
             </div>
-            <div style="clear: both"></div>
         {% endif %}
+        <div class="ui divider" style="clear: both"></div>
     </h1>
 
     <p>{{project.description}}</p>
@@ -94,14 +94,14 @@
                     {% endif %}
                     {% set item_count = deployment.items.count() %}
                     {% if item_count > 0 %}
-                        <table class="ui very compact small sortable purple table">
+                        <table class="ui very compact small sortable purple selectable striped table">
                             <thead>
                                 <tr>
                                     <th>Item</th>
                                     <th>Category</th>
                                     <th>Status</th>
                                 </tr>
-                            </thead>					
+                            </thead>
                             <tbody>
                                 {% for item in deployment.items %}
                                     <tr>
@@ -113,7 +113,7 @@
                                         <td class="ui collapsing">
                                             {{item.category}}
                                         </td>
-                                        <td class="collapsing">									
+                                        <td class="collapsing">
                                             <i class="ui {{item.statusIcon}} icon"></i>{{item.status}}
                                         </td>
                                     </tr>

@@ -13,6 +13,8 @@
 
 namespace Securilex\Authentication\Factory;
 
+use Securilex\Authentication\Provider\AuthenticationProviderWrapper;
+use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Provider\SimpleAuthenticationProvider;
 use Symfony\Component\Security\Core\Authentication\SimpleAuthenticatorInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -48,16 +50,17 @@ class SimpleAuthenticationFactory implements AuthenticationFactoryInterface
 
     /**
      * Create Authentication Provider instance.
-     * @param \Silex\Application $app
+     * @param Application $app
      * @param UserProviderInterface $userProvider
      * @param string $providerKey
      * @return SimpleAuthenticationProvider
      */
-    public function createAuthenticationProvider(\Silex\Application $app,
+    public function createAuthenticationProvider(Application $app,
                                                  UserProviderInterface $userProvider,
                                                  $providerKey)
     {
-        return new SimpleAuthenticationProvider($this->simpleAuthenticator, $userProvider, $providerKey);
+        return new AuthenticationProviderWrapper(
+            new SimpleAuthenticationProvider($this->simpleAuthenticator, $userProvider, $providerKey));
     }
 
     /**

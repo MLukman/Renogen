@@ -2,51 +2,119 @@
 {% import _self as h %}
 
 {% block content %}
-    <h2 class="ui header">
-        <span>
-            Renogen is a release management approval &amp; tracking platform
-        </span>
-    </h2>
-
     <div class="ui stackable grid">
         <div class="{% if need_actions %}eleven wide computer sixteen wide tablet{% else %}sixteen wide{% endif %} column">
-            <h3>
-                {% if app.securilex.isGranted('prefix', 'project_create') %}
-                    <a class="ui right floated primary button no-print" href="{{app.path('project_create')}}">
-                        <i class="ui plus icon"></i>Create new project
-                    </a>
-                    <div style="clear:both"></div>
-                {% endif %}
-                <span>Please select a project below <i class="ui level down icon"></i></span>
-            </h3>
-            <table class="ui large padded celled striped sortable table">
-                <thead>
-                    <tr>
-                        <th>Project</th>
-                        <th class="ui collapsing">Next deployment</th>
-                        <th class="ui collapsing">Previous deployment</th>
-                        <th class="ui collapsing">Role</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for project in projects_with_access %}
-                        {{ h.add_project_to_list(project) }}
-                    {% endfor %}
-                    {% for project in projects_no_access %}
-                        {{ h.add_project_to_list(project) }}
-                    {% endfor %}
-                </tbody>
-            </table>
+            {% if projects_with_access|length > 0 %}
+                <h2>
+                    <span>Please select a project below <i class="ui level down icon"></i></span>
+                </h2>
+                <table class="ui large padded striped sortable purple selectable table">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th class="ui collapsing">Next deployment</th>
+                            <th class="ui collapsing">Previous deployment</th>
+                            <th class="ui collapsing">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects_with_access %}
+                            <tr>
+                                <td data-sort-value="{{ project.title }}">
+                                    <a href="{{app.entity_path('project_view', project)}}" title="{{project.description}}">
+                                        <h2 class="nowrap">
+                                            {% if project.private %}
+                                                <i class="ui lock icon" title="Private project"></i>
+                                            {% else %}
+                                                <i class="ui {{project.icon}} icon" title="Project"></i> 
+                                            {% endif %}
+                                            {{project.title}}
+                                        </h2>
+                                    </a>
+                                </td>
+                                {%  if project.upcoming()|length > 0 %}
+                                    {% set upcoming = project.upcoming()[0] %}
+                                    <td data-sort-value="{{ upcoming.execute_date.getTimestamp() }}">
+                                        <a href="{{app.entity_path('deployment_view',upcoming)}}" title="{{ upcoming.title }}" class="nowrap"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
+                                    </td>
+                                {% else %}
+                                    <td data-sort-value="0" class="ui center aligned">
+                                        {% if app.securilex.isGranted('approval',project) and not project.archived %}
+                                            <a href="{{app.entity_path('deployment_create',project)}}" class="ui button no-print nowrap">
+                                                <i class="ui plus icon"></i>Create new
+                                            </a>
+                                        {% else %}
+                                            <span class="ui basic label">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                {% endif %}
+                                {%  if project.past()|length > 0 %}
+                                    {% set past = project.past()[0] %}
+                                    <td data-sort-value="{{ past.execute_date.getTimestamp() }}">
+                                        <a href="{{app.entity_path('deployment_view',past)}}" title="{{ past.title }}" class="nowrap"><strong>{{ past.dateTimeString(true) }}</strong></a>
+                                    </td>
+                                {% else %}
+                                    <td data-sort-value="0" class="ui center aligned">
+                                        <span class="ui basic label">N/A</span>
+                                    </td>
+                                {% endif %}
+                                {% set role_icon = {'view':'thermometer empty','execute':'thermometer quarter','entry':'thermometer half','review':'thermometer three quarters','approval':'thermometer full'} %}
+                                {% set role_value = {'view':0,'execute':1,'entry':2,'review':3,'approval':4} %}
+                                {% set role = project.getUserAccess(app.userEntity())|default('view') %}
+                                <td class="ui collapsing" data-sort-value="{{ role_value[role] }}">
+                                    <i class="ui {{role_icon[role]}} icon"></i> {{ role }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+            {% if projects_no_access|length > 0 %}
+                <div class="hide-on-mobile">
+                    <div class="ui divider"></div>
+                    <p>
+                        <strong>You do not have access to the following projects but you can request access from the users with approval role as listed for each project, or from an administrator</strong>
+                    </p>
+                    <div class="ui three stackable cards">
+                        {% for project in projects_no_access %}
+                            <div class="ui card">
+                                <div class="ui content">
+                                    <div class="ui purple header">
+                                        <h3>
+                                            <i class="ui {{project.icon}} icon"></i> 
+                                            {{project.title}}
+                                        </h3>
+                                    </div>
+                                    {% if project.description %}
+                                        <div class="ui description">
+                                            {{project.description}}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="extra content">
+                                    <div class="ui meta">
+                                        {% for u in project.usersWithRole('approval') %}
+                                            <span class="nowrap"><i class="ui id badge outline icon"></i> {{ u.shortname }}</span>
+                                        {% else %}
+                                            <div>Please request access from admin</div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
         {% if need_actions %}
             <div class="five wide computer sixteen wide tablet column">
                 <h3>Need actions</h3>
-                <div class="ui cards">
+                <div class="ui raised cards yellow">
                     {% for d in need_actions %}
-                        <div class="ui fluid card">
+                        <div class="ui fluid card" style="background-color: #ffffcc">
                             <div class="ui content">
                                 <h4>
-                                    <span><i class="ui cube icon" title="Project"></i> {{ d.deployment.project.title }} &raquo;</span>
+                                    <span><i class="ui {{project.icon}} icon" title="Project"></i> {{ d.deployment.project.title }} &raquo;</span>
                                     <span><i class="ui calendar check o icon" title="Deployment"></i> <a href="{{ app.entity_path('deployment_view', d.deployment) }}">{{ d.deployment.datetimeString(true) }}</a></span>
                                 </h4>
                                 <div class="ui celled list">
@@ -107,42 +175,3 @@
         {% endif %}
     </div>
 {% endblock %}
-
-{% macro add_project_to_list(project) %}
-    {% set has_access = app.securilex.isGranted(['view','execute','entry','review','approval'],project) %}
-    {% if has_access or not project.private %}
-        <tr>
-            <td>
-                <a {% if has_access %}href="{{app.entity_path('project_view', project)}}"{% else %}class="disabled"{% endif %} title="{{project.description}}">
-                    <h2>
-                        {% if project.private %}
-                            <i class="ui lock icon" title="Private project"></i>
-                        {% elseif not has_access %}
-                            <i class="ui eye slash icon" title="No access"></i>
-                        {% else %}
-                            <i class="ui cube icon" title="Project"></i> 
-                        {% endif %}
-                        {{project.title}}
-                    </h2>
-                </a>
-            </td>
-            {%  if has_access and project.upcoming()|length > 0 %}
-                {% set upcoming = project.upcoming()[0] %}
-                <td class="ui collapsing" data-sort-value="{{ upcoming.execute_date.getTimestamp() }}">
-                    <a href="{{app.entity_path('deployment_view',upcoming)}}" title="{{ upcoming.title }}"><strong>{{ upcoming.dateTimeString(true) }}</strong></a>
-                </td>
-            {% else %}
-                <td data-sort-value="0">-</td>
-            {% endif %}
-            {%  if has_access and project.past()|length > 0 %}
-                {% set past = project.past()[0] %}
-                <td class="ui collapsing" data-sort-value="{{ past.execute_date.getTimestamp() }}">
-                    <a href="{{app.entity_path('deployment_view',past)}}" title="{{ past.title }}"><strong>{{ past.dateTimeString(true) }}</strong></a>
-                </td>
-            {% else %}
-                <td data-sort-value="0">-</td>
-            {% endif %}
-            <td class="ui collapsing">{{ project.getUserAccess(app.userEntity())|default('-') }}</td>
-        </tr>
-    {% endif %}
-{% endmacro %}

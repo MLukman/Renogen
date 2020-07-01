@@ -1,28 +1,50 @@
 {% extends "base.twig" %}
 {% import _self as r %}
 
-{% block content %}
-    <div class="ui center aligned basic grid segment">
-        <div style="margin: 2em 0; width: 40em">
+{% block topbar %}
+{% endblock %}
+
+{% block head %}
+    <style>
+        body {
+            background-color: #c0c0c0;
+        }
+    </style>
+{% endblock %}
+
+{% block container %}
+    <div class="ui center aligned basic grid segment" style="margin: auto 0; padding: 1em; height: 100%">
+        <div class="ui purple inverted piled segment" style="margin: auto 0; width: 32em">
+            <a style="display: block; padding: 1em 0;" href="{{app.path('home')}}">
+                <img src="{{app.logo}}" />
+            </a>
             <form action="{{app.securilex.getLoginCheckPath()}}" method="post">
-                <div class="ui form piled raised segment">
-                    <h1 class="ui header">Please Login To Continue</h1>
-                    {% if error|default(null) %}<div class="ui negative message">{{error}}</div>{% endif %}
+                <div class="ui form">
+                    {% if error|default(null) %}
+                        <div class="ui negative inverted message"><i class="ui exclamation triangle icon"></i> {{error}}</div>
+                    {% else %}
+                        Renogen is a release management approval & tracking platform
+                    {% endif %}
                     <div class="ui big basic segment">
                         <div class="required field">
-                            <label>User Name</label>
-                            <input type="text" name="_username" placeholder="User Name" value="" />
+                            <div class="ui left icon input">
+                                <input type="text" name="_username" placeholder="Username" value="{{ last_username|default(null) }}" {% if not last_username %}autofocus{% endif %} />
+                                <i class="ui user icon"></i>
+                            </div>
                         </div>
                         <div class="required field">
-                            <label>Password</label>
-                            <input type="password" name="_password" placeholder="Password" value="" />
+                            <div class="ui left icon input">
+                                <input type="password" name="_password" placeholder="Password" value="" {% if last_username %}autofocus{% endif %} />
+                                <i class="ui key icon"></i>
+                            </div>
                         </div>
                         <div class="required field center aligned">
-                            <input class="ui big primary button" type="submit" name="login" value="Login" />
+                            <button class="ui big black button" type="submit"><i class="ui unlock icon"></i> Login</button>
                         </div>
                     </div>
                 </div>
             </form>
+            {{ bottom_message }}
         </div>
     </div>
 {% endblock %}

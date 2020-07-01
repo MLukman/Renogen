@@ -65,7 +65,7 @@ class InitializableAuthenticationFactory extends SimpleAuthenticationFactory imp
                                 $initPassword = '')
     {
         parent::__construct($this);
-        $this->initPassword    = $initPassword;
+        $this->initPassword = $initPassword;
         $this->passwordEncoder = $passwordEncoder;
     }
 
@@ -109,7 +109,7 @@ class InitializableAuthenticationFactory extends SimpleAuthenticationFactory imp
                                       $providerKey)
     {
         if (($user = $userProvider->loadUserByUsername($token->getUsername()))) {
-            $userPassword     = $user->getPassword();
+            $userPassword = $user->getPassword();
             $tokenCredentials = $token->getCredentials();
             if ($userPassword == $this->initPassword && $user instanceof MutableUserInterface
                 && $userProvider instanceof MutableUserProviderInterface) {

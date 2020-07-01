@@ -13,6 +13,8 @@
 
 namespace Securilex\Authentication\Factory;
 
+use Securilex\Authentication\Provider\AuthenticationProviderWrapper;
+use Silex\Application;
 use Symfony\Component\Ldap\Ldap;
 use Symfony\Component\Ldap\LdapInterface;
 use Symfony\Component\Security\Core\Authentication\Provider\LdapBindAuthenticationProvider;
@@ -56,27 +58,27 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
     {
         $config = array('host' => $host, 'port' => $port, 'version' => $version);
         if (substr($host, 0, 8) === 'ldaps://') {
-            $config['host']       = substr($host, 8);
+            $config['host'] = substr($host, 8);
             $config['encryption'] = 'ssl';
         } elseif (substr($host, 0, 7) === 'ldap://') {
             $config['host'] = substr($host, 7);
         }
         $this->ldapClient = Ldap::create('ext_ldap', $config);
-        $this->dnString   = $dnString;
+        $this->dnString = $dnString;
     }
 
     /**
      * Create Authentication Provider instance.
-     * @param \Silex\Application $app
+     * @param Application $app
      * @param UserProviderInterface $userProvider
      * @param string $providerKey
      * @return LdapBindAuthenticationProvider
      */
-    public function createAuthenticationProvider(\Silex\Application $app,
+    public function createAuthenticationProvider(Application $app,
                                                  UserProviderInterface $userProvider,
                                                  $providerKey)
     {
-        return new LdapBindAuthenticationProvider($userProvider, $app['security.user_checker'], $providerKey, $this->ldapClient, $this->dnString);
+        return new AuthenticationProviderWrapper(new LdapBindAuthenticationProvider($userProvider, $app['security.user_checker'], $providerKey, $this->ldapClient, $this->dnString));
     }
 
     /**
@@ -90,5 +92,14 @@ class LdapBindAuthenticationFactory implements AuthenticationFactoryInterface
             $this->id = 'ldap'.($instanceId++);
         }
         return $this->id;
+    }
+
+    /**
+     *
+     * @return LdapInterface
+     */
+    public function getLdapClient()
+    {
+        return $this->ldapClient;
     }
 }

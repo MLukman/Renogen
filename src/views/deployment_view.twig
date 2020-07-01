@@ -23,7 +23,8 @@
         {% endif %}
     </h1>
 
-    <div class="ui divider" style="clear:both"></div>
+    <div style="clear:both"></div>
+    <div class="ui divider"></div>
 
     <div class="ui top attached tabular secondary pointing menu">
         <div class="active item" data-tab="items">
@@ -79,7 +80,7 @@
             </div>
         </div>
 
-        <table class="ui celled striped sortable table">
+        <table class="ui celled striped sortable purple selectable table">
             <thead>
                 <tr>
                     <th class="ui collapsing">Reference #</th>
@@ -144,7 +145,7 @@
 
     </div>
     <div class="ui tab basic segment" data-tab="checklist">
-        {% set can_manage = app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive() %}
+        {% set can_manage = app.securilex.isGranted(['entry','approval'],deployment.project) and deployment.isActive(1) %}
 
         {% if can_manage %}
             <a class="ui right floated primary button no-print" href="{{app.entity_path('checklist_create',deployment)}}">
@@ -153,7 +154,7 @@
             <div style="clear:both"></div>
         {% endif %}
 
-        <table class="ui celled striped sortable table">
+        <table class="ui celled red striped sortable selectable table">
             <thead>
                 <tr>
                     <th class="ui collapsing">#</th>
@@ -168,7 +169,7 @@
             </thead>
             <tbody>
                 {% for c in deployment.checklists %}
-                    <tr>
+                    <tr class="top aligned">
                         <td>{{ loop.index }}</td>
                         <td>{{ c.title }}</td>
                         <td data-sort-value="{{ c.start_datetime.getTimestamp() }}">{{ c.start_datetime|date('d/m/Y h:i A') }}</td>
@@ -188,7 +189,7 @@
                                 {% for u in c.updates %}
                                     <div class="item">
                                         <div class="content">
-                                            [{{ u.created_by.name }}] {{ u.comment }}
+                                            {{ u.created_date|date('dM h:i a') }} [{{ u.created_by.name }}]: {{ u.comment }}
                                         </div>
                                     </div>
                                 {% endfor %}

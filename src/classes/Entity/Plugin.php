@@ -5,7 +5,6 @@ namespace Renogen\Entity;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
 use Renogen\Base\Entity;
 use Renogen\Plugin\PluginCore;
 
@@ -55,7 +54,7 @@ class Plugin extends Entity
     public function instance()
     {
         if (!$this->instance) {
-            $cls            = $this->class;
+            $cls = $this->class;
             $this->instance = new $cls($this->options);
         }
         return $this->instance;
@@ -64,8 +63,8 @@ class Plugin extends Entity
     public function setInstance(PluginCore $pluginInstance)
     {
         $this->instance = $pluginInstance;
-        $this->class    = get_class($this->instance);
-        $this->name     = $this->instance->getName();
-        $this->options  = $this->instance->getOptions();
+        $this->class = get_class($this->instance);
+        $this->name = $this->instance->getName();
+        $this->options = $this->instance->getOptions();
     }
 }

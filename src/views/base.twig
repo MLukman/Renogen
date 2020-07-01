@@ -126,11 +126,15 @@
                 $('#overlay').dimmer('hide');
             }
 
+            function onResize() {
+                var gap = $('#topbar').outerHeight(true);
+                $('#topfiller').css('height', gap);
+                $('#topmargin').css('marginTop', gap).css('height', $('body').height() - gap);
+            }
+
             $(function () {
-                $('#topfiller').css('height', $('#topbar').outerHeight(true));
-                $(window).resize(function () {
-                    $('#topfiller').css('height', $('#topbar').outerHeight(true));
-                });
+                onResize();
+                $(window).resize(onResize);
                 $('.tabular.menu .item').tab({
                     history: true,
                     historyType: 'hash'
@@ -141,9 +145,10 @@
                     action: 'nothing'
                 });
                 $('.ui.dropdown:not(.action-nothing)').dropdown({
-                    fullTextSearch: true
+                    fullTextSearch: true,
+                    clearable: true
                 });
-                $('.flash.message:not(.error,.persist)').delay(3000).animate({
+                $('.flash.message:not(.error,.persist)').delay(10000).animate({
                     height: 0,
                     opacity: 0,
                     marginTop: 0, marginBottom: 0,
@@ -180,7 +185,11 @@
                 font-size: 75%;
             }
 
-            a[name] {
+            .nowrap {
+                white-space: nowrap;
+            }
+
+            a.anchor[name] {
                 position: relative;
                 top: -60px;
             }
@@ -202,79 +211,78 @@
         {% block head %}{% endblock %}
     </head>
     <body>
-
-        <div id="topbar" class="no-print">
-            <div id="topmenu" class="ui stackable menu inverted purple">
-
-                <div class="ui title item" style="padding:8px">
-                    <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
-                        {% block menutitle %}
-                            {% if app.logo %}
-                                <img src="{{app.logo}}" />
-                            {% else %}
-                                <h3 style="padding: 8px;">
-                                    {% if app.icon %}<i class="ui {{app.icon}} icon"></i>{% endif %}
-                                    {{app.title}}
-                                </h3>
-                            {% endif %}
-                        {% endblock %}
-                    </a>
-                </div>
-
-                {% block menubar %}
-                {% endblock %}
-
-                <div class="right menu">
-                    {% block menuright %}
+        {% block topbar %}
+            <div id="topbar" class="no-print">
+                <div id="topmenu" class="ui stackable menu inverted purple">
+                    <div class="ui title item" style="padding:8px">
+                        <a style="padding: 0 30pt 0 0;" href="{{app.path('home')}}">
+                            {% block menutitle %}
+                                {% if app.logo %}
+                                    <img src="{{app.logo}}" />
+                                {% else %}
+                                    <h3 style="padding: 8px;">
+                                        {% if app.icon %}<i class="ui {{app.icon}} icon"></i>{% endif %}
+                                        {{app.title}}
+                                    </h3>
+                                {% endif %}
+                            {% endblock %}
+                        </a>
+                    </div>
+                    {% block menubar %}
                     {% endblock %}
-
-                    {% if app.securilex is defined %}
-                        {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
-                            <div class="ui dropdown item">
-                                <i class="ui user icon"></i> {{app['user'].getName()}}
-                                <i class="dropdown icon"></i>
-                                <div class="menu">
-                                    {% block usermenu %}
-                                    {% endblock %}
-                                    {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
-                                    {% if app.securilex.isGranted('prefix','admin') %}
-                                        <div class="ui divider"></div>
-                                        <div class="ui header">Administrations</div>
-                                        {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
-                                        {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
-                                        {{ m.topmenu_item('Archived Projects', app.path('archived'), 'archive') }}
-                                    {% endif %}
+                    <div class="right menu">
+                        {% block menuright %}
+                        {% endblock %}
+                        {% if app.securilex is defined %}
+                            {% if app['user'] and app.securilex.isGranted('IS_AUTHENTICATED_FULLY') %}
+                                <div class="ui dropdown item">
+                                    <i class="ui user icon"></i> {{app['user'].getName()}}
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu">
+                                        {% block usermenu %}
+                                        {% endblock %}
+                                        {{ m.topmenu_item('Logout', app.securilex.getLogoutPath(), 'sign out') }}
+                                        {% if app.securilex.isGranted('prefix','admin') %}
+                                            <div class="ui divider"></div>
+                                            <div class="ui header">Administrations</div>
+                                            {{ m.topmenu_item('Create Project', app.path('project_create'), 'cube') }}
+                                            {{ m.topmenu_item('Users', app.path('admin_users'), 'users') }}
+                                            {{ m.topmenu_item('Authentication', app.path('admin_auth'), 'lock') }}
+                                            {{ m.topmenu_item('Archived Projects', app.path('archived'), 'archive') }}
+                                            {{ m.topmenu_item('PHP Info', app.path('admin_phpinfo'), 'php') }}
+                                        {% endif %}
+                                    </div>
                                 </div>
-                            </div>
-                        {% else %}
-                            <a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+                            {% else %}
+                                <a href="{{path('login')}}" class="ui link item"><i class="ui sign in icon"></i> Login</a>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
+                    </div>
                 </div>
+                {% block belowtopmenu %}
+                {% endblock %}
             </div>
-
-            {% block belowtopmenu %}
-            {% endblock %}
-        </div>
-
-        <div id="topfiller" class="no-print"></div>
+            <div id="topfiller" class="no-print"></div>
+        {% endblock %}
 
         {% for message in app.session.flashbag.get('message') %}
-            <div class="ui floating {{message.type}} flash message {% if message.persistent %}persist{% endif %}" style="margin:1em" onclick="javascript:$(this).fadeOut()">
+            <a class="ui floating {{message.type}} flash message {% if message.persistent %}persist{% endif %}" style="display:block; margin:1em" onclick="javascript:$(this).fadeOut()">
                 {% if message.title %}
                     <div class="header">
                         {{message.title}}
                     </div>
                 {% endif %}
                 <p>{{message.text|nl2br}}</p>
-            </div>
+            </a>
         {% endfor %}
 
-        <div class="ui basic segment">
-            {% block content %}
-                {{content|default(null)|raw}}
-            {% endblock %}
-        </div>
+        {% block container %}
+            <div class="ui basic segment">
+                {% block content %}
+                    {{content|default(null)|raw}}
+                {% endblock %}
+            </div>
+        {% endblock %}
 
         {% if block('footer')|trim is not empty %}
             <div style="margin: 2em 0em; border-top: 1px solid silver">
@@ -329,7 +337,7 @@
         </div>
         {% if value %}
             <div>Current value = <a href="#" onclick="return $('#{{id}}').calendar('set date', '{{value}}');">{{value}}</a></div>
-        {% endif %}
+            {% endif %}
     </div>
     <script>
         $(function () {

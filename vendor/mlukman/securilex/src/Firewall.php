@@ -15,11 +15,16 @@ namespace Securilex;
 
 use Securilex\Authentication\AuthenticationDriverInterface;
 use Securilex\Authentication\Factory\AuthenticationFactoryInterface;
+use Securilex\Authentication\Handler\SuccessLoginHandler;
+use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\User\ChainUserProvider;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Http\EntryPoint\BasicAuthenticationEntryPoint;
 use Symfony\Component\Security\Http\EntryPoint\FormAuthenticationEntryPoint;
 use Symfony\Component\Security\Http\Firewall\ContextListener;
+use function GuzzleHttp\json_encode;
 
 /**
  * Firewall holds configurations on a secured area of your application and
@@ -76,6 +81,12 @@ class Firewall implements FirewallInterface
     protected $provider = null;
 
     /**
+     * Success login handlers
+     * @var array;
+     */
+    protected $handlers = array();
+
+    /**
      * Construct firewall instance.
      * @param array|string $patterns
      * @param string $loginPath
@@ -90,9 +101,9 @@ class Firewall implements FirewallInterface
                 $pattern = '^'.$pattern;
             }
         }
-        $this->patterns  = $patterns;
+        $this->patterns = $patterns;
         $this->loginPath = $loginPath;
-        $this->name      = md5(json_encode($this->patterns));
+        $this->name = md5(json_encode($this->patterns));
 
         // generate paths
         $this->generatePaths();
@@ -223,13 +234,12 @@ class Firewall implements FirewallInterface
 
     /**
      * Register authentication factory and user provider.
-     * @param \Silex\Application $app
+     * @param Application $app
      * @param string $id
      * @param AuthenticationFactoryInterface $authFactory
      * @param UserProviderInterface $userProvider
      */
-    protected function registerAuthenticationFactory(\Silex\Application $app,
-                                                     $id,
+    protected function registerAuthenticationFactory(Application $app, $id,
                                                      AuthenticationFactoryInterface $authFactory,
                                                      UserProviderInterface $userProvider)
     {
@@ -240,14 +250,14 @@ class Firewall implements FirewallInterface
 
         $app[$fac] = $app->protect(function ($name, $options) use ($app, $id, $authFactory, $userProvider) {
             // the authentication type
-            $type        = (isset($options['login_path']) ? 'form' : 'http');
+            $type = (isset($options['login_path']) ? 'form' : 'http');
             $entry_point = "security.entry_point.$name.$type";
             if ($type == 'form') {
                 $options['failure_forward'] = true;
             }
 
             // the authentication provider id
-            $auth_provider       = "security.authentication_provider.$name.$id";
+            $auth_provider = "security.authentication_provider.$name.$id";
             $app[$auth_provider] = $app->share(function () use ($app, $name, $authFactory, $userProvider) {
                 return $authFactory->createAuthenticationProvider($app, $userProvider, $name);
             });
@@ -255,6 +265,17 @@ class Firewall implements FirewallInterface
             // the authentication listener id
             $auth_listener = "security.authentication_listener.$name.$type";
             if (!isset($app[$auth_listener])) {
+                $app['security.authentication.success_handler.'.$name] = $app->share(function () use ($name, $options, $app) {
+                    $handler = new SuccessLoginHandler(
+                        $app['security.http_utils'],
+                        $options
+                    );
+                    $handler->setProviderKey($name);
+                    foreach ($this->handlers as $name => $h) {
+                        $handler->addLoginHandler($name, $h);
+                    }
+                    return $handler;
+                });
                 $app[$auth_listener] = $app["security.authentication_listener.$type._proto"]($name, $options);
             }
 
@@ -264,11 +285,11 @@ class Firewall implements FirewallInterface
 
     /**
      * Register User Provider
-     * @param \Silex\Application $app
+     * @param Application $app
      */
-    protected function registerUserProvider(\Silex\Application $app)
+    protected function registerUserProvider(Application $app)
     {
-        $user_provider       = 'security.user_provider.'.$this->name;
+        $user_provider = 'security.user_provider.'.$this->name;
         $app[$user_provider] = $app->share(function () {
             return new ChainUserProvider($this->userProviders);
         });
@@ -277,11 +298,11 @@ class Firewall implements FirewallInterface
 
     /**
      * Register Context Listener
-     * @param \Silex\Application $app
+     * @param Application $app
      */
-    protected function registerContextListener(\Silex\Application $app)
+    protected function registerContextListener(Application $app)
     {
-        $context_listener       = 'security.context_listener.'.$this->name;
+        $context_listener = 'security.context_listener.'.$this->name;
         $app[$context_listener] = $app->share(function () use ($app) {
             return new ContextListener(
                 $app['security.token_storage'], $this->userProviders, $this->name, $app['logger'], $app['dispatcher']
@@ -292,11 +313,11 @@ class Firewall implements FirewallInterface
 
     /**
      * Register Entry Point
-     * @param \Silex\Application $app
+     * @param Application $app
      */
-    protected function registerEntryPoint(\Silex\Application $app)
+    protected function registerEntryPoint(Application $app)
     {
-        $entry_point       = 'security.entry_point.'.$this->name.
+        $entry_point = 'security.entry_point.'.$this->name.
             (empty($this->loginPath) ? '.http' : '.form');
         $app[$entry_point] = $app->share(function () use ($app) {
             return $this->loginPath ?
@@ -325,7 +346,7 @@ class Firewall implements FirewallInterface
                     $base .= '/';
                 }
                 $this->loginCheckPath = $base.'login_check';
-                $this->logoutPath     = $base.'logout';
+                $this->logoutPath = $base.'logout';
                 break;
             }
             // unable to generate since all patterns are regex
@@ -333,10 +354,15 @@ class Firewall implements FirewallInterface
                 static $underscorePad = 0;
                 $underscorePad++;
                 $this->loginCheckPath = '/'.str_repeat('_', $underscorePad).'login_check';
-                $this->logoutPath     = '/'.str_repeat('_', $underscorePad).'logout';
-                $this->patterns[]     = "^{$this->loginCheckPath}$";
-                $this->patterns[]     = "^{$this->logoutPath}$";
+                $this->logoutPath = '/'.str_repeat('_', $underscorePad).'logout';
+                $this->patterns[] = "^{$this->loginCheckPath}$";
+                $this->patterns[] = "^{$this->logoutPath}$";
             }
         }
+    }
+
+    public function addSuccessLoginHandler($name, callable $handler)
+    {
+        $this->handlers[$name] = $handler;
     }
 }

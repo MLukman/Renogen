@@ -15,7 +15,7 @@
                     <div class="ui content">
                         <div class="ui {% if has_access %}purple{% else %}disabled{% endif %} header">
                             <h2>
-                                <i class="ui cube icon" title="Project"></i> 
+                                <i class="ui {{project.icon}} icon" title="Project"></i> 
                                 {{project.title}}
                                 {% if project.private %}
                                     <div class="ui right corner label">

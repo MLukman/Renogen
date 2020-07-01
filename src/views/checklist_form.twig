@@ -2,7 +2,7 @@
 
 {% block content %}
     {% set is_existing = (checklist.id|default(null) is not empty) %}
-    {% set can_edit_title = (not is_existing or (checklist.created_by == app.userEntity() or app.securilex.isGranted('approval',item.deployment.project))) %}
+    {% set can_edit_title = not is_existing or app.securilex.isGranted('edit_title',checklist) %}
     <h1 class="ui header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(checklist.deployment.project, true)}} &raquo;</span>
@@ -22,14 +22,14 @@
         <div class="ui form">
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Title</label>
-                <input placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} />
+                <input id="title_manual" placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} onchange="v=$(this).val(); $('#title_templated').dropdown('clear'); $(this).val(v);" />
                 {% if not can_edit_title %}<em>Only task creator and users with approval role can edit task titles</em>{% endif %}
                 {{ m.fieldError(errors|default([]), 'title') }}
                 {% if templates and can_edit_title %}
                     <div class="ui horizontal divider">
                         Or select a template
                     </div>
-                    <select name="template" class="ui fluid dropdown">
+                    <select id="title_templated" name="template" class="ui fluid dropdown" onchange="$('#title_manual').val('')">
                         <option value="">- Select one -</option>
                         {% for t in templates %}
                             <option{% if t == template %} selected="selected"{% endif %}>{{t}}</option>

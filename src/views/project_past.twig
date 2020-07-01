@@ -2,10 +2,11 @@
 {% import "project_view.twig" as mm %}
 
 {% block content %}
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <span>
-            <i class="ui cube icon" title="Project"></i>{{project.title}}
+            <i class="ui {{project.icon}} icon" title="Project"></i>{{project.title}}
         </span>
+        <div class="ui divider" style="clear: both"></div>
     </h1>
 
     <h2>
@@ -25,7 +26,7 @@
         {% for deployment in deployments %}
             <div class="ui purple card">
                 <div class="content">
-                    <a  class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
+                    <a class="ui header" href="{{app.entity_path('deployment_view',deployment)}}">
                         <span class="ui right floated">
                             {{deployment.datetimeString(true)}}
                         </span>
@@ -47,7 +48,7 @@
                                     <th>Item</th>
                                     <th>Status</th>
                                 </tr>
-                            </thead>					
+                            </thead>
                             <tbody>
                                 {% for item in deployment.items %}
                                     <tr>
@@ -56,7 +57,7 @@
                                                 {{item.displayTitle}}
                                             </a>
                                         </td>
-                                        <td class="collapsing">									
+                                        <td class="collapsing">
                                             <i class="ui {{item.statusIcon}} icon"></i>{{item.status}}
                                         </td>
                                     </tr>

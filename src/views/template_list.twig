@@ -1,7 +1,7 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(project, true)}} &raquo;</span>
         </div>
@@ -9,7 +9,7 @@
         <a class="ui right floated primary button" href="{{app.entity_path('template_create',project)}}">
             <i class="ui plus icon"></i>Create activity template
         </a>
-        <div style="clear:both"></div>
+        <div class="ui divider" style="clear: both"></div>
     </h1>
 
     <p>Activity templates are templates that will be used to create activities under deployment items</p>

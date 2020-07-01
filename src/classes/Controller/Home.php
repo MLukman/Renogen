@@ -36,6 +36,7 @@ class Home extends Controller
                 $contexts['projects_with_access'][] = $project;
             } elseif (!$project->private) {
                 $contexts['projects_no_access'][] = $project;
+                $project->usersWithRole('approval');
             }
         }
 
@@ -105,7 +106,7 @@ class Home extends Controller
                     }
                 }
                 if ((!empty($d['items']) || !empty($d['checklists']) || !empty($d['activities']))) {
-                    $k                = $deployment->execute_date->getTimestamp()."-".$project->name;
+                    $k = $deployment->execute_date->getTimestamp()."-".$project->name;
                     $need_actions[$k] = $d;
                 }
             }

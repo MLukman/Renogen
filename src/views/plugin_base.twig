@@ -1,7 +1,7 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <div class="breadcrumb">
             <span>{{r.crumb_project(project, true)}} &raquo;</span>
             {% if plugin is defined %}
@@ -15,6 +15,7 @@
             {% else %}
             <span><i class="ui plug icon"></i>Plugins</span>
         {% endif %}
+        <div class="ui divider" style="clear: both"></div>
     </h1>
     {% if plugin is defined %}
         <div class="ui message">{{plugin.title}}</div>

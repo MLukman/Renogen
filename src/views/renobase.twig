@@ -169,7 +169,7 @@
 {% endmacro %}
 
 {% macro crumb_project(project, link) %}
-    <i class="ui cube icon" title="Project"></i>
+    <i class="ui {{project.icon}} icon" title="Project"></i>
     {% if link %}
         <a href="{{app.entity_path('project_view',project)}}">{{project.title}}</a>
     {% else %}

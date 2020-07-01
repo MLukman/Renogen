@@ -12,7 +12,7 @@
         {% for row in data %}
             <tr>
                 <td class="top aligned collapsing">
-                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
+                    <a name="{{row.runitem.id}}" class="anchor">&nbsp;</a>{{loop.index}}
                 </td>
                 <td class="top aligned">
                     {{ r.prettyDisplay(row.params.Nodes) }}

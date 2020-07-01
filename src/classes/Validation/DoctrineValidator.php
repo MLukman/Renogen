@@ -130,8 +130,18 @@ class DoctrineValidator implements DataValidator
             }
 
             // validation: url
-            if (isset($rules['url']) && $rules['url'] && !filter_var($value, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
+            if (isset($rules['url']) && $rules['url'] && !filter_var($value, FILTER_VALIDATE_URL)) {
                 $errors[] = "Must be a valid URL";
+            }
+
+            // validation: email
+            if (isset($rules['email']) && $rules['email'] && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Must be a valid email address";
+            }
+
+            // validation: ip
+            if (isset($rules['ip']) && $rules['ip'] && !filter_var($value, FILTER_VALIDATE_IP)) {
+                $errors[] = "Must be a valid IP address";
             }
         }
 

@@ -1,12 +1,13 @@
 {% extends "renobase.twig" %}
 
 {% block content %}
-    <h1 class="ui dividing header">
+    <h1 class="ui header">
         <small><i class="ui setting icon"></i>Admin &raquo;</small><br />
         <span><i class="ui users icon"></i>Users</span>
         <a class="ui right floated primary button" href="{{app.path('admin_user_add')}}">
             <i class="ui plus icon"></i>Add new user
         </a>
+        <div class="ui divider" style="clear: both"></div>
     </h1>
 
     <table class="ui celled striped sortable table">
@@ -14,25 +15,28 @@
             <tr>
                 <th>Username</th>
                 <th>Short Name</th>
+                <th>Email</th>
                 <th class="ui collapsing">Login by</th>
                 <th class="ui collapsing">Admin</th>
                 <th>Project Access</th>
+                <th class="ui collapsing">Last Login</th>
                 <th class="ui collapsing">Action</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
-                <tr>
-                    <td class="ui top aligned">{{user.username}}</td>
-                    <td class="ui top aligned">{{user.shortname}}</td>
-                    <td class="ui top aligned center aligned">
+                <tr class="ui top aligned">
+                    <td>{{user.username}}</td>
+                    <td>{{user.shortname}}</td>
+                    <td>{{user.email}}</td>
+                    <td class="ui center aligned">
                         {% if user.blocked %}
                             <div class="ui red label">Blocked</div>
                         {% else %}
                             <div class="ui label">{{user.auth}}</div>
                         {% endif %}
                     </td>
-                    <td class="ui top aligned center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
+                    <td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
                     <td>
                         <div class="ui middle aligned divided list">
                             {% for userProject in user.userProjects.toArray()|psort('project.title') %}
@@ -49,7 +53,14 @@
                             {% endfor %}
                         </div>
                     </td>
-                    <td class="ui top aligned collapsing">
+                    <td class="ui collapsing">
+                        {% if user.last_login %}
+                            {{ user.last_login|date('d/m/Y h:i A') }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+                    <td class="ui collapsing">
                         <a class="ui button" href="{{app.path('admin_user_edit', {'username': user.username})}}">
                             <i class="ui pencil icon"></i> Edit
                         </a>

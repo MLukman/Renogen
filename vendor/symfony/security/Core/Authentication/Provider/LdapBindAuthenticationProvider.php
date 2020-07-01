@@ -1,5 +1,4 @@
 <?php
-
 /*
  * This file is part of the Symfony package.
  *
@@ -44,7 +43,10 @@ class LdapBindAuthenticationProvider extends UserAuthenticationProvider
      * @param string                $dnString                   A string used to create the bind DN
      * @param bool                  $hideUserNotFoundExceptions Whether to hide user not found exception or not
      */
-    public function __construct(UserProviderInterface $userProvider, UserCheckerInterface $userChecker, $providerKey, LdapInterface $ldap, $dnString = '{username}', $hideUserNotFoundExceptions = true)
+    public function __construct(UserProviderInterface $userProvider,
+                                UserCheckerInterface $userChecker, $providerKey,
+                                LdapInterface $ldap, $dnString = '{username}',
+                                $hideUserNotFoundExceptions = true)
     {
         parent::__construct($userChecker, $providerKey, $hideUserNotFoundExceptions);
 
@@ -68,7 +70,8 @@ class LdapBindAuthenticationProvider extends UserAuthenticationProvider
     /**
      * {@inheritdoc}
      */
-    protected function checkAuthentication(UserInterface $user, UsernamePasswordToken $token)
+    protected function checkAuthentication(UserInterface $user,
+                                           UsernamePasswordToken $token)
     {
         $username = $token->getUsername();
         $password = $token->getCredentials();

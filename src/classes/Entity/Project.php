@@ -39,6 +39,11 @@ class Project extends Entity
     public $title;
 
     /**
+     * @Column(type="string", length=30, options={"default":"cube"})
+     */
+    public $icon = 'cube';
+
+    /**
      * @Column(type="text", nullable=true)
      */
     public $description;
@@ -101,23 +106,24 @@ class Project extends Entity
      * Validation rules
      * @var array
      */
-    protected $validation_rules   = array(
+    protected $validation_rules = array(
         'name' => array('required' => 1, 'unique' => true, 'maxlen' => 30,
             'preg_match' => array('/^[0-9a-zA-Z][0-9a-zA-Z_-]*$/', 'Project name must start with an alphanumerical character'),
             'invalidvalues' => array('login', 'admin', 'archived')),
         'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),
         'categories' => array('required' => 1),
         'modules' => array('required' => 1),
+        'icon' => array('trim' => 1, 'maxlen' => 30),
     );
     protected $validation_default = array('trim' => 1);
 
-    const ITEM_STATUS_INIT      = 'Documentation';
-    const ITEM_STATUS_REVIEW    = 'Test Review';
-    const ITEM_STATUS_APPROVAL  = 'Go No Go';
-    const ITEM_STATUS_READY     = 'Ready For Release';
+    const ITEM_STATUS_INIT = 'Documentation';
+    const ITEM_STATUS_REVIEW = 'Test Review';
+    const ITEM_STATUS_APPROVAL = 'Go No Go';
+    const ITEM_STATUS_READY = 'Ready For Release';
     const ITEM_STATUS_COMPLETED = 'Completed';
-    const ITEM_STATUS_REJECTED  = 'Rejected';
-    const ITEM_STATUS_FAILED    = 'Failed';
+    const ITEM_STATUS_REJECTED = 'Rejected';
+    const ITEM_STATUS_FAILED = 'Failed';
 
     public $item_statuses = array(
         self::ITEM_STATUS_INIT => array(
@@ -160,9 +166,9 @@ class Project extends Entity
     public function __construct()
     {
         $this->created_date = new \DateTime();
-        $this->deployments  = new ArrayCollection();
-        $this->templates    = new ArrayCollection();
-        $this->plugins      = new ArrayCollection();
+        $this->deployments = new ArrayCollection();
+        $this->templates = new ArrayCollection();
+        $this->plugins = new ArrayCollection();
         $this->userProjects = new ArrayCollection();
     }
 
@@ -258,5 +264,23 @@ class Project extends Entity
             $this->_enabled_templates = $this->templates->matching(Criteria::create()->where(Criteria::expr()->eq("disabled", false)));
         }
         return $this->_enabled_templates;
+    }
+
+    public function usersWithRole($role)
+    {
+        return array_map(function($a) {
+            return $a->user;
+        }, $this->userProjects->matching(Criteria::create()->where(Criteria::expr()->eq('role', 'approval')))->toArray());
+    }
+
+    /**
+     * @PrePersist
+     * @PreUpdate
+     */
+    public function defaultIcon()
+    {
+        if (empty($this->icon)) {
+            $this->icon = 'cube';
+        }
     }
 }

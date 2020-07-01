@@ -46,4 +46,10 @@ interface FirewallInterface
      * @return string
      */
     public function getLogoutPath();
+
+    /**
+     * 
+     * @param callable $handler Callable that accepts Request and TokenInterface
+     */
+    public function addSuccessLoginHandler($name, callable $handler);
 }

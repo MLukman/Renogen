@@ -56,9 +56,9 @@ class DaoAuthenticationFactory implements AuthenticationFactoryInterface
                                                  UserProviderInterface $userProvider,
                                                  $providerKey)
     {
-        return new DaoAuthenticationProvider($userProvider,
-            $app['security.user_checker'], $providerKey,
-            $this->encoderFactory ? : $app['security.encoder_factory']);
+        return new AuthenticationProviderWrapper(new DaoAuthenticationProvider($userProvider,
+                $app['security.user_checker'], $providerKey,
+                $this->encoderFactory ?: $app['security.encoder_factory']));
     }
 
     /**

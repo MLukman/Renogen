@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class Project extends RenoController
 {
-    const entityFields = array('name', 'title', 'description');
+    const entityFields = array('name', 'title', 'icon', 'description');
 
     public function create(Request $request)
     {

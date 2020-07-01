@@ -29,6 +29,15 @@
                 {{ m.fieldError(errors|default([]), 'title') }}
             </div>
             <div class="ui field basic segment">
+                <label class="ui top attached large label">Icon</label>
+                <div class="ui input">
+                    <h1 style="padding:0 0.5em; margin:0"><i id="project_icon_preview" class="ui {{project.icon|default('cube')}} icon"></i> </h1>
+                    <input id="project_icon_input" placeholder="Icon ID" type="text" name="icon" value="{{project.icon|default('cube')}}" onkeyup="$('#project_icon_preview').removeClass().addClass('ui').addClass($('#project_icon_input').val()).addClass('icon');" />
+                </div>
+                {{ m.fieldError(errors|default([]), 'icon') }}
+                <div>Refer <a href="https://semantic-ui.com/elements/icon.html" target="_blank">this website</a> for the list of icon IDs</div>
+            </div>
+            <div class="ui field basic segment">
                 <label class="ui top attached large label">Description</label>
                 <textarea name="description" rows="3">{{project.description|default(null)}}</textarea>
                 {{ m.fieldError(errors|default([]), 'description') }}

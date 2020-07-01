@@ -22,7 +22,7 @@
         {% for row in data %}
             <tr>
                 <td class="top aligned collapsing">
-                    <a name="{{row.runitem.id}}">&nbsp;</a>{{loop.index}}
+                    <a name="{{row.runitem.id}}" class="anchor">&nbsp;</a>{{loop.index}}
                 </td>
                 {% if row.runitem.template.parameters['nodes']|length > 0 %}
                     <td class="ui collapsing top aligned">

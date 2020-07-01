@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y libldap2-dev wget \
     && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
     && docker-php-ext-install -j$(nproc) ldap mbstring pdo pdo_mysql \
     && apt-get autoremove -y libldap2-dev \
-	&& apt-get clean \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && a2enmod rewrite \
     && wget -O /usr/local/bin/dumb-init --no-verbose https://github.com/Yelp/dumb-init/releases/download/v1.2.2/dumb-init_1.2.2_amd64 \
@@ -27,11 +27,6 @@ ENV DB_PORT=3306
 ENV DB_NAME=renogen
 ENV DB_USER=renogen
 ENV DB_PASSWORD=reno123gen
-
-# To support login using LDAP. For LDAPS, use 'ldaps://host:port'
-ENV LDAP_HOST=''
-ENV LDAP_PORT=389
-ENV LDAP_DN="uid={username},ou=users,o=company"
 
 HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 

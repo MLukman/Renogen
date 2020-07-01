@@ -25,6 +25,11 @@ class User extends Entity implements MutableUserInterface
     public $shortname;
 
     /**
+     * @Column(type="string", length=50)
+     */
+    public $email;
+
+    /**
      * @Column(type="string", nullable=true, length=100)
      */
     public $password = '';
@@ -45,6 +50,11 @@ class User extends Entity implements MutableUserInterface
     public $blocked;
 
     /**
+     * @Column(type="datetime", nullable=true)
+     */
+    public $last_login;
+
+    /**
      * @OneToMany(targetEntity="UserProject", mappedBy="user", orphanRemoval=true)
      * @var ArrayCollection|UserProject[]
      */
@@ -57,6 +67,8 @@ class User extends Entity implements MutableUserInterface
     protected $validation_rules = array(
         'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 25, 'unique' => 1),
         'shortname' => array('trim' => 1, 'trunaate' => 100, 'unique' => 1),
+        'email' => array('trim' => 1, 'required' => 1, 'maxlen' => 50, 'unique' => 1,
+            'email' => 1),
         'auth' => array('required' => 1),
         'roles' => array('required' => 1),
     );

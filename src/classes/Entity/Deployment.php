@@ -132,9 +132,14 @@ class Deployment extends Entity
         }
     }
 
-    public function isActive()
+    public function isActive($buffer_day = 0)
     {
-        return ($this->execute_date >= date_create()->setTime(0, 0, 0)) && !$this->project->archived;
+        $ref_date = clone $this->execute_date;
+        $buffer_day = intval($buffer_day);
+        if ($buffer_day != 0) {
+            $ref_date->add(new \DateInterval("P${buffer_day}D"));
+        }
+        return ($ref_date >= date_create()->setTime(0, 0, 0)) && !$this->project->archived;
     }
 
     /**

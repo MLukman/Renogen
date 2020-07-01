@@ -67,7 +67,7 @@ class Users extends RenoController
                 $post->set('roles', array());
             }
             if ($ds->prepareValidateEntity($user, array('auth', 'username', 'shortname',
-                    'roles'), $post)) {
+                    'email', 'roles'), $post)) {
                 $ds->commit($user);
                 foreach ($post->get('project_role', array()) as $project_name => $role) {
                     try {
@@ -98,9 +98,26 @@ class Users extends RenoController
 
         $has_contrib = false;
         if ($user->created_date) {
-            $entities = array('Activity', 'Attachment', 'Item', 'Checklist', 'ItemComment',
-                'ItemStatusLog', 'Deployment', 'Template', 'Project', 'UserProject',
-                'User');
+            $entities = array(
+                'Activity',
+                'ActivityFile',
+                'Attachment',
+                'AuthDriver',
+                'Checklist',
+                'ChecklistUpdate',
+                'Deployment',
+                'FileStore',
+                'Item',
+                'ItemComment',
+                'ItemStatusLog',
+                'Plugin',
+                'Project',
+                'RunItem',
+                'RunItemFile',
+                'Template',
+                'User',
+                'UserProject',
+            );
             foreach ($entities as $entity) {
                 $has_contrib = $has_contrib || ($ds->queryUsingOr("\Renogen\Entity\\$entity",
                         array('created_by' => $user, 'updated_by' => $user)) != null);
@@ -109,6 +126,7 @@ class Users extends RenoController
 
         return $this->render('admin_user_form', array(
                 'user' => $user,
+                'project_roles' => $post->get('project_role', array()),
                 'has_contrib' => $has_contrib,
                 'auths' => $ds->queryMany('\Renogen\Entity\AuthDriver'),
                 'projects' => $ds->queryMany('\Renogen\Entity\Project'),
