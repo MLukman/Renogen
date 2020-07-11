@@ -195,6 +195,14 @@
     {% endif %}
 {% endmacro %}
 
+{% macro describe(description) %}
+    {% if description %}
+        <div class="ui secondary segment">
+            {{ description|nl2br }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
 {% macro bytesToSize(bytes) %}{% spaceless %}
         {% set kilobyte = 1024 %}
         {% set megabyte = kilobyte * 1024 %}

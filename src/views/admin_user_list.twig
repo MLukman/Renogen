@@ -53,13 +53,15 @@
                             {% endfor %}
                         </div>
                     </td>
-                    <td class="ui collapsing">
-                        {% if user.last_login %}
+                    {% if user.last_login %}
+                        <td class="ui collapsing" data-sort-value="{{ user.last_login.getTimestamp() }}">
                             {{ user.last_login|date('d/m/Y h:i A') }}
-                        {% else %}
+                        </td>
+                    {% else %}
+                        <td class="ui collapsing" data-sort-value="0">
                             Unknown
-                        {% endif %}
-                    </td>
+                        </td>
+                    {% endif %}
                     <td class="ui collapsing">
                         <a class="ui button" href="{{app.path('admin_user_edit', {'username': user.username})}}">
                             <i class="ui pencil icon"></i> Edit

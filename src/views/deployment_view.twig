@@ -8,6 +8,11 @@
         </div>
         <span>
             <i class="ui calendar check o icon" title="Deployment"></i>{{deployment.displayTitle}}
+            {% if deployment.external_url %}
+                <a class="ui circular black label no-print" href="{{ deployment.external_url }}" target="_blank">
+                    <i class="ui linkify icon"></i>{{ deployment.external_url_label|default('External URL') }}
+                </a>
+            {% endif %}
         </span>
         {% if app.securilex.isGranted('approval',deployment.project) %}
             <a class="ui right floated button no-print" href="{{app.entity_path('deployment_edit',deployment)}}"><i class="ui pencil icon"></i>Edit</a>
@@ -16,15 +21,12 @@
             <a class="ui right floated primary button no-print" href="{{app.entity_path('runbook_view',deployment)}}"><i class="ui checkmark box icon"></i>Run Book</a>
         {% endif %}
         <a class="ui right floated primary button no-print" href="{{app.entity_path('release_note',deployment)}}"><i class="ui ordered list icon"></i>Release Note</a>
-        {% if deployment.external_url %}
-            <a class="ui right floated secondary button no-print" href="{{ deployment.external_url }}" target="_blank" title="External URL">
-                <i class="ui linkify icon"></i>{{ deployment.external_url_label|default('External URL') }}
-            </a>
-        {% endif %}
     </h1>
 
     <div style="clear:both"></div>
     <div class="ui divider"></div>
+
+    {{ r.describe(deployment.description) }}
 
     <div class="ui top attached tabular secondary pointing menu">
         <div class="active item" data-tab="items">
@@ -34,7 +36,6 @@
                     <span class="ui circular large label">{{deployment.items|length}}</span>
                 </span>
             </h2>
-
         </div>
         <div class="item" data-tab="checklist">
             <h2 class="ui header">
@@ -43,7 +44,6 @@
                     <span class="ui circular large label">{{deployment.checklists|length}}</span>
                 </span>
             </h2>
-
         </div>
     </div>
 

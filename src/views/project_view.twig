@@ -34,7 +34,7 @@
         <div class="ui divider" style="clear: both"></div>
     </h1>
 
-    <p>{{project.description}}</p>
+    {{ r.describe(project.description) }}
 
     {% if is_project_admin and project.templates.count() == 0 %}
         <div class="ui error message">

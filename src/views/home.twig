@@ -23,12 +23,11 @@
                                 <td data-sort-value="{{ project.title }}">
                                     <a href="{{app.entity_path('project_view', project)}}" title="{{project.description}}">
                                         <h2 class="nowrap">
-                                            {% if project.private %}
-                                                <i class="ui lock icon" title="Private project"></i>
-                                            {% else %}
-                                                <i class="ui {{project.icon}} icon" title="Project"></i> 
-                                            {% endif %}
+                                            <i class="ui {{project.icon}} icon" title="Project"></i> 
                                             {{project.title}}
+                                            {% if project.private %}
+                                                <i class="ui small lock icon" title="Private project"></i>
+                                            {% endif %}
                                         </h2>
                                     </a>
                                 </td>
@@ -114,7 +113,7 @@
                         <div class="ui fluid card" style="background-color: #ffffcc">
                             <div class="ui content">
                                 <h4>
-                                    <span><i class="ui {{project.icon}} icon" title="Project"></i> {{ d.deployment.project.title }} &raquo;</span>
+                                    <span><i class="ui {{d.deployment.project.icon}} icon" title="Project"></i> {{ d.deployment.project.title }} &raquo;</span>
                                     <span><i class="ui calendar check o icon" title="Deployment"></i> <a href="{{ app.entity_path('deployment_view', d.deployment) }}">{{ d.deployment.datetimeString(true) }}</a></span>
                                 </h4>
                                 <div class="ui celled list">
