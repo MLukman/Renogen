@@ -22,7 +22,7 @@
         <div class="ui form">
             <div class="ui required field basic segment">
                 <label class="ui top attached large label">Title</label>
-                <input id="title_manual" placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} onchange="v=$(this).val(); $('#title_templated').dropdown('clear'); $(this).val(v);" />
+                <input id="title_manual" placeholder="User friendly title (max 250 characters)" type="text" name="title" value="{{checklist.title|default(null)}}" {% if not can_edit_title %}readonly="readonly"{% endif %} {% if templates %}onchange="v = $(this).val(); $('#title_templated').dropdown('clear'); $(this).val(v);"{% endif %} />
                 {% if not can_edit_title %}<em>Only task creator and users with approval role can edit task titles</em>{% endif %}
                 {{ m.fieldError(errors|default([]), 'title') }}
                 {% if templates and can_edit_title %}

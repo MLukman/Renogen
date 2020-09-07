@@ -70,7 +70,11 @@ class Checklist extends RenoController
                         $post->set('title', $post->get('template'));
                     }
                     $errors = array();
-                    if ($ds->prepareValidateEntity($checklist, static::entityFields, $post)) {
+                    $fields = static::entityFields;
+                    if ($checklist->created_by && !$checklist->isRoleAllowed('edit_title')) {
+                        $fields = array_diff($fields, array('title'));
+                    }
+                    if ($ds->prepareValidateEntity($checklist, $fields, $post)) {
                         if ($checklist->id) {
                             $update = new \Renogen\Entity\ChecklistUpdate($checklist);
                             $update->comment = $post->get('update');

@@ -170,7 +170,7 @@
             <tbody>
                 {% for c in deployment.checklists %}
                     <tr class="top aligned">
-                        <td>{{ loop.index }}</td>
+                        <td data-sort-value="{{ loop.index }}">{{ loop.index }}</td>
                         <td>{{ c.title }}</td>
                         <td data-sort-value="{{ c.start_datetime.getTimestamp() }}">{{ c.start_datetime|date('d/m/Y h:i A') }}</td>
                         {% if c.end_datetime %}

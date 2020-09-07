@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
+use Doctrine\ORM\Mapping\PrePersist;
+use Doctrine\ORM\Mapping\PreUpdate;
 use Renogen\Base\Entity;
 
 /**
@@ -79,6 +81,7 @@ class Project extends Entity
 
     /**
      * @OneToMany(targetEntity="Deployment", mappedBy="project", indexBy="id", orphanRemoval=true, fetch="EXTRA_LAZY")
+     * @OrderBy({"execute_date" = "DESC"})
      * @var ArrayCollection|Deployment[]
      */
     public $deployments = null;
@@ -174,29 +177,44 @@ class Project extends Entity
 
     /**
      * Get upcoming deployments
-     * @return Deployment[]
+     * @return ArrayCollection|Deployment[]
      */
     public function upcoming()
     {
         return $this->cached('upcoming', function() {
-                return $this->deployments->matching(
+                $compare_dates = array(date_create(), date_create()->setTime(0, 0, 0),
+                    date_create('yesterday')->setTime(18, 0, 0));
+                $upcoming = array();
+                foreach ($compare_dates as $compare) {
+                    $upcoming = $this->deployments->matching(
                         Criteria::create()
-                            ->where(new Comparison('execute_date', '>=', date_create()->setTime(0, 0, 0)))
+                            ->where(new Comparison('execute_date', '>=', $compare))
                             ->orderBy(array('execute_date' => 'ASC')));
+                    if ($upcoming->count() > 0) {
+                        break;
+                    }
+                }
+                return $upcoming;
             });
     }
 
     /**
      * Get past deployments
-     * @return Deployment[]
+     * @return ArrayCollection|Deployment[]
      */
-    public function past()
+    public function past($limit = 0)
     {
-        return $this->cached('past', function() {
-                return $this->deployments->matching(
-                        Criteria::create()
-                            ->where(new Comparison('execute_date', '<', date_create()->setTime(0, 0, 0)))
-                            ->orderBy(array('execute_date' => 'DESC')));
+        return $this->cached("past.$limit", function() use ($limit) {
+                $criteria = Criteria::create()
+                    ->orderBy(array('execute_date' => 'DESC'));
+                $upcoming = $this->upcoming();
+                if (count($upcoming) > 0) {
+                    $criteria = $criteria->where(new Comparison('execute_date', '<', $upcoming[0]->execute_date));
+                }
+                if ($limit > 0) {
+                    $criteria = $criteria->setMaxResults($limit);
+                }
+                return $this->deployments->matching($criteria);
             });
     }
 

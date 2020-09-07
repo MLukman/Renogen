@@ -60,14 +60,14 @@
         {% endif %}
     </div>
 
-    {% if project.past().count() > 0 %}
+    {% if project.past(10).count() > 0 %}
         <h2>
             Past Deployments (Showing last 10)
             <a class="ui button right floated" href="{{app.entity_path('project_past',project)}}"><i class="ui clock icon"></i>Show all past deployments</a>
             <div style="clear:both"></div>
         </h2>
         <div class="ui basic segment">
-            {{ mm.deploymentList(project.past()|slice(0, 10)) }}
+            {{ mm.deploymentList(project.past(10)) }}
         </div>
     {% endif %}
 
