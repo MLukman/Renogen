@@ -65,10 +65,10 @@ class User extends Entity implements MutableUserInterface
      * @var array
      */
     protected $validation_rules = array(
-        'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 25, 'unique' => 1),
-        'shortname' => array('trim' => 1, 'trunaate' => 100, 'unique' => 1),
-        'email' => array('trim' => 1, 'required' => 1, 'maxlen' => 50, 'unique' => 1,
-            'email' => 1),
+        'username' => array('trim' => 1, 'required' => 1, 'maxlen' => 25, 'unique' => 1,
+            'preg_match' => array('/^[0-9a-zA-Z][0-9a-zA-Z\._-]*$/', 'Username must start with an alphanumerical character and contains only alphanumeric, underscores, dashes and dots')),
+        'shortname' => array('trim' => 1, 'required' => 1, 'truncate' => 100, 'unique' => 1),
+        'email' => array('required' => 1, 'maxlen' => 50, 'unique' => 1, 'email' => 1),
         'auth' => array('required' => 1),
         'roles' => array('required' => 1),
     );
@@ -85,7 +85,7 @@ class User extends Entity implements MutableUserInterface
 
     public function eraseCredentials()
     {
-        
+
     }
 
     public function getPassword()

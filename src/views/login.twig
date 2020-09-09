@@ -20,8 +20,12 @@
             </a>
             <form action="{{app.securilex.getLoginCheckPath()}}" method="post">
                 <div class="ui form">
-                    {% if error|default(null) %}
-                        <div class="ui negative inverted message"><i class="ui exclamation triangle icon"></i> {{error}}</div>
+                    {% if message|default(null) %}
+                        {% if message.negative %}
+                            <div class="ui negative inverted message"><i class="ui exclamation triangle icon"></i> {{message.text}}</div>
+                        {% else %}
+                            <div class="ui positive message"><i class="ui info icon"></i> {{message.text}}</div>
+                        {% endif %}
                     {% else %}
                         Renogen is a release management approval & tracking platform
                     {% endif %}
@@ -38,8 +42,14 @@
                                 <i class="ui key icon"></i>
                             </div>
                         </div>
-                        <div class="required field center aligned">
+                        <div class="field center aligned">
                             <button class="ui big black button" type="submit"><i class="ui unlock icon"></i> Login</button>
+                            {% if self_register and not last_username %}
+                                <div class="ui horizontal divider">
+                                    Or
+                                </div>
+                                <a class="ui big silver button" href="{{ app.path('register') }}"><i class="ui sign-in icon"></i> Register</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

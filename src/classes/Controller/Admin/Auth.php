@@ -25,10 +25,6 @@ class Auth extends RenoController
 
     public function edit(Request $request, $driver)
     {
-        if ($driver == 'password') {
-            $this->app->addFlashMessage("Authentication 'password' cannot be edited");
-            return $this->app->params_redirect('admin_auth');
-        }
         $this->addCrumb('Authentication', $this->app->path('admin_auth'), 'lock');
         $this->addEditCrumb($this->app->path('admin_auth_edit', array('driver' => $driver)));
         $auth = $this->app['datastore']->queryOne('\Renogen\Entity\AuthDriver', $driver);
@@ -41,6 +37,10 @@ class Auth extends RenoController
         $ds = $this->app['datastore'];
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
+                if ($auth->name == 'password') {
+                    $this->app->addFlashMessage("Authentication 'password' cannot be deleted");
+                    return $this->app->params_redirect('admin_auth');
+                }
                 $ds->deleteEntity($auth);
                 $ds->commit();
                 $this->app->addFlashMessage("Authentication '$auth->name' has been deleted");
@@ -49,7 +49,13 @@ class Auth extends RenoController
             if (!$post->has('parameters')) {
                 $post->set('parameters', array());
             }
-            if (!$ds->prepareValidateEntity($auth, array('name', 'class', 'parameters'), $post)) {
+            $attributes = array('title', 'parameters', 'allow_self_registration',
+                'registration_explanation');
+            if (!$auth->created_date) {
+                $attributes[] = 'name';
+                $attributes[] = 'class';
+            }
+            if (!$ds->prepareValidateEntity($auth, $attributes, $post)) {
                 $errors = $auth->errors;
             }
             if (class_exists($auth->class) &&
