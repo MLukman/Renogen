@@ -35,7 +35,7 @@
                     <input type="text" name="parameters[{{param}}][{{i}}][desc]" value="{{paramval[i].desc|default(null)}}" placeholder="Short description for this field" />
                 </td>
                 <td>
-                    <textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type &quot;dropdown&quot; / &quot;multiselect&quot;, regex pattern for type &quot;formatted&quot; or the default value for other text-based types">{{paramval[i].details|default(null)}}</textarea>
+                    <textarea name="parameters[{{param}}][{{i}}][details]" rows="3" placeholder="List of values for type &quot;dropdown&quot; / &quot;multiselect&quot;, regex pattern for type &quot;formatted&quot;, list of file extensions (e.g. &quot;.sql&quot;) for type &quot;file&quot;, or the default value for other text-based types">{{paramval[i].details|default(null)}}</textarea>
                 </td>
                 <td class="ui center aligned collapsing">
                     <input class="ui checkbox" type="checkbox" name="parameters[{{param}}][{{i}}][required]" value="1" {% if paramval[i].required|default(null) %}checked="checked"{% endif %} />
@@ -44,4 +44,9 @@
         {% endfor %}
     </tbody>
 </table>
-<em>Note: to add more entries, save first and edit later</em>
+<em>Notes: 
+    <ul>
+        <li>to add more entries, save first to get more empty entry rows</li>
+        <li>to delete an entry, clear all its fields and save</li>
+    </ul>
+</em>

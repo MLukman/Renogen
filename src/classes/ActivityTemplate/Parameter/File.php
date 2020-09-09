@@ -69,10 +69,10 @@ class File extends Parameter
     public function displayActivityParameter(Actionable $activity, $key)
     {
         if ($activity instanceof RunItem) {
-            $class  = '\Renogen\Entity\RunItemFile';
+            $class = '\Renogen\Entity\RunItemFile';
             $parent = 'runitem';
         } else {
-            $class  = '\Renogen\Entity\ActivityFile';
+            $class = '\Renogen\Entity\ActivityFile';
             $parent = 'activity';
         }
         if (isset($activity->parameters[$key])) {
@@ -88,18 +88,23 @@ class File extends Parameter
     {
         if (isset($activity->parameters[$key]) && $activity->files->containsKey($activity->parameters[$key])) {
             $activity_file = $activity->files->get($activity->parameters[$key]);
+            $input[$key] = $activity_file->classifier;
         } else {
             $activity_file = new ActivityFile($activity);
         }
 
         $files = $request->files->get('parameters');
         if (isset($files[$key]) &&
-            ($file  = $files[$key])) {
-            $activity_file             = $this->app['datastore']->processFileUpload($file, $activity_file);
+            ($file = $files[$key])) {
+            $activity_file = $this->app['datastore']->processFileUpload($file, $activity_file);
             $activity_file->classifier = $key;
-            $this->app['datastore']->manage($activity_file);
+            if ($activity_file->validate($this->app['em'])) {
+                $this->app['datastore']->manage($activity_file);
+                $input[$key] = $activity_file->classifier;
+            } elseif ($activity_file->id) {
+                $this->app['datastore']->reloadEntity($activity_file);
+            }
         }
-        $input[$key] = $activity_file->classifier;
     }
 
     public function getTwigForTemplateForm()

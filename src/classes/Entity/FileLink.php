@@ -76,8 +76,8 @@ abstract class FileLink extends Entity
      * @var array
      */
     protected $validation_rules = array(
-        'filename' => array('truncate' => 100),
-        'classifier' => array('truncate' => 100),
+        'filename' => array('required' => 1, 'truncate' => 100),
+        'classifier' => array('required' => 1, 'truncate' => 100),
         'description' => array('trim' => 1),
     );
 
@@ -93,8 +93,8 @@ abstract class FileLink extends Entity
 
     public function getHtmlLink()
     {
-        $base      = log($this->filestore->filesize) / log(1024);
-        $suffix    = array(" bytes", " KB", " MB", " GB", " TB")[floor($base)];
+        $base = log($this->filestore->filesize) / log(1024);
+        $suffix = array(" bytes", " KB", " MB", " GB", " TB")[floor($base)];
         $humansize = round(pow(1024, $base - floor($base)), 2).$suffix;
         return '<a href="'.htmlentities($this->downloadUrl()).'" title="'.$humansize.' '.$this->filestore->mime_type.'">'.htmlentities($this->filename).'</a>';
     }

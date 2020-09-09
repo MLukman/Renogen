@@ -20,19 +20,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for user in users %}
-                        {% set urole = project.getUserAccess(user.username) %}
+                    {% for user in users if user.username in project.userProjects|keys %}
+                        <tr class="ui positive">
+                            {{ _self.user_row(project, user) }}
+                        </tr>
+                    {% endfor %}
+                    {% for user in users if user.username not in project.userProjects|keys %}
                         <tr>
-                            <td>{{user.username}}</td>
-                            <td>{{user.shortname}}</td>
-                            {% for lbl,role in {'None':null,'View':'view','Entry':'entry','Review':'review','Approval':'approval','Execute':'execute'} %}
-                                <td class="ui collapsing">
-                                    <div class="ui toggle checkbox">
-                                        <input type="radio" name="role[{{user.username}}]]" value="{{role}}" {% if role == urole %}checked="checked"{% endif %} />
-                                        <label>{{lbl}}</label>
-                                    </div>
-                                </td>
-                            {% endfor %}
+                            {{ _self.user_row(project, user) }}
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -43,3 +38,17 @@
         </div>
     </form>
 {% endblock %}
+
+{%  macro user_row(project, user) %}
+    {% set urole = project.getUserAccess(user.username) %}
+    <td>{{user.username}}</td>
+    <td>{{user.shortname}}</td>
+    {% for lbl,role in {'None':null,'View':'view','Entry':'entry','Review':'review','Approval':'approval','Execute':'execute'} %}
+        <td class="ui collapsing">
+            <div class="ui toggle checkbox">
+                <input type="radio" name="role[{{user.username}}]]" value="{{role}}" {% if role == urole %}checked="checked"{% endif %} />
+                <label>{{lbl}}</label>
+            </div>
+        </td>
+    {% endfor %}
+{% endmacro %}

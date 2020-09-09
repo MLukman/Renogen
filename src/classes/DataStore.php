@@ -32,7 +32,7 @@ class DataStore implements ServiceProviderInterface
 
     public function register(Application $app)
     {
-        $this->app              = $app;
+        $this->app = $app;
         $this->app['datastore'] = $this;
     }
 
@@ -80,7 +80,7 @@ class DataStore implements ServiceProviderInterface
                                  Array $sort = array(), $limit = 0)
     {
         $repo = $this->app['em']->getRepository($entity);
-        $qb   = $repo->createQueryBuilder('e');
+        $qb = $repo->createQueryBuilder('e');
         foreach ($criteria as $crit => $value) {
             $qb->orWhere("e.$crit = :$crit")->setParameter($crit, $value);
         }
@@ -102,7 +102,7 @@ class DataStore implements ServiceProviderInterface
     public function fetchProject($project)
     {
         if (!($project instanceof Project)) {
-            $name    = $project;
+            $name = $project;
             if (!($project = $this->queryOne('\Renogen\Entity\Project', array('name' => $name)))) {
                 throw new NoResultException("There is not such project with name '$name'");
             }
@@ -158,7 +158,7 @@ class DataStore implements ServiceProviderInterface
     public function fetchItem($project, $deployment, $item)
     {
         if (!($item instanceof Item)) {
-            $id   = $item;
+            $id = $item;
             if (!($item = $this->queryOne('\Renogen\Entity\Item', array('id' => $id)))) {
                 throw new NoResultException("There is not such deployment item with id '$id'");
             }
@@ -177,7 +177,7 @@ class DataStore implements ServiceProviderInterface
     public function fetchChecklist($project, $deployment, $checklist)
     {
         if (!($checklist instanceof Entity\Checklist)) {
-            $id        = $checklist;
+            $id = $checklist;
             if (!($checklist = $this->queryOne('\Renogen\Entity\Checklist', array(
                 'id' => $id)))) {
                 throw new NoResultException("There is not such deployment checklist id '$id'");
@@ -198,7 +198,7 @@ class DataStore implements ServiceProviderInterface
     public function fetchActivity($project, $deployment, $item, $activity)
     {
         if (!($activity instanceof Activity)) {
-            $id       = $activity;
+            $id = $activity;
             $item_obj = $this->fetchItem($project, $deployment, $item);
             if (!($activity = $item_obj->activities->get($id))) {
                 throw new NoResultException("There is not such activity with id '$id'");
@@ -219,8 +219,8 @@ class DataStore implements ServiceProviderInterface
     public function fetchAttachment($project, $deployment, $item, $attachment)
     {
         if (!($attachment instanceof Attachment)) {
-            $id         = $attachment;
-            $item_obj   = $this->fetchItem($project, $deployment, $item);
+            $id = $attachment;
+            $item_obj = $this->fetchItem($project, $deployment, $item);
             if (!($attachment = $item_obj->attachments->get($id))) {
                 throw new NoResultException("There is not such attachment with id '$id'");
             }
@@ -238,7 +238,7 @@ class DataStore implements ServiceProviderInterface
     public function fetchTemplate($template, $project = null)
     {
         if (!($template instanceof Template)) {
-            $name     = $template;
+            $name = $template;
             $template = $this->queryOne('\Renogen\Entity\Template', $template);
             if (!$template || ($project != null && $template->project != $this->fetchProject($project))) {
                 throw new NoResultException("There is not such template with id '$name'");
@@ -332,12 +332,22 @@ class DataStore implements ServiceProviderInterface
                 $entity->$field = $field_value;
             }
         }
+        return $this->validateEntity($entity);
+    }
+
+    public function validateEntity(Entity &$entity)
+    {
         return $entity->validate($this->app['em']);
+    }
+
+    public function reloadEntity(Entity &$entity)
+    {
+        $this->app['em']->refresh($entity);
     }
 
     public function deleteEntity(Entity &$entity)
     {
-        $entity->updated_by   = $this->app->userEntity() ?: $entity->updated_by;
+        $entity->updated_by = $this->app->userEntity() ?: $entity->updated_by;
         $entity->updated_date = new \DateTime();
         $entity->delete($this->app['em']);
     }
@@ -347,17 +357,17 @@ class DataStore implements ServiceProviderInterface
                                       array &$errors = array())
     {
         if ($file->isValid() && $filelink) {
-            $sha1      = sha1_file($file->getRealPath());
+            $sha1 = sha1_file($file->getRealPath());
             $filestore = $this->queryOne('\\Renogen\\Entity\\FileStore', array('id' => $sha1));
             if (!$filestore) {
-                $filestore            = new FileStore();
-                $filestore->id        = $sha1;
-                $filestore->data      = fopen($file->getRealPath(), 'rb');
-                $filestore->filesize  = $file->getClientSize();
+                $filestore = new FileStore();
+                $filestore->id = $sha1;
+                $filestore->data = fopen($file->getRealPath(), 'rb');
+                $filestore->filesize = $file->getClientSize();
                 $filestore->mime_type = $file->getMimeType();
             }
             $filelink->filestore = $filestore;
-            $filelink->filename  = $file->getClientOriginalName();
+            $filelink->filename = $file->getClientOriginalName();
             if (!$filelink->classifier) {
                 $filelink->classifier = $filelink->filename;
             }

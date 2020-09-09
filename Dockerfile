@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y libldap2-dev wget \
 
 RUN echo 'TLS_REQCERT never' >> /etc/ldap/ldap.conf \
     && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
-    && echo 'post_max_size = 100M' >> /usr/local/etc/php/conf.d/max.ini
+    && echo 'post_max_size = 120M' >> /usr/local/etc/php/conf.d/max.ini
 
 # If behind reverse proxy using path (e.g. /renogen), put the path here (without the preceding slash, e.g renogen). 
 # Also ensure the reverse proxy retains the path when proxying to this container.

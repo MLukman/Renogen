@@ -60,21 +60,25 @@
             <div class="ui equal width stackable grid">
                 {% set statuses = deployment.project.item_statuses|keys %}
                 {% for s in statuses %}
-                    <div class="ui tiny statistic column">
-                        <div class="label">
-                            {{s}}
-                        </div>
-                        <div class="value">
-                            {{deployment.getItemsWithStatus(s)|length}}
+                    <div class="ui column">
+                        <div class="ui tiny statistic ">
+                            <div class="label">
+                                {{s}}
+                            </div>
+                            <div class="value">
+                                {{deployment.getItemsWithStatus(s)|length}}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
-                <div class="ui tiny statistic column">
-                    <div class="label">
-                        Rejected / Failed
-                    </div>
-                    <div class="value">
-                        {{deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_REJECTED'))|length + deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_FAILED'))|length}}
+                <div class="ui column">
+                    <div class="ui red tiny statistic">
+                        <div class="label">
+                            Rejected / Failed
+                        </div>
+                        <div class="value">
+                            {{deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_REJECTED'))|length + deployment.getItemsWithStatus(constant('Renogen\\Entity\\Project::ITEM_STATUS_FAILED'))|length}}
+                        </div>
                     </div>
                 </div>
             </div>

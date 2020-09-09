@@ -29,7 +29,8 @@
                     </div>
                 {% elseif p.type == 'file' %}
                     <div class="ui basic secondary segment">
-                        <input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" />
+                        <input id="{{pid}}" type="file" name="parameters[{{param}}][{{p.id}}]" {% if p.details %}accept="{{ p.details|split('\n')|join(',') }}"{% endif %} />
+                        <em>Uploaded file with size larger than {{ upload_max_filesize }} will be ignored</em>
                         {% if paramval[p.id]|default(null) %}
                             <div>
                                 Existing file: <strong>{{paramval[p.id].filename}}</strong> of type <strong>{{paramval[p.id].mime_type}}</strong> with size <strong>{{paramval[p.id].filesize}}</strong> bytes
@@ -56,7 +57,11 @@
                 {% elseif p.type == 'url' %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://"  />
                 {% elseif p.type == 'formatted' %}
-                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]}}" onkeyup="if (new RegExp('^{{p.details|escape('js')}}$').test(this.value)) { $(this).parent('.field').removeClass('error'); } else { $(this).parent('.field').addClass('error'); }" />
+                    <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]}}" onkeyup="if (new RegExp('^{{p.details|escape('js')}}$').test(this.value)) {
+                                $(this).parent('.field').removeClass('error');
+                            } else {
+                                $(this).parent('.field').addClass('error');
+                            }" />
                 {% elseif p.type == 'jsondropdown' %}
                     <select id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" class="ui search dropdown">
                         <option value="">-- Please select --</option>

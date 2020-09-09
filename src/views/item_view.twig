@@ -109,7 +109,7 @@
                                 <tr>
                                     <td>
                                         <i class="calendar icon"></i>{{log.created_date|date('Y-m-d')}}
-                                        <i class="clock icon"></i>{{log.created_date|date('H:i')}}
+                                        <span class="nowrap"><i class="clock icon"></i>{{log.created_date|date('H:i')}}</span>
                                     </td>
                                     <td>{{log.status}}</td>
                                     <td>{{log.created_by.shortname}}</td>

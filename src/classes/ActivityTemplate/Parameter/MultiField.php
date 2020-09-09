@@ -11,7 +11,7 @@ class MultiField extends Parameter
 {
     public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
         'url', 'file', 'formatted', 'jsondropdown'];
-    public $default_type  = null;
+    public $default_type = null;
 
     static public function create($templateLabel, $templateDescription,
                                   $templateRequired, $activityLabel,
@@ -30,7 +30,7 @@ class MultiField extends Parameter
                                           $error_prefix = '')
     {
         $input[$key] = $this->templateFormToDatabase($input[$key]);
-        $errkey      = ($error_prefix ? "$error_prefix.$key" : $key);
+        $errkey = ($error_prefix ? "$error_prefix.$key" : $key);
 
         if (empty($input[$key]) && $this->templateRequired) {
             $errors[$errkey] = array('Required');
@@ -139,18 +139,24 @@ class MultiField extends Parameter
                 $pid = $p['id'];
                 if (isset($activity->parameters[$key][$pid]) && $activity->files->containsKey($activity->parameters[$key][$pid])) {
                     $activity_file = $activity->files->get($activity->parameters[$key][$pid]);
+                    $input[$key][$pid] = $activity_file->classifier;
                 } else {
                     $activity_file = new ActivityFile($activity);
                 }
 
-                $post  = $request->request->get('parameters');
+                $post = $request->request->get('parameters');
                 $files = $request->files->get('parameters');
                 if (isset($files[$key]) &&
                     isset($files[$key][$pid]) &&
-                    ($file  = $files[$key][$pid])) {
-                    $activity_file             = $this->app['datastore']->processFileUpload($file, $activity_file);
+                    ($file = $files[$key][$pid])) {
+                    $activity_file = $this->app['datastore']->processFileUpload($file, $activity_file);
                     $activity_file->classifier = "$key.$pid";
-                    $this->app['datastore']->manage($activity_file);
+                    if ($activity_file->validate($this->app['em'])) {
+                        $this->app['datastore']->manage($activity_file);
+                        $input[$key][$pid] = $activity_file->classifier;
+                    } elseif ($activity_file->id) {
+                        $this->app['datastore']->reloadEntity($activity_file);
+                    }
                 } elseif (isset($post[$key]) &&
                     isset($post[$key][$pid.'_delete']) &&
                     $post[$key][$pid.'_delete']) {
@@ -159,7 +165,6 @@ class MultiField extends Parameter
                     unset($input[$key][$pid.'_delete']);
                     continue;
                 }
-                $input[$key][$pid] = $activity_file->classifier;
             }
         }
     }
@@ -167,8 +172,8 @@ class MultiField extends Parameter
     public function displayActivityParameter(Actionable $activity, $key)
     {
         $isForRunbook = ($activity instanceof \Renogen\Entity\RunItem);
-        $options      = array();
-        $data         = $this->activityDatabaseToForm($activity->template->parameters, $activity->parameters, $key, $activity);
+        $options = array();
+        $data = $this->activityDatabaseToForm($activity->template->parameters, $activity->parameters, $key, $activity);
         foreach ($activity->template->parameters[$key] as $p) {
             if ($isForRunbook) {
                 $d = $p['id'];

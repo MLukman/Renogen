@@ -138,7 +138,7 @@ class App extends Application
         ));
         $app['twig']->addExtension(new TwigInstanceOf());
         $app['twig']->addExtension(new TwigSortByProperty());
-// for plugins
+        $app['twig']->addGlobal("upload_max_filesize", \ini_get("upload_max_filesize"));
         $app['twig.loader.filesystem']->addPath(realpath(__DIR__."/Plugin"), 'plugin');
 
         /* Security */

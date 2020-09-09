@@ -1,5 +1,4 @@
 {% extends "renobase.twig" %}
-{% import _self as actform %}
 
 {% block content %}
     {% set is_existing = (activity.id|default(null) is not empty) %}
@@ -38,7 +37,7 @@
                                 <div class="ui item">
                                     <div class="content">
                                         <div class="ui radio checkbox">
-                                            <input type="radio" name="template" value="{{template.id}}" />
+                                            <input type="radio" name="template" value="{{template.id}}" onchange="javascript:$('#submit_Next').click()" />
                                             <label>
                                                 <h3 class="ui header">    
                                                     {{template.title}}
@@ -54,15 +53,15 @@
                     </div>
                 </div>
                 <div class="ui field">
-                    <input type="submit" class="ui submit primary button" name="_action" value="Next" />
+                    <input id="submit_Next" type="submit" class="ui submit primary button" name="_action" value="Next" />
                     <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
                 </div>
             {% else %}
                 <h2 class="ui header">Template: {{activity.template.title}}</h2>
                 <input type="hidden" name="template" value="{{activity.template.id}}" />
-                {{ actform.activityConfigForm(activity.template, activity, errors|default([])) }}
+                {{ _self.activityConfigForm(activity.template, activity, errors|default([])) }}
                 <div class="ui field">
-                    <input type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} activity" />
+                    <input id="submit_Save" type="submit" class="ui submit primary button" name="_action" value="{% if is_existing %}Save{% else %}Create{% endif %} activity" />
                     <a href="{{cancel_path|default('javascript:window.history.go(-1)')}}" class="ui secondary button">Cancel</a>
                     {% if is_existing and app.securilex.isGranted('delete',activity) %}
                         <input type="submit" class="ui red right floated button" name="_action" value="Delete"
