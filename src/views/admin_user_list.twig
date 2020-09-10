@@ -10,6 +10,36 @@
         <div class="ui divider" style="clear: both"></div>
     </h1>
 
+    {% set active_users = users|filter(u => not u.blocked) %}
+    {% set blocked_users = users|filter(u => u.blocked) %}
+    <div class="ui top attached tabular secondary pointing menu">
+        <div class="active item" data-tab="active">
+            <h2 class="ui header">
+                <span>
+                    <i class="ui user icon"></i> Active
+                    <span class="ui circular large label">{{active_users|length}}</span>
+                </span>
+            </h2>
+        </div>
+        <div class="item" data-tab="blocked">
+            <h2 class="ui header">
+                <span>
+                    <i class="ui user times icon"></i> Blocked
+                    <span class="ui circular large label">{{blocked_users|length}}</span>
+                </span>
+            </h2>
+        </div>
+    </div>
+
+    <div class="ui tab basic segment active" data-tab="active">
+        {{ _self.userlist(active_users) }}
+    </div>
+    <div class="ui tab basic segment" data-tab="blocked">
+        {{ _self.userlist(blocked_users) }}
+    </div>
+{% endblock %}
+
+{% macro userlist(users) %}
     <table class="ui celled striped sortable table">
         <thead>
             <tr>
@@ -39,11 +69,11 @@
                         {% endif %}
                     </td>
                     <td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
-                    <td class="ui center aligned">
+                    <td class="ui center aligned" data-sort-value="{{user.userProjects|length}}">
                         {{user.userProjects|length}}
                     </td>
                     <td>
-                        <div class="ui middle aligned divided list">
+                        <div class="ui middle aligned divided tiny list">
                             {% for userProject in user.userProjects.toArray()|psort('project.title') %}
                                 <div class="item">
                                     <div class="right floated content">
@@ -76,7 +106,11 @@
                         </a>
                     </td>
                 </tr>
+            {% else %}
+                <tr>
+                    <td colspan="10" class="ui center aligned">Nothing to list</td>
+                </tr>
             {% endfor %}
         </tbody>
-    </table>
-{% endblock %}
+    </table>    
+{% endmacro %}

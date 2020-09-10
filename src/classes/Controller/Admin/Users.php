@@ -74,7 +74,7 @@ class Users extends RenoController
                         $project = $ds->fetchProject($project_name);
                         $project_role = $project->userProjects->containsKey($user->username)
                                 ? $project->userProjects->get($user->username) : null;
-                        if ($role == 'none' || empty($role)) {
+                        if ($role == 'none' || empty($role) || !in_array($role, \Renogen\App::PROJECT_ROLES)) {
                             if ($project_role) {
                                 $ds->deleteEntity($project_role);
                             }
@@ -115,12 +115,21 @@ class Users extends RenoController
                 'RunItem',
                 'RunItemFile',
                 'Template',
-                'User',
                 'UserProject',
             );
             foreach ($entities as $entity) {
-                $has_contrib = $has_contrib || ($ds->queryUsingOr("\Renogen\Entity\\$entity",
-                        array('created_by' => $user, 'updated_by' => $user)) != null);
+                $has_contrib = $has_contrib || 0 < count($ds->queryUsingOr("\Renogen\Entity\\$entity",
+                            array('created_by' => $user, 'updated_by' => $user)));
+            }
+
+            // special checking for User entity because self-registered user has created_by = himself
+            if (!$has_contrib) {
+                $managed_users = $ds->queryUsingOr("\Renogen\Entity\User",
+                    array('created_by' => $user, 'updated_by' => $user));
+                if (count($managed_users) > 1 ||
+                    (count($managed_users) == 1 && $managed_users[0]->username != $user->username)) {
+                    $has_contrib = true;
+                }
             }
         }
 

@@ -109,7 +109,6 @@
 
 {% macro arrayTable(arr,level) %}
     {% if arr is iterable %}
-        {% import _self as r %}	
         <table class="ui compact {% if level|default(0) > 0 %}small{% endif %} tablet stackable table">
             {% for key,val in arr %}
                 <tr>
@@ -123,24 +122,23 @@
                         </td>
                     {% endif %}
                     <td class="ui top aligned" style="overflow:auto">
-                        {{r.prettyDisplay(val,level|default(0)+1)}}
+                        {{_self.prettyDisplay(val,level|default(0)+1)}}
                     </td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
-        {{arr}}
+        {{_self.prettyDisplay(arr)}}
     {% endif %}
 {% endmacro %}
 
 {% macro prettyDisplay(val,level) %}
-    {% import _self as r %}	
     {% if val is empty %}
         <em>-- Not Specified --</em>
     {% elseif val is instanceof('\\Renogen\\Entity\\FileLink') %}
         {{val.getHtmlLink()|raw}}
     {% elseif val is iterable %}
-        {{r.arrayTable(val,level|default(0)+1)}}
+        {{_self.arrayTable(val,level|default(0)+1)}}
     {% elseif val|first == '<' %}
         {{val|raw}}
     {% else %}

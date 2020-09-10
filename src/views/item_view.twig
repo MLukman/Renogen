@@ -25,9 +25,24 @@
             }
         }
 
+        function activitiesOpenClose(open) {
+            console.log('Accordion: ' + (open ? 'open' : 'close'));
+            $('.activities.accordion').accordion(open ? 'open' : 'close', 0);
+            $('#activitiesOpenClose').text(open ? 'Close all' : 'Open all').off('click').on('click', function () {
+                activitiesOpenClose(open ? 0 : 1);
+            });
+        }
+
         $(function () {
             $('#changeStatusRemarkTextArea').on('input propertychange', validateRemark);
             $('.menu .item').tab();
+        });
+
+        $(function () {
+            activitiesOpenClose(true);
+            setTimeout(function () {
+                activitiesOpenClose(false);
+            }, 3000);
         });
     </script>
 {% endblock %}
@@ -139,9 +154,11 @@
                     <thead>
                         <tr>
                             <th class="ui collapsing">#</th>
-                            <th style="width:25%">Template</th>
-                            <th>Description</th>
-                            <th style="width:8em"></th>
+                            <th>
+                                <a id="activitiesOpenClose" style="float:right" href="#" onclick="return false"></a>
+                                Description
+                            </th>
+                            <th style="width:8em">Status</th>
                         </tr>
                     </thead>
                 {% endif %}
@@ -150,24 +167,34 @@
                         {% set description = activity.template.templateClass().describeActivityAsArray(activity) %}
                         <tr style="position:relative">
                             <td class="ui top aligned collapsing">{{loop.index}}</td>
-                            <td class="ui top aligned">
-                                {% if activity.stage < 0 %}
-                                    <em>Pre Deployment &raquo;</em><br />
-                                {% elseif activity.stage > 0 %}
-                                    <em>Post Deployment &raquo;</em><br />
-                                {% endif %}
-                                {{activity.template.title}}
-                            </td>
-                            <td class="ui top aligned" style="position:relative; overflow: auto; max-height: 400px; max-width: inherit;">
-                                {{ r.arrayTable(description) }}
+                            <td class="ui top aligned" style="position:relative; overflow: auto; max-width: inherit;">
+                                <div class="ui fluid activities accordion">
+                                    <div class="title active" style="padding:0">
+                                        <h4>
+                                            <i class="dropdown icon"></i>
+                                            {% if activity.stage < 0 %}
+                                                <em>Pre Deployment &raquo;</em><br />
+                                            {% elseif activity.stage > 0 %}
+                                                <em>Post Deployment &raquo;</em><br />
+                                            {% endif %}
+                                            {{activity.displayTitle()}}
+                                        </h4>
+                                    </div>
+                                    <div class="content active">
+                                        {{ r.arrayTable(description) }}
+                                    </div>
+                                </div>
                             </td>
                             <td class="ui top aligned collapsing no-print">
-                                <div>{{activity.runitem.status|default('New')}}</div>
-                                {% if editable and (not activity.runitem or activity.runitem.status != 'Completed') %}
-                                    <a class="ui icon button" title="Edit" href="{{app.entity_path('activity_edit',activity)}}">
-                                        <i class="ui pencil icon"></i>
-                                    </a>
-                                {% endif %}
+                                <div>
+                                    {% if editable and (not activity.runitem or activity.runitem.status != 'Completed') %}
+                                        <a class="ui right floated icon button" title="Edit" href="{{app.entity_path('activity_edit',activity)}}">
+                                            <i class="ui pencil icon"></i>
+                                        </a>
+                                    {% endif %}
+                                    {{activity.runitem.status|default('New')}}
+                                    <div style="clear:both"></div>
+                                </div>
                             </td>
                         </tr>
                     {% else %}

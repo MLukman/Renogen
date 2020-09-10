@@ -14,6 +14,11 @@ use Renogen\Base\Actionable;
 class Activity extends Actionable
 {
     /**
+     * @Column(type="string", length=100, nullable=true)
+     */
+    public $title;
+
+    /**
      * @ManyToOne(targetEntity="Item")
      * @JoinColumn(name="item_id", referencedColumnName="id", onDelete="CASCADE")
      * @var Item
@@ -38,20 +43,21 @@ class Activity extends Actionable
      * @var array
      */
     protected $validation_rules = array(
+        'title' => array('required' => 1, 'trim' => 1, 'maxlen' => 100),
         'template' => array('required' => 1),
     );
-    public $fileClass           = '\Renogen\Entity\ActivityFile';
-    public $actionableType      = 'activity';
+    public $fileClass = '\Renogen\Entity\ActivityFile';
+    public $actionableType = 'activity';
 
     public function __construct(Item $item)
     {
-        $this->item  = $item;
+        $this->item = $item;
         $this->files = new ArrayCollection();
     }
 
     public function displayTitle()
     {
-        return 'Activity: '.$this->template->title;
+        return $this->title ?: $this->template->title;
     }
 
     public function isUsernameAllowed($username, $attribute)
