@@ -30,6 +30,7 @@ return array(
     'Securilex\\Doctrine\\' => array($vendorDir . '/mlukman/securilex-doctrine/src'),
     'Securilex\\' => array($vendorDir . '/mlukman/securilex/src'),
     'Renogen\\' => array($baseDir . '/src/classes'),
+    'ReCaptcha\\' => array($vendorDir . '/google/recaptcha/src/ReCaptcha'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log/Psr/Log'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
     'GuzzleHttp\\Psr7\\' => array($vendorDir . '/guzzlehttp/psr7/src'),

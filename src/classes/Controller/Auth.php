@@ -35,6 +35,11 @@ class Auth extends Controller
 
     public function register(Request $request)
     {
+        $recaptcha_keys = array(
+            'sitekey' => getenv('RECAPTCHA_SITE_KEY'),
+            'secretkey' => getenv('RECAPTCHA_SECRET_KEY'),
+        );
+
         $ds = $this->app['datastore'];
         $post = $request->request;
         $selected_auth = null;
@@ -60,6 +65,14 @@ class Auth extends Controller
         }
 
         if ($post->get('_action') == 'Proceed to register') {
+            if (!empty($recaptcha_keys['secretkey'])) {
+                $recaptcha = new \ReCaptcha\ReCaptcha($recaptcha_keys['secretkey']);
+                $resp = $recaptcha->verify($post->get('g-recaptcha-response'));
+                if (!$resp->isSuccess()) {
+                    $user->errors['recaptcha'] = 'Invalid response: '.join(", ", $resp->getErrorCodes());
+                }
+            }
+
             $user->roles = array('ROLE_USER');
             if ($ds->prepareValidateEntity($user, array('auth', 'username', 'shortname',
                     'email'), $post)) {
@@ -77,6 +90,7 @@ class Auth extends Controller
                 'auth' => $selected_auth,
                 'user' => $user,
                 'errors' => $user->errors,
+                'recaptcha' => $recaptcha_keys,
         ));
     }
 }

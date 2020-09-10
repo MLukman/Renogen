@@ -1,5 +1,9 @@
 {% extends "renobase.twig" %}
 
+{% block head %}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock %}
+
 {% block content %}
     <h1 class="ui header">
         <span>
@@ -58,6 +62,13 @@
                     <input placeholder="Email address (max 50 characters)" type="text" name="email" value="{{user.email|default(null)}}" />
                     {{ m.fieldError(errors|default([]), 'email') }}
                 </div>
+                {% if recaptcha['sitekey'] %}
+                    <div class="ui required field basic segment">
+                        <label class="ui top attached large label">Human Verification</label>
+                        <div class="g-recaptcha" data-sitekey="{{ recaptcha['sitekey'] }}"></div>
+                        {{ m.fieldError(errors|default([]), 'recaptcha') }}
+                    </div>
+                {% endif %}
                 <div class="ui field">
                     <input type="submit" class="ui submit primary button" name="_action" value="Proceed to register" />
                 </div>
