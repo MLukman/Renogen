@@ -14,29 +14,31 @@
         <thead>
             <tr>
                 <th class="ui collapsing">Name</th>
+                <th>Title</th>
                 <th class="ui collapsing">Class</th>
                 <th>Parameters</th>
+                <th class="ui collapsing">Self-Register?</th>
                 <th class="ui collapsing">Action</th>
             </tr>
         </thead>
         <tbody>
             {% for auth in drivers %}
-                <tr>
-                    <td class="ui collapsing top aligned">{{auth.name}}</td>
-                    <td class="ui collapsing top aligned">{{auth.class}}</td>
-                    <td class="ui top aligned">
+                <tr class="ui top aligned">
+                    <td class="ui collapsing">{{auth.name}}</td>
+                    <td>{{auth.title}}</td>
+                    <td class="ui collapsing">{{auth.class}}</td>
+                    <td>
                         {% if auth.parameters %}
                             {{r.arrayTable(auth.parameters, false)}}
                         {% else %}
                             -
                         {% endif %}
                     </td>
-                    <td class="ui collapsing top aligned">
-                        {% if auth.name != 'password' %}
-                            <a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
-                                <i class="ui pencil icon"></i> Edit
-                            </a>
-                        {% endif %}
+                    <td class="ui collapsing">{{auth.allow_self_registration ? 'Y' : 'N'}}</td>
+                    <td class="ui collapsing">
+                        <a class="ui button" href="{{app.path('admin_auth_edit', {'driver': auth.name})}}">
+                            <i class="ui pencil icon"></i> Edit
+                        </a>
                     </td>
                 </tr>
             {% endfor %}

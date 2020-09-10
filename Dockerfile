@@ -12,7 +12,10 @@ RUN apt-get update && apt-get install -y libldap2-dev wget \
 
 RUN echo 'TLS_REQCERT never' >> /etc/ldap/ldap.conf \
     && echo 'upload_max_filesize = 100M' > /usr/local/etc/php/conf.d/max.ini \
-    && echo 'post_max_size = 120M' >> /usr/local/etc/php/conf.d/max.ini
+    && echo 'post_max_size = 120M' >> /usr/local/etc/php/conf.d/max.ini \
+    && wget -O /usr/local/etc/cacert.pem --no-verbose https://curl.haxx.se/ca/cacert.pem \
+    && echo 'curl.cainfo=/usr/local/etc/cacert.pem' > /usr/local/etc/php/conf.d/openssl_cacert.ini \
+    && echo 'openssl.cafile=/usr/local/etc/cacert.pem' >> /usr/local/etc/php/conf.d/openssl_cacert.ini
 
 # If behind reverse proxy using path (e.g. /renogen), put the path here (without the preceding slash, e.g renogen). 
 # Also ensure the reverse proxy retains the path when proxying to this container.
@@ -27,6 +30,10 @@ ENV DB_PORT=3306
 ENV DB_NAME=renogen
 ENV DB_USER=renogen
 ENV DB_PASSWORD=reno123gen
+
+# RECAPTCHA SITE & SECRET KEYS
+ENV RECAPTCHA_SITE_KEY=''
+ENV RECAPTCHA_SECRET_KEY=''
 
 HEALTHCHECK CMD sleep 10 && curl -sSf http://localhost/healthcheck.php || exit 1
 

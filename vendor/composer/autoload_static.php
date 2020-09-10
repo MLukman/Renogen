@@ -53,6 +53,7 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
         'R' => 
         array (
             'Renogen\\' => 8,
+            'ReCaptcha\\' => 10,
         ),
         'P' => 
         array (
@@ -171,6 +172,10 @@ class ComposerStaticInitcc20315e295cd80e6398d6f77a368211
         'Renogen\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src/classes',
+        ),
+        'ReCaptcha\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/google/recaptcha/src/ReCaptcha',
         ),
         'Psr\\Log\\' => 
         array (

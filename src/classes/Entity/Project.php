@@ -112,7 +112,7 @@ class Project extends Entity
     protected $validation_rules = array(
         'name' => array('required' => 1, 'unique' => true, 'maxlen' => 30,
             'preg_match' => array('/^[0-9a-zA-Z][0-9a-zA-Z_-]*$/', 'Project name must start with an alphanumerical character'),
-            'invalidvalues' => array('login', 'admin', 'archived')),
+            'invalidvalues' => array('login', 'admin', 'archived', 'register')),
         'title' => array('required' => 1, 'unique' => true, 'maxlen' => 100),
         'categories' => array('required' => 1),
         'modules' => array('required' => 1),

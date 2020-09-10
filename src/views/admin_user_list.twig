@@ -13,12 +13,14 @@
     <table class="ui celled striped sortable table">
         <thead>
             <tr>
-                <th>Username</th>
+                <th class="ui collapsing">Username</th>
                 <th>Short Name</th>
-                <th>Email</th>
+                <th class="ui collapsing">Email</th>
                 <th class="ui collapsing">Login by</th>
                 <th class="ui collapsing">Admin</th>
+                <th class="ui collapsing">Project<br/>Count</th>
                 <th>Project Access</th>
+                <th class="ui collapsing">Registered</th>
                 <th class="ui collapsing">Last Login</th>
                 <th class="ui collapsing">Action</th>
             </tr>
@@ -37,6 +39,9 @@
                         {% endif %}
                     </td>
                     <td class="ui center aligned">{{'ROLE_ADMIN' in user.roles ? 'Y':'N'}}</td>
+                    <td class="ui center aligned">
+                        {{user.userProjects|length}}
+                    </td>
                     <td>
                         <div class="ui middle aligned divided list">
                             {% for userProject in user.userProjects.toArray()|psort('project.title') %}
@@ -52,6 +57,9 @@
                                 N/A
                             {% endfor %}
                         </div>
+                    </td>
+                    <td class="ui collapsing" data-sort-value="{{ user.created_date.getTimestamp() }}">
+                        {{ user.created_date|date('d/m/Y') }}
                     </td>
                     {% if user.last_login %}
                         <td class="ui collapsing" data-sort-value="{{ user.last_login.getTimestamp() }}">

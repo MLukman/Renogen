@@ -203,9 +203,10 @@ class App extends Application
 
         $this->firewall->addSuccessLoginHandler('flash', function(Request $request, TokenInterface $token) {
             $user = $this->userEntity();
-            $welcome = sprintf('Welcome back, %s. ', $user->shortname);
             if ($user->last_login) {
-                $welcome .= sprintf('Your last login was on %s.', $user->last_login->format('d/m/Y h:i A'));
+                $welcome = sprintf('Welcome back, %s. Your last login was on %s.', $user->shortname, $user->last_login->format('d/m/Y h:i A'));
+            } else {
+                $welcome = sprintf('Welcome to Renogen, %s.', $user->shortname);
             }
             $this->addFlashMessage($welcome, 'Hello there!', 'notice', true);
             $user->last_login = new \DateTime();
@@ -215,23 +216,12 @@ class App extends Application
         $this->security->addFirewall($this->firewall);
         $this->security->addAuthorizationVoter(new SecuredAccessVoter());
         $this->security->addAuthorizationVoter(SubjectPrefixVoter::instance());
+        $this->security->addUnsecurePattern('/register(/|$)');
+        $this->security->addUnsecurePattern('/login(/|$)');
         $this->register($this->security);
 
         SubjectPrefixVoter::instance()
             ->addSubjectPrefix(array('admin', 'project_create'), 'ROLE_ADMIN');
-
-        /* Login page (not using controller because too simple) */
-        $this->get('/login/', function(Request $request) {
-            $count_last = 30;
-            $query = $this['em']->createQuery("SELECT COUNT(u) FROM \Renogen\Entity\User u WHERE u.last_login > ?1");
-            $query->setParameter(1, new \DateTime("- $count_last minute"));
-            $usersCount = $query->getSingleScalarResult();
-            return $this['twig']->render("login.twig", array(
-                    'error' => $this['security.last_error']($request),
-                    'last_username' => $this['session']->get('_security.last_username'),
-                    'bottom_message' => ($usersCount < 2 ? '' : "There are ${usersCount} users who logged in within the last ${count_last} minutes"),
-            ));
-        })->bind('login');
 
         $this->before(function(Request $request, Application $app) {
             if (!$app['securilex']->getFirewall()) {
@@ -261,6 +251,14 @@ class App extends Application
 
     protected function configureRoutes()
     {
+        /* Routes: Login & Register */
+        $this['auth.controller'] = $this->share(function() {
+            return new Controller\Auth($this);
+        });
+        $this->match('/login/', 'auth.controller:login')->bind('login');
+        $this->match('/login/{username}/', 'auth.controller:login')->bind('login_username');
+        $this->match('/register/', 'auth.controller:register')->bind('register');
+
         /* Routes: Home */
         $this['home.controller'] = $this->share(function() {
             return new Home($this);

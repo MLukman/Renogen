@@ -14,7 +14,8 @@
 		"guzzlehttp/guzzle": "^6.3",
 		"erusev/parsedown": "^1.7",
 		"laravelfy/parsedown-extra-plugin": "^0.01.0",
-		"mlukman/securilex-doctrine": "0.2"
+		"mlukman/securilex-doctrine": "0.2",
+		"google/recaptcha": "^1.2"
 	},
 	"autoload": {
 		"psr-4": {

@@ -19,6 +19,11 @@ class AuthDriver extends Entity
     /**
      * @Column(type="string")
      */
+    public $title;
+
+    /**
+     * @Column(type="string")
+     */
     public $class;
 
     /**
@@ -27,12 +32,24 @@ class AuthDriver extends Entity
     public $parameters = array();
 
     /**
+     * @Column(type="boolean", options={"default" : 0})
+     */
+    public $allow_self_registration = false;
+
+    /**
+     * @Column(type="string", nullable=true)
+     */
+    public $registration_explanation;
+
+    /**
      * Validation rules
      * @var array
      */
     protected $validation_rules = array(
         'name' => array('trim' => 1, 'required' => 1, 'unique' => 1),
+        'title' => array('trim' => 1, 'required' => 1, 'unique' => 1),
         'class' => array('required' => 1),
+        'registration_explanation' => array('trim' => 1),
     );
 
     public function __construct($name = null)
