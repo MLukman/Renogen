@@ -177,6 +177,7 @@ class Item extends RenoController
                     break;
 
                 case 'Delete':
+                    $item->updated_by = $this->app->userEntity();
                     $ds->deleteEntity($item);
                     $ds->commit();
                     $this->app->addFlashMessage("Item '$item->title' has been deleted");

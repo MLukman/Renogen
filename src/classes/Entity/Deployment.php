@@ -247,4 +247,14 @@ class Deployment extends Entity
             }
         }
     }
+
+    /**
+     * @PostRemove
+     */
+    public function onDeleted()
+    {
+        foreach ($this->project->plugins as $plugin) {
+            $plugin->instance()->onDeploymentDeleted($this);
+        }
+    }
 }

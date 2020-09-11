@@ -39,6 +39,11 @@ class Core extends PluginCore
 
     }
 
+    public function onDeploymentDeleted(Deployment $deployment)
+    {
+
+    }
+
     public function onItemStatusUpdated(Item $item, $old_status = null)
     {
         
@@ -51,6 +56,6 @@ class Core extends PluginCore
 
     public function onItemDeleted(Item $item)
     {
-
+        
     }
 }

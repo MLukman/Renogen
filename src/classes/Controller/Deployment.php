@@ -11,7 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 class Deployment extends RenoController
 {
-    const entityFields = array('execute_date', 'title', 'description', 'external_url', 'external_url_label');
+    const entityFields = array('execute_date', 'title', 'description', 'external_url',
+        'external_url_label');
 
     public function create(Request $request, $project)
     {
@@ -67,6 +68,7 @@ class Deployment extends RenoController
         if ($post->count() > 0) {
             if ($post->get('_action') == 'Delete') {
                 if ($deployment->items->count() == 0) {
+                    $deployment->updated_by = $this->app->userEntity();
                     $this->app['datastore']->deleteEntity($deployment);
                     $this->app['datastore']->commit();
                     $this->app->addFlashMessage("Deployment '$deployment->title' has been deleted");

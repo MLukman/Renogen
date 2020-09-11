@@ -13,12 +13,13 @@ class Core extends PluginCore
         'bot_token' => null,
         'group_id' => null,
         'group_name' => null,
-        'template_deployment_created' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has been created for <b>{datetime}</b> {bywho}',
-        'template_deployment_date_changed' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has changed date from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_created' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment}</b> {bywho}',
-        'template_item_status_changed' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been changed status from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_moved' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has moved from <b>{old}</b> to <b>{new}</b> {bywho}',
-        'template_item_deleted' => '&#x1F4CC; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment}</b> {bywho}',
+        'template_deployment_created' => '&#x1F4C5; [<b>{project}</b>] Deployment window <b>{datetime}</b> with title <a href="{url}">{title}</a> has been created by {who}',
+        'template_deployment_date_changed' => '&#x1F4C5; [<b>{project}</b>] Deployment <a href="{url}">{title}</a> has changed date from <b>{old}</b> to <b>{new}</b> by {who}',
+        'template_deployment_deleted' => '&#x1F4C5; [<b>{project}</b>] Deployment <b>{title} ({datetime})</b> has been deleted by {who}',
+        'template_item_created' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has been created for deployment <b>{deployment_title} ({deployment_datetime})</b> by {who}',
+        'template_item_status_changed' => '&#x1F4CC; [<b>{project}</b>] Status of item <a href="{url}">{title}</a> has been changed from <b>{old}</b> to <b>{new}</b> by {who}',
+        'template_item_moved' => '&#x1F4CC; [<b>{project}</b>] Item <a href="{url}">{title}</a> has moved from <b>{old_title} ({old_datetime})</b> to <b>{new_title} ({new_datetime})</b> by {who}',
+        'template_item_deleted' => '&#x1F4CC; [<b>{project}</b>] Item <b>{title}</b> has been deleted from deployment <b>{deployment_title} ({deployment_datetime})</b> by {who}',
     );
 
     static public function getIcon()
@@ -33,7 +34,7 @@ class Core extends PluginCore
 
     protected function sendMessage($message)
     {
-        if (substr($message, 0, 1) == '-') {
+        if (empty($message) || substr($message, 0, 1) == '-') {
             // Not send if message template starts with a dash
             return;
         }
@@ -89,6 +90,7 @@ class Core extends PluginCore
         $message = str_replace('{url}', $this->escape($this->app->url('deployment_view', $this->app->entityParams($deployment))), $message);
         $message = str_replace('{title}', $this->escape($deployment->title), $message);
         $message = str_replace('{datetime}', $this->escape($deployment->datetimeString(true)), $message);
+        $message = str_replace('{who}', $this->escape($deployment->created_by->shortname), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($deployment->created_by->shortname), $message);
         $this->sendMessage($message);
     }
@@ -102,6 +104,18 @@ class Core extends PluginCore
         $message = str_replace('{title}', $this->escape($deployment->title), $message);
         $message = str_replace('{old}', $this->escape($deployment->datetimeString(true, $old_date)), $message);
         $message = str_replace('{new}', $this->escape($deployment->datetimeString(true)), $message);
+        $message = str_replace('{who}', $this->escape($deployment->updated_by->shortname), $message);
+        $message = str_replace('{bywho}', ' by '.$this->escape($deployment->updated_by->shortname), $message);
+        $this->sendMessage($message);
+    }
+
+    public function onDeploymentDeleted(Deployment $deployment)
+    {
+        $message = $this->options['template_deployment_deleted'];
+        $message = str_replace('{project}', $this->escape($deployment->project->title), $message);
+        $message = str_replace('{title}', $this->escape($deployment->title), $message);
+        $message = str_replace('{datetime}', $this->escape($deployment->datetimeString(true)), $message);
+        $message = str_replace('{who}', $this->escape($deployment->updated_by->shortname), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($deployment->updated_by->shortname), $message);
         $this->sendMessage($message);
     }
@@ -112,15 +126,19 @@ class Core extends PluginCore
             $message = $this->options['template_item_status_changed'];
             $message = str_replace('{old}', $this->escape($old_status), $message);
             $message = str_replace('{new}', $this->escape($item->status), $message);
+            $message = str_replace('{who}', $this->escape($item->updated_by->shortname), $message);
             $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
         } else {
             $message = $this->options['template_item_created'];
+            $message = str_replace('{who}', $this->escape($item->created_by->shortname), $message);
             $message = str_replace('{bywho}', ' by '.$this->escape($item->created_by->shortname), $message);
         }
         $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
         $message = str_replace('{url}', $this->escape($this->app->url('item_view', $this->app->entityParams($item))), $message);
         $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
         $message = str_replace('{deployment}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{deployment_title}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{deployment_datetime}', $this->escape($item->deployment->datetimeString(true)), $message);
         $this->sendMessage($message);
     }
 
@@ -131,7 +149,12 @@ class Core extends PluginCore
         $message = str_replace('{url}', $this->escape($this->app->url('item_view', $this->app->entityParams($item))), $message);
         $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
         $message = str_replace('{old}', $this->escape($old_deployment->title), $message);
+        $message = str_replace('{old_title}', $this->escape($old_deployment->title), $message);
+        $message = str_replace('{old_datetime}', $this->escape($old_deployment->datetimeString(true)), $message);
         $message = str_replace('{new}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{new_title}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{new_datetime}', $this->escape($item->deployment->datetimeString(true)), $message);
+        $message = str_replace('{who}', $this->escape($item->updated_by->shortname), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
         $this->sendMessage($message);
     }
@@ -142,6 +165,9 @@ class Core extends PluginCore
         $message = str_replace('{project}', $this->escape($item->deployment->project->title), $message);
         $message = str_replace('{title}', $this->escape($item->displayTitle()), $message);
         $message = str_replace('{deployment}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{deployment_title}', $this->escape($item->deployment->title), $message);
+        $message = str_replace('{deployment_datetime}', $this->escape($item->deployment->datetimeString(true)), $message);
+        $message = str_replace('{who}', $this->escape($item->updated_by->shortname), $message);
         $message = str_replace('{bywho}', ' by '.$this->escape($item->updated_by->shortname), $message);
         $this->sendMessage($message);
     }

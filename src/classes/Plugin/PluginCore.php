@@ -26,6 +26,8 @@ abstract class PluginCore
     abstract public function onDeploymentDateChanged(Deployment $deployment,
                                                      \DateTime $old_date);
 
+    abstract public function onDeploymentDeleted(Deployment $deployment);
+
     abstract public function onItemStatusUpdated(Item $item, $old_status = null);
 
     abstract public function onItemMoved(Item $item, Deployment $old_deployment);
