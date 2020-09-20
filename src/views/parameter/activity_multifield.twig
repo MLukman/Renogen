@@ -54,6 +54,8 @@
                     <input id="{{pid}}" type="password" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" />
                 {% elseif p.type == 'multiline' %}
                     <textarea id="{{pid}}" name="parameters[{{param}}][{{p.id}}]">{{paramval[p.id]|default(p.details)}}</textarea>
+                {% elseif p.type == 'script' %}
+                    <textarea id="{{pid}}" name="parameters[{{param}}][{{p.id}}]" style="font-family: monospace">{{paramval[p.id]|default(p.details)}}</textarea>
                 {% elseif p.type == 'url' %}
                     <input id="{{pid}}" type="text" name="parameters[{{param}}][{{p.id}}]" value="{{paramval[p.id]|default(p.details|split('\n')|first)}}" placeholder="http://"  />
                 {% elseif p.type == 'formatted' %}

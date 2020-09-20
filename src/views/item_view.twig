@@ -26,11 +26,7 @@
         }
 
         function activitiesOpenClose(open) {
-            console.log('Accordion: ' + (open ? 'open' : 'close'));
             $('.activities.accordion').accordion(open ? 'open' : 'close', 0);
-            $('#activitiesOpenClose').text(open ? 'Close all' : 'Open all').off('click').on('click', function () {
-                activitiesOpenClose(open ? 0 : 1);
-            });
         }
 
         $(function () {
@@ -39,7 +35,6 @@
         });
 
         $(function () {
-            activitiesOpenClose(true);
             setTimeout(function () {
                 activitiesOpenClose(false);
             }, 3000);
@@ -155,7 +150,10 @@
                         <tr>
                             <th class="ui collapsing">#</th>
                             <th>
-                                <a id="activitiesOpenClose" style="float:right" href="#" onclick="return false"></a>
+                                <a style="float:right" href="#" title="Open all" onclick="activitiesOpenClose(true);
+                                        return false"><i class="ui angle double down icon"></i></a>
+                                <a style="float:right" href="#" title="Close all" onclick="activitiesOpenClose(false);
+                                        return false"><i class="ui angle double up icon"></i></a>
                                 Description
                             </th>
                             <th style="width:8em">Status</th>

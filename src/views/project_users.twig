@@ -41,8 +41,15 @@
 
 {%  macro user_row(project, user) %}
     {% set urole = project.getUserAccess(user.username) %}
-    <td>{{user.username}}</td>
-    <td>{{user.shortname}}</td>
+    <td>
+        {{user.username}}
+        {% if user.blocked %}
+            <div class="ui right floated red label">Blocked</div>
+        {% endif %}
+    </td>
+    <td>
+        {{user.shortname}}
+    </td>
     {% for lbl,role in {'None':null,'View':'view','Entry':'entry','Review':'review','Approval':'approval','Execute':'execute'} %}
         <td class="ui collapsing">
             <div class="ui toggle checkbox">

@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 class MultiField extends Parameter
 {
     public $allowed_types = ['freetext', 'password', 'dropdown', 'multiselect', 'multiline',
-        'url', 'file', 'formatted', 'jsondropdown'];
+        'script', 'url', 'file', 'formatted', 'jsondropdown'];
     public $default_type = null;
 
     static public function create($templateLabel, $templateDescription,
@@ -61,6 +61,9 @@ class MultiField extends Parameter
     {
         $errkey = ($error_prefix ? "$error_prefix.$key" : $key);
         foreach ($template_parameters[$key] as $p) {
+            if (is_string($input[$key][$p['id']])) {
+                $input[$key][$p['id']] = trim($input[$key][$p['id']]);
+            }
             if ($p['required'] && empty($input[$key][$p['id']])) {
                 $errors[$errkey.'.'.$p['id']] = array('Required');
             } elseif ($p['type'] == 'url' && !filter_var($input[$key][$p['id']], FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED)) {
@@ -195,6 +198,8 @@ class MultiField extends Parameter
                     $options[$d] = '******';
                 } elseif ($p['type'] == 'url') {
                     $options[$d] = '<a href="'.htmlentities($data[$p['id']]).'" target="_blank">'.htmlentities($data[$p['id']]).'</a>';
+                } elseif ($p['type'] == 'script') {
+                    $options[$d] = '<div class="ui form"><textarea readonly="readonly" style="font-family: monospace">'.htmlentities($data[$p['id']]).'</textarea></div>';
                 } else {
                     $options[$d] = $data[$p['id']];
                 }

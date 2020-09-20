@@ -20,17 +20,17 @@ class User extends Entity implements MutableUserInterface
     public $username;
 
     /**
-     * @Column(type="string", nullable=true, length=100)
+     * @Column(type="string", length=100, nullable=true)
      */
     public $shortname;
 
     /**
-     * @Column(type="string", length=50)
+     * @Column(type="string", length=50, nullable=true)
      */
     public $email;
 
     /**
-     * @Column(type="string", nullable=true, length=100)
+     * @Column(type="string", length=100, nullable=true)
      */
     public $password = '';
 

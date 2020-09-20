@@ -1,6 +1,8 @@
 {% set is_template = data[0].runitem.template.templateClass().instructionsContainVariables(data[0].runitem) %}
 {% if not is_template %}
-    {{data[0].params.Instructions|raw}}
+    <div style="max-width:100%; overflow: auto">
+        {{data[0].params.Instructions|raw}}
+    </div>
 {% endif %}
 <table class="ui striped very compact table">
     <thead>
@@ -30,8 +32,10 @@
                     </td>
                 {% endif %}
                 {% if is_template %}
-                    <td class="top aligned">
-                        {{ r.prettyDisplay(row.params.Instructions) }}
+                    <td class="ui collapsing top aligned">
+                        <div style="max-width:600px; overflow: auto">
+                            {{ r.prettyDisplay(row.params.Instructions) }}
+                        </div>
                     </td>
                 {% endif %}
                 {% if row.params.Details|length > 0 %}
